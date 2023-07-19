@@ -1,11 +1,14 @@
 var querystring = require('querystring'),
   util = require('util'),
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
   AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var GeocodioGeocoder = function GeocodioGeocoder(httpAdapter, apiKey) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GeocodioGe... Remove this comment to see the full error message
+var GeocodioGeocoder = function GeocodioGeocoder(this: any, httpAdapter: any, apiKey: any) {
+  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
   GeocodioGeocoder.super_.call(this, httpAdapter);
 
   if (!apiKey || apiKey == 'undefined') {
@@ -23,7 +26,7 @@ util.inherits(GeocodioGeocoder, AbstractGeocoder);
  * @param <string>   value    Value to geocode (Address)
  * @param <function> callback Callback method
  */
-GeocodioGeocoder.prototype._geocode = function (value, callback) {
+GeocodioGeocoder.prototype._geocode = function (value: any, callback: any) {
   var _this = this;
   this.httpAdapter.get(
     this._endpoint + '/geocode',
@@ -31,7 +34,7 @@ GeocodioGeocoder.prototype._geocode = function (value, callback) {
       q: value,
       api_key: querystring.unescape(this.apiKey)
     },
-    function (err, result) {
+    function (err: any, result: any) {
       if (err) {
         return callback(err);
       }
@@ -49,13 +52,14 @@ GeocodioGeocoder.prototype._geocode = function (value, callback) {
         results.push(_this._formatResult(locations[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   );
 };
 
-GeocodioGeocoder.prototype._formatResult = function (result) {
+GeocodioGeocoder.prototype._formatResult = function (result: any) {
   var accuracy = result.accuracy < 1 ? result.accuracy - 0.1 : 1;
   return {
     latitude: result.location.lat,
@@ -79,7 +83,7 @@ GeocodioGeocoder.prototype._formatResult = function (result) {
  * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
  * @param <function> callback Callback method
  */
-GeocodioGeocoder.prototype._reverse = function (query, callback) {
+GeocodioGeocoder.prototype._reverse = function (query: any, callback: any) {
   var lat = query.lat;
   var lng = query.lon;
 
@@ -91,7 +95,7 @@ GeocodioGeocoder.prototype._reverse = function (query, callback) {
       q: lat + ',' + lng,
       api_key: querystring.unescape(this.apiKey)
     },
-    function (err, result) {
+    function (err: any, result: any) {
       if (err) {
         return callback(err);
       }
@@ -103,10 +107,11 @@ GeocodioGeocoder.prototype._reverse = function (query, callback) {
         results.push(_this._formatResult(locations[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   );
 };
 
-module.exports = GeocodioGeocoder;
+export default GeocodioGeocoder;

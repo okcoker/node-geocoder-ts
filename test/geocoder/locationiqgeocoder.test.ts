@@ -10,22 +10,27 @@
     get: function() {}
   };
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('LocationIQGeocoder', () => {
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#constructor', () => {
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an http adapter must be set', () => {
         expect(function() {
           new LocationIQGeocoder();
         }).to.throw(Error, 'LocationIQGeocoder need an httpAdapter');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('must have an api key as second argument', () => {
         expect(function() {
           new LocationIQGeocoder(mockedHttpAdapter);
         }).to.throw(Error, 'LocationIQGeocoder needs an apiKey');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should be an instance of LocationIQGeocoder', () => {
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
         adapter.should.be.instanceOf(LocationIQGeocoder);
@@ -33,8 +38,10 @@
 
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#geocode', () => {
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv4', () => {
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
         expect(function() {
@@ -42,6 +49,7 @@
         }).to.throw(Error, 'LocationIQGeocoder does not support geocoding IPv4');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv6', () => {
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
         expect(function() {
@@ -49,6 +57,7 @@
         }).to.throw(Error, 'LocationIQGeocoder does not support geocoding IPv6');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock.expects('get').once().returns({then: function() {}});
@@ -57,7 +66,8 @@
         mock.verify();
       });
 
-      test('Should return geocoded address', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should return geocoded address', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         var rawResponse = [{
           "place_id": "49220656",
@@ -94,7 +104,7 @@
         mock.expects('get').once().callsArgWith(2, false, rawResponse);
 
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
-        adapter.geocode('Empire State Building', function(err, results) {
+        adapter.geocode('Empire State Building', function(err: any, results: any) {
           mock.verify();
           err.should.equal(false);
 
@@ -118,9 +128,10 @@
         done();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test(
         'Should return geocoded address when queried with an object',
-        done => {
+        (done: any) => {
           var mock = sinon.mock(mockedHttpAdapter);
           var rawResponse = [{
             "place_id": "49220656",
@@ -161,7 +172,7 @@
             'street': '5th Avenue 263',
             'city': 'New York'
           };
-          adapter.geocode(query, function(err, results) {
+          adapter.geocode(query, function(err: any, results: any) {
             mock.verify();
             err.should.equal(false);
 
@@ -186,7 +197,8 @@
         }
       );
 
-      test('should ignore "format" and "addressdetails" arguments', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('should ignore "format" and "addressdetails" arguments', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock.expects('get').once().callsArgWith(2, false, [])
           .withArgs('http://us1.locationiq.com/v1/search', {
@@ -198,7 +210,7 @@
 
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
         var query = {q:'Athens',format:'xml',addressdetails:0};
-        adapter.geocode(query, function(err, results) {
+        adapter.geocode(query, function(err: any, results: any) {
           err.should.equal(false);
           results.should.have.length.of(0);
           mock.verify();
@@ -208,9 +220,11 @@
 
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#reverse', () => {
 
-      test('Should correctly set extra arguments', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should correctly set extra arguments', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock.expects('get').once().callsArgWith(2, false, [])
           .withArgs('http://us1.locationiq.com/v1/reverse', {
@@ -223,7 +237,7 @@
           });
 
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
-        adapter.reverse({lat:12,lon:7,zoom:15}, function(err, result) {
+        adapter.reverse({lat:12,lon:7,zoom:15}, function(err: any, result: any) {
           err.should.equal(false);
           // check for empty result
           result.should
@@ -234,7 +248,8 @@
         });
       });
 
-      test('should ignore "format" and "addressdetails" arguments', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('should ignore "format" and "addressdetails" arguments', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock.expects('get').once().callsArgWith(2, false, [])
           .withArgs('http://us1.locationiq.com/v1/reverse', {
@@ -247,7 +262,7 @@
 
         var adapter = new LocationIQGeocoder(mockedHttpAdapter, 'API_KEY');
         var query = {lat:12,lon:7,format:'xml',addressdetails:0};
-        adapter.reverse(query, function(err, result) {
+        adapter.reverse(query, function(err: any, result: any) {
           err.should.equal(false);
           // check for empty result
           result.should

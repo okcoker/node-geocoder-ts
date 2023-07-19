@@ -1,12 +1,15 @@
 var querystring = require('querystring'),
   util = require('util'),
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
   AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var MapzenGeocoder = function MapzenGeocoder(httpAdapter, apiKey) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'MapzenGeoc... Remove this comment to see the full error message
+var MapzenGeocoder = function MapzenGeocoder(this: any, httpAdapter: any, apiKey: any) {
 
+  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
   MapzenGeocoder.super_.call(this, httpAdapter);
 
   if (!apiKey || apiKey == 'undefined') {
@@ -25,12 +28,12 @@ util.inherits(MapzenGeocoder, AbstractGeocoder);
  * @param <string>   value    Value to geocode (Address)
  * @param <function> callback Callback method
  */
-MapzenGeocoder.prototype._geocode = function (value, callback) {
+MapzenGeocoder.prototype._geocode = function (value: any, callback: any) {
   var _this = this;
   this.httpAdapter.get(this._endpoint + '/search', {
     'text': value,
     'api_key': querystring.unescape(this.apiKey)
-  }, function (err, result) {
+  }, function (err: any, result: any) {
     if (err) {
       return callback(err);
     }
@@ -46,12 +49,13 @@ MapzenGeocoder.prototype._geocode = function (value, callback) {
       results.push(_this._formatResult(locations[i]));
     }
 
+    // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
     results.raw = result;
     callback(false, results);
   });
 };
 
-MapzenGeocoder.prototype._formatResult = function (result) {
+MapzenGeocoder.prototype._formatResult = function (result: any) {
   var accuracy = (result.properties.confidence < 1) ? result.properties.confidence - 0.1 : 1;
 
   return {
@@ -75,7 +79,7 @@ MapzenGeocoder.prototype._formatResult = function (result) {
  * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
  * @param <function> callback Callback method
  */
-MapzenGeocoder.prototype._reverse = function (query, callback) {
+MapzenGeocoder.prototype._reverse = function (query: any, callback: any) {
   var lat = query.lat;
   var lng = query.lon;
 
@@ -85,7 +89,7 @@ MapzenGeocoder.prototype._reverse = function (query, callback) {
     'point.lat': lat,
     'point.lon': lng,
     'api_key': querystring.unescape(this.apiKey)
-  }, function (err, result) {
+  }, function (err: any, result: any) {
     if (err) {
       return callback(err);
     }
@@ -97,9 +101,10 @@ MapzenGeocoder.prototype._reverse = function (query, callback) {
       results.push(_this._formatResult(locations[i]));
     }
 
+    // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
     results.raw = result;
     callback(false, results);
   });
 };
 
-module.exports = MapzenGeocoder;
+export default MapzenGeocoder;

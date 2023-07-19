@@ -16,14 +16,18 @@
     }
   };
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('HereGeocoder', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#constructor', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an http adapter must be set', () => {
         expect(function () {
           new HereGeocoder();
         }).to.throw(Error, 'HereGeocoder need an httpAdapter');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('requires appId and appCode to be specified', () => {
         expect(function () {
           new HereGeocoder(mockedHttpAdapter, {});
@@ -36,6 +40,7 @@
         }).to.throw(Error, 'You must specify apiKey to use Here Geocoder');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should be an instance of HereGeocoder if an http adapter, appId, and appCode are provided', () => {
         var hereAdapter = new HereGeocoder(mockedHttpAdapter, {
           appId: 'APP_ID',
@@ -45,6 +50,7 @@
         hereAdapter.should.be.instanceof(HereGeocoder);
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should use CIT endpoint, if production is not provided', () => {
         var hereAdapter = new HereGeocoder(mockedHttpAdapter, {
           appId: 'APP_ID',
@@ -59,6 +65,7 @@
         );
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should use production endpoint, if production is provided', () => {
         var hereAdapter = new HereGeocoder(mockedHttpAdapter, {
           appId: 'APP_ID',
@@ -75,7 +82,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#geocode', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv4', () => {
         var hereAdapter = new HereGeocoder(mockedHttpAdapter, {
           appId: 'APP_ID',
@@ -87,6 +96,7 @@
         }).to.throw(Error, 'HereGeocoder does not support geocoding IPv4');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv6', () => {
         var hereAdapter = new HereGeocoder(mockedHttpAdapter, {
           appId: 'APP_ID',
@@ -98,6 +108,7 @@
         }).to.throw(Error, 'HereGeocoder does not support geocoding IPv6');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -122,6 +133,7 @@
         mock.verify();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method with language if specified', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -148,6 +160,7 @@
         mock.verify();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method with politicalView if specified', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -174,6 +187,7 @@
         mock.verify();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method with country if specified', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -200,6 +214,7 @@
         mock.verify();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method with state if specified', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -226,6 +241,7 @@
         mock.verify();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method with components if called with object', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -256,6 +272,7 @@
         mock.verify();
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method without default state if called with object containing country', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -286,7 +303,8 @@
         mock.verify();
       });
 
-      test('Should return geocoded address', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should return geocoded address', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -356,7 +374,7 @@
 
         hereAdapter.geocode(
           'Kaiserswerther Str 10, Berlin',
-          function (err, results) {
+          function (err: any, results: any) {
             err.should.to.equal(false);
             results[0].should.to.deep.equal({
               formattedAddress:
@@ -448,7 +466,8 @@
         );
       });
 
-      test('Should handle a not "OK" status', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should handle a not "OK" status', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -465,7 +484,7 @@
           appCode: 'APP_CODE'
         });
 
-        hereAdapter.geocode('1 champs élysées Paris', function (err, results) {
+        hereAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
           err.message.should.to.equal('Response status code is 401');
 
           results.raw.should.deep.equal({
@@ -480,7 +499,8 @@
         });
       });
 
-      test('Should handle an empty response', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should handle an empty response', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -497,7 +517,7 @@
           appCode: 'APP_CODE'
         });
 
-        hereAdapter.geocode('1 champs élysées Paris', function (err, results) {
+        hereAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
           err.should.equal(false);
 
           results.length.should.equal(0);
@@ -514,7 +534,8 @@
         });
       });
 
-      test('Should handle an unauthorized response', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should handle an unauthorized response', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -528,7 +549,7 @@
           apiKey: 'API_KEY'
         });
 
-        hereAdapter.geocode('1 champs élysées Paris', function (err, results) {
+        hereAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
           err.message.should.to.equal('apiKey invalid. apiKey not found.');
 
           mock.verify();
@@ -537,7 +558,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#reverse', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -555,7 +578,8 @@
         mock.verify();
       });
 
-      test('Should return geocoded address', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should return geocoded address', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -641,7 +665,7 @@
 
         hereAdapter.reverse(
           { lat: 40.714232, lon: -73.9612889 },
-          function (err, results) {
+          function (err: any, results: any) {
             err.should.to.equal(false);
             results[0].should.to.deep.equal({
               formattedAddress:
@@ -751,7 +775,8 @@
         );
       });
 
-      test('Should handle a not "OK" status', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should handle a not "OK" status', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -770,7 +795,7 @@
 
         hereAdapter.reverse(
           { lat: 40.714232, lon: -73.9612889 },
-          function (err, results) {
+          function (err: any, results: any) {
             err.message.should.to.equal('Response status code is 401');
 
             results.raw.should.deep.equal({
@@ -786,7 +811,8 @@
         );
       });
 
-      test('Should handle an empty response', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should handle an empty response', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -805,7 +831,7 @@
 
         hereAdapter.reverse(
           { lat: 40.714232, lon: -73.9612889 },
-          function (err, results) {
+          function (err: any, results: any) {
             err.should.equal(false);
 
             results.length.should.equal(0);

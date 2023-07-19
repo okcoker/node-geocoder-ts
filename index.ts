@@ -1,7 +1,5 @@
-'use strict';
-
-const GeocoderFactory = require('./lib/geocoderfactory.js');
+import GeocoderFactory from './lib/geocoderfactory';
 
 const Exports = GeocoderFactory.getGeocoder.bind(GeocoderFactory);
 
-module.exports = Exports;
+export default Exports;

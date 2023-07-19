@@ -11,20 +11,25 @@
     get: function () {}
   };
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('SmartyStreets', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#constructor', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an http adapter must be set', () => {
         expect(function () {
           new SmartyStreets();
         }).to.throw(Error, 'SmartyStreets need an httpAdapter');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an auth-id and auth-token must be set', () => {
         expect(function () {
           new SmartyStreets(mockedHttpAdapter);
         }).to.throw(Error, 'You must specify an auth-id and auth-token!');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should be an instance of SmartyStreets', () => {
         var smartyStreetsAdapter = new SmartyStreets(
           mockedHttpAdapter,
@@ -36,7 +41,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#geocode', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -61,7 +68,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#reverse', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should throw expection', () => {
         var smartyStreetsAdapter = new SmartyStreets(
           mockedHttpAdapter,

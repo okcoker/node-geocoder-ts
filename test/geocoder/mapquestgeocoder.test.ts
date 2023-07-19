@@ -11,20 +11,25 @@
     get: function () {}
   };
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('MapQuestGeocoder', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#constructor', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an http adapter must be set', () => {
         expect(function () {
           new MapQuestGeocoder();
         }).to.throw(Error, 'MapQuestGeocoder need an httpAdapter');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an apiKey must be set', () => {
         expect(function () {
           new MapQuestGeocoder(mockedHttpAdapter);
         }).to.throw(Error, 'MapQuestGeocoder needs an apiKey');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should be an instance of MapQuestGeocoder', () => {
         var mapquestAdapter = new MapQuestGeocoder(
           mockedHttpAdapter,
@@ -35,7 +40,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#geocode', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv4', () => {
         var mapquestAdapter = new MapQuestGeocoder(
           mockedHttpAdapter,
@@ -47,6 +54,7 @@
         }).to.throw(Error, 'MapQuestGeocoder does not support geocoding IPv4');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv6', () => {
         var mapquestAdapter = new MapQuestGeocoder(
           mockedHttpAdapter,
@@ -58,6 +66,7 @@
         }).to.throw(Error, 'MapQuestGeocoder does not support geocoding IPv6');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -80,7 +89,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#reverse', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock

@@ -1,6 +1,6 @@
-'use strict';
 
 var util = require('util');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
 var AbstractGeocoder = require('./abstractgeocoder');
 
 /**
@@ -8,14 +8,16 @@ var AbstractGeocoder = require('./abstractgeocoder');
  * @param <object> httpAdapter Http Adapter
  * @param <object> options     Options (language, clientId, apiKey)
  */
-var YandexGeocoder = function YandexGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'YandexGeoc... Remove this comment to see the full error message
+var YandexGeocoder = function YandexGeocoder(this: any, httpAdapter: any, options: any) {
   this.options = ['apiKey'];
+  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
   YandexGeocoder.super_.call(this, httpAdapter, options);
 };
 
 util.inherits(YandexGeocoder, AbstractGeocoder);
 
-function _findKey(result, wantedKey) {
+function _findKey(result: any, wantedKey: any) {
   var val = null;
   Object.keys(result).every(function(key) {
 
@@ -36,7 +38,7 @@ function _findKey(result, wantedKey) {
   return val;
 }
 
-function _formatResult(result) {
+function _formatResult(result: any) {
   var position = result.GeoObject.Point.pos.split(' ');
   result = result.GeoObject.metaDataProperty.GeocoderMetaData.AddressDetails;
 
@@ -53,7 +55,7 @@ function _formatResult(result) {
   };
 }
 
-function _processOptionsToParams(params, options){
+function _processOptionsToParams(params: any, options: any){
 
   //language (language_region, ex: `ru_RU`, `uk_UA`)
   if (options.language) {
@@ -103,7 +105,7 @@ YandexGeocoder.prototype._endpoint = 'https://geocode-maps.yandex.ru/1.x/';
 * @param <string>   value    Value to geocode (Address)
 * @param <function> callback Callback method
 */
-YandexGeocoder.prototype._geocode = function(value, callback) {
+YandexGeocoder.prototype._geocode = function(value: any, callback: any) {
   var params = {
     geocode : value,
     format: 'json'
@@ -111,13 +113,13 @@ YandexGeocoder.prototype._geocode = function(value, callback) {
 
   _processOptionsToParams(params, this.options);
 
-  this.httpAdapter.get(this._endpoint, params, function(err, result) {
+  this.httpAdapter.get(this._endpoint, params, function(err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
-      var results = [];
+      var results: any = [];
 
-      result.response.GeoObjectCollection.featureMember.forEach(function(geopoint) {
+      result.response.GeoObjectCollection.featureMember.forEach(function(geopoint: any) {
         results.push(_formatResult(geopoint));
       });
 
@@ -132,7 +134,7 @@ YandexGeocoder.prototype._geocode = function(value, callback) {
  * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
  * @param <function> callback Callback method
  */
-YandexGeocoder.prototype._reverse = function (query, callback) {
+YandexGeocoder.prototype._reverse = function (query: any, callback: any) {
   var lat = query.lat;
   var lng = query.lon;
 
@@ -142,4 +144,4 @@ YandexGeocoder.prototype._reverse = function (query, callback) {
 };
 
 
-module.exports = YandexGeocoder;
+export default YandexGeocoder;

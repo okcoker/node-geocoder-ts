@@ -1,14 +1,17 @@
 var util             = require('util'),
     net              = require('net'),
+    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
     AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var DataScienceToolkitGeocoder = function DataScienceToolkitGeocoder(httpAdapter,options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DataScienc... Remove this comment to see the full error message
+var DataScienceToolkitGeocoder = function DataScienceToolkitGeocoder(this: any, httpAdapter: any, options: any) {
     this.options     = ['host'];
     this.supportIPv4 = true;
 
+    // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
     DataScienceToolkitGeocoder.super_.call(this, httpAdapter, options);
 };
 
@@ -18,7 +21,7 @@ util.inherits(DataScienceToolkitGeocoder, AbstractGeocoder);
 * Build DSTK endpoint, allows for local DSTK installs
 * @param <string>   value    Value to geocode (Address or IPv4)
 */
-DataScienceToolkitGeocoder.prototype._endpoint = function(value) {
+DataScienceToolkitGeocoder.prototype._endpoint = function(value: any) {
    var ep = { };
    var host = 'www.datasciencetoolkit.org';
 
@@ -26,9 +29,12 @@ DataScienceToolkitGeocoder.prototype._endpoint = function(value) {
         host =  this.options.host;
     }
 
+    // @ts-expect-error TS(2339): Property 'ipv4Endpoint' does not exist on type '{}... Remove this comment to see the full error message
     ep.ipv4Endpoint = 'http://' + host + '/ip2coordinates/';
+    // @ts-expect-error TS(2339): Property 'street2coordinatesEndpoint' does not exi... Remove this comment to see the full error message
     ep.street2coordinatesEndpoint = 'http://' + host + '/street2coordinates/';
 
+    // @ts-expect-error TS(2339): Property 'ipv4Endpoint' does not exist on type '{}... Remove this comment to see the full error message
     return net.isIPv4(value) ? ep.ipv4Endpoint : ep.street2coordinatesEndpoint;
 };
 
@@ -37,10 +43,10 @@ DataScienceToolkitGeocoder.prototype._endpoint = function(value) {
 * @param <string>   value    Value to geocode (Address or IPv4)
 * @param <function> callback Callback method
 */
-DataScienceToolkitGeocoder.prototype._geocode = function(value, callback) {
+DataScienceToolkitGeocoder.prototype._geocode = function(value: any, callback: any) {
 
     var ep = this._endpoint(value);
-    this.httpAdapter.get(ep + value , { }, function(err, result) {
+    this.httpAdapter.get(ep + value , { }, function(err: any, result: any) {
         if (err) {
             return callback(err);
         } else {
@@ -63,6 +69,7 @@ DataScienceToolkitGeocoder.prototype._geocode = function(value, callback) {
                 'countryCode' : result.country_code
             });
 
+            // @ts-expect-error TS(2339): Property 'raw' does not exist on type '{ latitude:... Remove this comment to see the full error message
             results.raw = result;
             callback(false, results);
         }
@@ -71,4 +78,4 @@ DataScienceToolkitGeocoder.prototype._geocode = function(value, callback) {
 
 };
 
-module.exports = DataScienceToolkitGeocoder;
+export default DataScienceToolkitGeocoder;

@@ -1,4 +1,5 @@
 var util = require('util');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
 var AbstractGeocoder = require('./abstractgeocoder');
 
 /**
@@ -6,7 +7,9 @@ var AbstractGeocoder = require('./abstractgeocoder');
  * @param <object> httpAdapter Http Adapter
  * @param <object> options     Options (language, clientId, apiKey)
  */
-var TomTomGeocoder = function TomTomGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'TomTomGeoc... Remove this comment to see the full error message
+var TomTomGeocoder = function TomTomGeocoder(this: any, httpAdapter: any, options: any) {
+  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
   TomTomGeocoder.super_.call(this, httpAdapter, options);
 
   if (!this.options.apiKey || this.options.apiKey == 'undefined') {
@@ -26,7 +29,7 @@ TomTomGeocoder.prototype._batchGeocodingEndpoint =
  * @param <string>   value    Value to geocode (Address)
  * @param <function> callback Callback method
  */
-TomTomGeocoder.prototype._geocode = function (value, callback) {
+TomTomGeocoder.prototype._geocode = function (value: any, callback: any) {
   var _this = this;
 
   var params = {
@@ -34,20 +37,23 @@ TomTomGeocoder.prototype._geocode = function (value, callback) {
   };
 
   if (this.options.language) {
+    // @ts-expect-error TS(2339): Property 'language' does not exist on type '{ key:... Remove this comment to see the full error message
     params.language = this.options.language;
   }
 
   if (this.options.country) {
+    // @ts-expect-error TS(2339): Property 'countrySet' does not exist on type '{ ke... Remove this comment to see the full error message
     params.countrySet = this.options.country;
   }
 
   if (this.options.limit) {
+    // @ts-expect-error TS(2339): Property 'limit' does not exist on type '{ key: an... Remove this comment to see the full error message
     params.limit = this.options.limit;
   }
 
   var url = this._endpoint + '/' + encodeURIComponent(value) + '.json';
 
-  this.httpAdapter.get(url, params, function (err, result) {
+  this.httpAdapter.get(url, params, function (err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -57,13 +63,14 @@ TomTomGeocoder.prototype._geocode = function (value, callback) {
         results.push(_this._formatResult(result.results[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   });
 };
 
-TomTomGeocoder.prototype._formatResult = function (result) {
+TomTomGeocoder.prototype._formatResult = function (result: any) {
   return {
     latitude: result.position.lat,
     longitude: result.position.lon,
@@ -82,7 +89,7 @@ TomTomGeocoder.prototype._formatResult = function (result) {
  * @param <string[]>   values    Valueas to geocode
  * @param <function> callback Callback method
  */
-TomTomGeocoder.prototype._batchGeocode = async function (values, callback) {
+TomTomGeocoder.prototype._batchGeocode = async function (values: any, callback: any) {
   try {
     const jobLocation = await this.__createJob(values);
     const rawResults = await this.__pollJobStatusAndFetchResults(
@@ -96,9 +103,9 @@ TomTomGeocoder.prototype._batchGeocode = async function (values, callback) {
   }
 };
 
-TomTomGeocoder.prototype.__createJob = async function (addresses) {
+TomTomGeocoder.prototype.__createJob = async function (addresses: any) {
   const body = {
-    batchItems: addresses.map(address => {
+    batchItems: addresses.map((address: any) => {
       let query = `/geocode/${encodeURIComponent(address)}.json`;
       const queryString = new URLSearchParams();
       if (this.options.country) {
@@ -130,7 +137,7 @@ TomTomGeocoder.prototype.__createJob = async function (addresses) {
       this._batchGeocodingEndpoint,
       params,
       options,
-      function (err, result) {
+      function (err: any, result: any) {
         if (err) {
           return reject(err);
         }
@@ -138,18 +145,23 @@ TomTomGeocoder.prototype.__createJob = async function (addresses) {
       }
     );
   });
+  // @ts-expect-error TS(2571): Object is of type 'unknown'.
   if (response.status !== 303) {
+    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const responseContentType = response.headers.get('Content-Type');
     if (
       responseContentType &&
       responseContentType.includes('application/json')
     ) {
+      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       const errorBody = await response.json();
       throw new Error(errorBody.error.description);
     } else {
+      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       throw new Error(await response.text());
     }
   }
+  // @ts-expect-error TS(2571): Object is of type 'unknown'.
   const location = response.headers.get('Location');
   if (!location) {
     throw new Error('Location header not found');
@@ -158,8 +170,8 @@ TomTomGeocoder.prototype.__createJob = async function (addresses) {
 };
 
 TomTomGeocoder.prototype.__pollJobStatusAndFetchResults = async function (
-  location,
-  addresses
+  location: any,
+  addresses: any
 ) {
   let results;
   let stalledResponsesLeft = 84;
@@ -169,7 +181,7 @@ TomTomGeocoder.prototype.__pollJobStatusAndFetchResults = async function (
       this.httpAdapter.get(
         newLocation,
         {},
-        function (err, res) {
+        function (err: any, res: any) {
           if (err) {
             return reject(err);
           }
@@ -178,16 +190,22 @@ TomTomGeocoder.prototype.__pollJobStatusAndFetchResults = async function (
         true
       );
     });
+    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     if (status.status === 200) {
+      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       results = await status.json();
+    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     } else if (status.status === 202) {
+      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       newLocation = status.headers.get('Location');
       if (!newLocation) {
         throw new Error('Location header not found');
       }
+    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     } else if (status.status === 429) {
       throw new Error('Provider error: Too many requests');
     } else {
+      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       throw new Error(`Unexpected status: ${status.status}`);
     }
   }
@@ -200,8 +218,8 @@ TomTomGeocoder.prototype.__pollJobStatusAndFetchResults = async function (
   return results;
 };
 
-TomTomGeocoder.prototype.__parseBatchResults = function (rawResults) {
-  return rawResults.batchItems.map(result => {
+TomTomGeocoder.prototype.__parseBatchResults = function (rawResults: any) {
+  return rawResults.batchItems.map((result: any) => {
     if (result.statusCode !== 200) {
       return {
         error: `statusCode: ${result.statusCode}`,
@@ -210,7 +228,7 @@ TomTomGeocoder.prototype.__parseBatchResults = function (rawResults) {
     }
     return {
       error: null,
-      value: result.response.results.map((value) => ({
+      value: result.response.results.map((value: any) => ({
         ...this._formatResult(value),
         provider: 'tomtom'
       }))
@@ -218,4 +236,4 @@ TomTomGeocoder.prototype.__parseBatchResults = function (rawResults) {
   });
 };
 
-module.exports = TomTomGeocoder;
+export default TomTomGeocoder;

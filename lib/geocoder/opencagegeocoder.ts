@@ -1,4 +1,5 @@
 var util = require('util'),
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
   AbstractGeocoder = require('./abstractgeocoder');
 
 // http://geocoder.opencagedata.com/api.html#confidence
@@ -19,9 +20,11 @@ var ConfidenceInKM = {
 /**
  * Constructor
  */
-var OpenCageGeocoder = function OpenCageGeocoder(httpAdapter, apiKey, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpenCageGe... Remove this comment to see the full error message
+var OpenCageGeocoder = function OpenCageGeocoder(this: any, httpAdapter: any, apiKey: any, options: any) {
   this.options = ['language'];
 
+  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
   OpenCageGeocoder.super_.call(this, httpAdapter, options);
 
   if (!apiKey || apiKey == 'undefined') {
@@ -40,7 +43,7 @@ util.inherits(OpenCageGeocoder, AbstractGeocoder);
  * @param <string>   value    Value to geocode (Address)
  * @param <function> callback Callback method
  */
-OpenCageGeocoder.prototype._geocode = function (value, callback) {
+OpenCageGeocoder.prototype._geocode = function (value: any, callback: any) {
   var _this = this;
 
   var params = this._getCommonParams();
@@ -69,7 +72,7 @@ OpenCageGeocoder.prototype._geocode = function (value, callback) {
     params.q = value;
   }
 
-  this.httpAdapter.get(this._endpoint, params, function (err, result) {
+  this.httpAdapter.get(this._endpoint, params, function (err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -81,13 +84,14 @@ OpenCageGeocoder.prototype._geocode = function (value, callback) {
         }
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   });
 };
 
-OpenCageGeocoder.prototype._formatResult = function (result) {
+OpenCageGeocoder.prototype._formatResult = function (result: any) {
   var confidence = result.confidence || 0;
   return {
     latitude: result.geometry.lat,
@@ -112,7 +116,7 @@ OpenCageGeocoder.prototype._formatResult = function (result) {
  * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
  * @param <function> callback Callback method
  */
-OpenCageGeocoder.prototype._reverse = function (query, callback) {
+OpenCageGeocoder.prototype._reverse = function (query: any, callback: any) {
   var lat = query.lat;
   var lng = query.lon;
 
@@ -121,7 +125,7 @@ OpenCageGeocoder.prototype._reverse = function (query, callback) {
   var params = this._getCommonParams();
   params.q = lat + ' ' + lng;
 
-  this.httpAdapter.get(this._endpoint, params, function (err, result) {
+  this.httpAdapter.get(this._endpoint, params, function (err: any, result: any) {
     if (err) {
       callback(err);
     } else {
@@ -133,6 +137,7 @@ OpenCageGeocoder.prototype._reverse = function (query, callback) {
         }
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
@@ -146,13 +151,15 @@ OpenCageGeocoder.prototype._reverse = function (query, callback) {
  */
 OpenCageGeocoder.prototype._getCommonParams = function () {
   var params = {};
+  // @ts-expect-error TS(2339): Property 'key' does not exist on type '{}'.
   params.key = this.apiKey;
 
   if (this.options.language) {
+    // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
     params.language = this.options.language;
   }
 
   return params;
 };
 
-module.exports = OpenCageGeocoder;
+export default OpenCageGeocoder;

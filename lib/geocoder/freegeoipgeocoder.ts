@@ -1,13 +1,16 @@
 var util             = require('util'),
+    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
     AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var FreegeoipGeocoder = function FreegeoipGeocoder(httpAdapter) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'FreegeoipG... Remove this comment to see the full error message
+var FreegeoipGeocoder = function FreegeoipGeocoder(this: any, httpAdapter: any) {
     this.supportIPv4   = true;
     this.supportIPv6   = true;
     this.supportAddress = false;
+    // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
     FreegeoipGeocoder.super_.call(this, httpAdapter);
 };
 
@@ -21,8 +24,8 @@ FreegeoipGeocoder.prototype._endpoint = 'https://freegeoip.net/json/';
 * @param <string>   value    Value to geocode (IP only)
 * @param <function> callback Callback method
 */
-FreegeoipGeocoder.prototype._geocode = function(value, callback) {
-    this.httpAdapter.get(this._endpoint + value , { }, function(err, result) {
+FreegeoipGeocoder.prototype._geocode = function(value: any, callback: any) {
+    this.httpAdapter.get(this._endpoint + value , { }, function(err: any, result: any) {
         if (err) {
             return callback(err);
         } else {
@@ -44,6 +47,7 @@ FreegeoipGeocoder.prototype._geocode = function(value, callback) {
 
             });
 
+            // @ts-expect-error TS(2339): Property 'raw' does not exist on type '{ ip: any; ... Remove this comment to see the full error message
             results.raw = result;
             callback(false, results);
         }
@@ -52,4 +56,4 @@ FreegeoipGeocoder.prototype._geocode = function(value, callback) {
 
 };
 
-module.exports = FreegeoipGeocoder;
+export default FreegeoipGeocoder;

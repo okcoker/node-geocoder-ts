@@ -1,8 +1,11 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NodeGeocod... Remove this comment to see the full error message
 const NodeGeocoder = require('../../index');
 
+// @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
 describe('Mapbox geocoder', () => {
-  let geocoder;
+  let geocoder: any;
 
+  // @ts-expect-error TS(2304): Cannot find name 'beforeAll'.
   beforeAll(() => {
     const apiKey = process.env.MAPBOX_API_KEY;
     const options = {
@@ -17,7 +20,9 @@ describe('Mapbox geocoder', () => {
     geocoder = NodeGeocoder(options);
   });
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('geocode', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'it'. Do you need to install type... Remove this comment to see the full error message
     it('works', async () => {
       const res = await geocoder.geocode('1231 Av. Lajoie, Montreal');
 
@@ -37,7 +42,9 @@ describe('Mapbox geocoder', () => {
     });
   });
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('reverse', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'it'. Do you need to install type... Remove this comment to see the full error message
     it('works', async () => {
       const res = await geocoder.reverse({ lat: 45.521056, lon: -73.610734 });
       expect(res[0]).toBeDefined();

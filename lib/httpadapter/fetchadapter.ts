@@ -1,11 +1,16 @@
-'use strict';
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'HttpError'... Remove this comment to see the full error message
 const HttpError = require('../error/httperror.js');
 const nodeFetch = require('node-fetch');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'BPromise'.
 const BPromise = require('bluebird');
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'FetchAdapt... Remove this comment to see the full error message
 class FetchAdapter {
+  fetch: any;
+  options: any;
   constructor(options = {}) {
+    // @ts-expect-error TS(2339): Property 'fetch' does not exist on type '{}'.
     this.fetch = options.fetch || nodeFetch;
     this.options = { ...options };
     delete this.options.fetch;
@@ -15,7 +20,7 @@ class FetchAdapter {
     return true;
   }
 
-  get(url, params, callback, fullResponse = false) {
+  get(url: any, params: any, callback: any, fullResponse = false) {
     var options = {
       headers: {
         'user-agent': 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
@@ -29,6 +34,7 @@ class FetchAdapter {
         if (!v) {
           continue;
         }
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         options[k] = v;
       }
     }
@@ -45,16 +51,18 @@ class FetchAdapter {
         try {
           return await res.json();
         } catch (e) {
+          // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
           throw new HttpError(await res.text(), {
             code: res.statusCode
           });
         }
       })
-      .catch(function (error) {
+      .catch(function (error: any) {
         if (error instanceof HttpError) {
           throw error;
         }
         const _error = error.cause ? error.cause : error;
+        // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
         throw new HttpError(_error.message, {
           code: _error.code
         });
@@ -62,7 +70,7 @@ class FetchAdapter {
       .asCallback(callback);
   }
 
-  post(url, params, options, callback) {
+  post(url: any, params: any, options: any, callback: any) {
     options.method = 'POST';
     options.headers = options.headers || {};
     options.headers['user-agent'] = 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0';
@@ -86,11 +94,12 @@ class FetchAdapter {
           options
         );
       })
-      .catch(function(error) {
+      .catch(function(error: any) {
         if (error instanceof HttpError) {
           throw error;
         }
         const _error = error.cause ? error.cause : error;
+        // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
         throw new HttpError(_error.message, {
           code: _error.code
         });
@@ -99,4 +108,4 @@ class FetchAdapter {
   }
 }
 
-module.exports = FetchAdapter;
+export default FetchAdapter;

@@ -1,12 +1,7 @@
-'use strict';
-
-/**
-* Helper object
-*/
-var Helper = {
-  isString: function(testVar) {
+const Helper = {
+  isString(testVar: any) {
     return typeof testVar === 'string' || testVar instanceof String;
   }
 };
 
-module.exports = Helper;
+export default Helper;

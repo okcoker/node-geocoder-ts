@@ -1,6 +1,7 @@
 var util = require('util');
 
-var HttpError = function(message, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'HttpError'... Remove this comment to see the full error message
+var HttpError = function(this: any, message: any, options: any) {
     Error.call(this);
     Error.captureStackTrace(this, this.constructor);
 
@@ -16,4 +17,4 @@ var HttpError = function(message, options) {
 
 util.inherits(HttpError, Error);
 
-module.exports = HttpError;
+export default HttpError;

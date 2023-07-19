@@ -1,9 +1,11 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
 const AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * available options
  * @see https://docs.mapbox.com/api/search/geocoding/
  */
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OPTIONS'.
 const OPTIONS = [
   'apiKey',
   'language',
@@ -25,8 +27,9 @@ const OPTIONS_MAP = {
  * @param <object> httpAdapter Http Adapter
  * @param <object> options Options (apiKey, language, country, autocomplete, bbox, fuzzyMatch, limit, proximity, routing)
  */
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'MapBoxGeoc... Remove this comment to see the full error message
 class MapBoxGeocoder extends AbstractGeocoder {
-  constructor(httpAdapter, options) {
+  constructor(httpAdapter: any, options: any) {
     super(httpAdapter, options);
     this.options = options || {};
 
@@ -40,7 +43,7 @@ class MapBoxGeocoder extends AbstractGeocoder {
    * @param <string>   value    Value to geocode (Address)
    * @param <function> callback Callback method
    */
-  _geocode(value, callback) {
+  _geocode(value: any, callback: any) {
     let params = this._prepareQueryString({});
     let searchtext = value;
 
@@ -53,8 +56,8 @@ class MapBoxGeocoder extends AbstractGeocoder {
       searchtext
     )}.json`;
 
-    this.httpAdapter.get(endpoint, params, (err, result) => {
-      let results = [];
+    this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
+      let results: any = [];
       results.raw = result;
 
       if (err) {
@@ -77,7 +80,7 @@ class MapBoxGeocoder extends AbstractGeocoder {
    * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
    * @param <function> callback Callback method
    */
-  _reverse(query, callback) {
+  _reverse(query: any, callback: any) {
     const { lat, lon, ...other } = query;
 
     const params = this._prepareQueryString(other);
@@ -85,8 +88,8 @@ class MapBoxGeocoder extends AbstractGeocoder {
       `${lon},${lat}`
     )}.json`;
 
-    this.httpAdapter.get(endpoint, params, (err, result) => {
-      let results = [];
+    this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
+      let results: any = [];
       results.raw = result;
 
       if (err) {
@@ -104,8 +107,8 @@ class MapBoxGeocoder extends AbstractGeocoder {
     });
   }
 
-  _formatResult(result) {
-    const context = (result.context || []).reduce((o, item) => {
+  _formatResult(result: any) {
+    const context = (result.context || []).reduce((o: any, item: any) => {
       // possible types: country, region, postcode, district, place, locality, neighborhood, address
       const [type] = item.id.split('.');
       if (type) {
@@ -146,10 +149,11 @@ class MapBoxGeocoder extends AbstractGeocoder {
     return extractedObj;
   }
 
-  _prepareQueryString(params) {
+  _prepareQueryString(params: any) {
     OPTIONS.forEach(key => {
       const val = this.options[key];
       if (val) {
+        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const _key = OPTIONS_MAP[key] || key;
         params[_key] = val;
       }
@@ -167,4 +171,4 @@ Object.defineProperties(MapBoxGeocoder.prototype, {
   }
 });
 
-module.exports = MapBoxGeocoder;
+export default MapBoxGeocoder;

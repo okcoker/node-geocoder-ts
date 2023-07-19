@@ -10,15 +10,19 @@
         get: function() {}
     };
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('DataScienceToolkitGeocoder', () => {
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#constructor' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an http adapter must be set', () => {
 
                 expect(function() {new DataScienceToolkitGeocoder();}).to.throw(Error, 'DataScienceToolkitGeocoder need an httpAdapter');
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should be an instance of DataScienceToolkitGeocoder', () => {
 
                 var geocoder = new DataScienceToolkitGeocoder(mockedHttpAdapter);
@@ -28,8 +32,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#geocode' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should call httpAdapter get method', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
@@ -42,6 +48,7 @@
                 mock.verify();
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should call httpAdapter get method with specified host', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
@@ -54,7 +61,8 @@
                 mock.verify();
             });
 
-            test('Should return a geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return a geocoded address', (done: any) => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
@@ -74,7 +82,7 @@
                 );
                 var geocoder = new DataScienceToolkitGeocoder(mockedHttpAdapter);
 
-                geocoder.geocode('67.169.73.113', function(err, results) {
+                geocoder.geocode('67.169.73.113', function(err: any, results: any) {
                     err.should.to.equal(false);
                     results[0].should.to.deep.equal({
                         "latitude": 37.7587013244629,
@@ -93,7 +101,8 @@
 
             });
 
-            test('Should return a geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return a geocoded address', (done: any) => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
@@ -115,7 +124,7 @@
                 );
                 var geocoder = new DataScienceToolkitGeocoder(mockedHttpAdapter);
 
-                geocoder.geocode('2543 Graystone Place, Simi Valley, CA 93065', function(err, results) {
+                geocoder.geocode('2543 Graystone Place, Simi Valley, CA 93065', function(err: any, results: any) {
                     err.should.to.equal(false);
                     results[0].should.to.deep.equal({
                         "latitude": 34.280874,
@@ -134,7 +143,8 @@
 
             });
 
-            test('Should error for no result', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should error for no result', (done: any) => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
@@ -143,7 +153,7 @@
                 );
                 var geocoder = new DataScienceToolkitGeocoder(mockedHttpAdapter);
 
-                geocoder.geocode('2543 Graystone Place, #123, Simi Valley, CA 93065', function(err, results) {
+                geocoder.geocode('2543 Graystone Place, #123, Simi Valley, CA 93065', function(err: any, results: any) {
                     err.message.should.to.equal('Could not geocode "2543 Graystone Place, #123, Simi Valley, CA 93065".');
                     mock.verify();
                     done();
@@ -152,7 +162,9 @@
             });
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#reverse' , () => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should throw an error', () => {
                 var geocoder = new DataScienceToolkitGeocoder(mockedHttpAdapter);
                 expect(function() {geocoder.reverse(10.0235,-2.3662);})

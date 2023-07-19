@@ -10,20 +10,25 @@
         get: function() {}
     };
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('OpenCageGeocoder', () => {
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#constructor' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an http adapter must be set', () => {
 
                 expect(function() {new OpenCageGeocoder();}).to.throw(Error, 'OpenCageGeocoder need an httpAdapter');
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an apiKey must be set', () => {
 
                 expect(function() {new OpenCageGeocoder(mockedHttpAdapter);}).to.throw(Error, 'OpenCageGeocoder needs an apiKey');
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should be an instance of OpenCageGeocoder', () => {
 
                 var ocgAdapter = new OpenCageGeocoder(mockedHttpAdapter, 'API_KEY');
@@ -33,8 +38,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#geocode' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv4', () => {
 
                 var ocgAdapter = new OpenCageGeocoder(mockedHttpAdapter, 'API_KEY');
@@ -45,6 +52,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv6', () => {
 
                 var ocgAdapter = new OpenCageGeocoder(mockedHttpAdapter, 'API_KEY');
@@ -55,6 +63,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should call httpAdapter get method', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
@@ -68,6 +77,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test(
                 'Should call httpAdapter get method with components if called with object',
                 () => {
@@ -96,7 +106,8 @@
                 }
             );
 
-            test('Should return geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                         "status" : {
@@ -146,7 +157,7 @@
 
                 var ocgAdapter = new OpenCageGeocoder(mockedHttpAdapter, 'API_KEY');
 
-                ocgAdapter.geocode('Rua Cafelândia, Carapicuíba, Brasil', function(err, results) {
+                ocgAdapter.geocode('Rua Cafelândia, Carapicuíba, Brasil', function(err: any, results: any) {
                     err.should.to.equal(false);
 
                     results[0].should.to.deep.equal({
@@ -218,8 +229,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#reverse' , () => {
-            test('Should return geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                     "status" : {
@@ -267,7 +280,7 @@
                     }
                 );
                 var ocgAdapter = new OpenCageGeocoder(mockedHttpAdapter, 'API_KEY');
-                ocgAdapter.reverse({lat:13.3826786867678, lon:52.51921145}, function(err, results) {
+                ocgAdapter.reverse({lat:13.3826786867678, lon:52.51921145}, function(err: any, results: any) {
                         err.should.to.equal(false);
                         results[0].should.to.deep.equal({
                             "latitude": 52.51921145,

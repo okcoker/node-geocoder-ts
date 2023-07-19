@@ -1,5 +1,5 @@
-'use strict';
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'BPromise'.
 var BPromise = require('bluebird');
 
 /**
@@ -7,7 +7,8 @@ var BPromise = require('bluebird');
 * @param <object> geocoder  Geocoder Adapter
 * @param <object> formatter Formatter adapter or null
 */
-var Geocoder = function (geocoder, formatter) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Geocoder'.
+var Geocoder = function(this: any, geocoder: any, formatter: any) {
   this._geocoder = geocoder;
   this._formatter = formatter;
 };
@@ -17,18 +18,18 @@ var Geocoder = function (geocoder, formatter) {
 * @param <string>   value    Value to geocoder (address or IP)
 * @param <function> callback Callback method
 */
-Geocoder.prototype.geocode = function (value, callback) {
+Geocoder.prototype.geocode = function (value: any, callback: any) {
   return BPromise.resolve()
     .bind(this)
-    .then(function() {
-      return BPromise.fromCallback(function(callback) {
+    .then(function(this: any) {
+      return BPromise.fromCallback(function(this: any, callback: any) {
         this._geocoder.geocode(value, callback);
       }.bind(this));
     })
-    .then(function(data) {
+    .then(function(this: any, data: any) {
       return this._filter(value, data);
     })
-    .then(function(data) {
+    .then(function(this: any, data: any) {
       return this._format(data);
     })
     .asCallback(callback);
@@ -39,15 +40,15 @@ Geocoder.prototype.geocode = function (value, callback) {
 * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
 * @param {function} callback Callback method
 */
-Geocoder.prototype.reverse = function(query, callback) {
+Geocoder.prototype.reverse = function(query: any, callback: any) {
   return BPromise.resolve()
     .bind(this)
-    .then(function() {
-      return BPromise.fromCallback(function(callback) {
+    .then(function(this: any) {
+      return BPromise.fromCallback(function(this: any, callback: any) {
         this._geocoder.reverse(query, callback);
       }.bind(this));
     })
-    .then(function(data) {
+    .then(function(this: any, data: any) {
       return this._format(data);
     })
     .asCallback(callback);
@@ -60,24 +61,24 @@ Geocoder.prototype.reverse = function(query, callback) {
 *
 * @return promise
 */
-Geocoder.prototype.batchGeocode = function(values, callback) {
+Geocoder.prototype.batchGeocode = function(values: any, callback: any) {
   return BPromise.resolve()
     .bind(this)
-    .then(function() {
-      return BPromise.fromCallback(function(callback) {
+    .then(function(this: any) {
+      return BPromise.fromCallback(function(this: any, callback: any) {
         this._geocoder.batchGeocode(values, callback);
       }.bind(this));
     })
     .asCallback(callback);
 };
 
-Geocoder.prototype._filter = function (value, data) {
+Geocoder.prototype._filter = function (value: any, data: any) {
   if (!data || !data.length) {
     return data;
   }
 
   if (value.minConfidence) {
-    data = data.filter(function(geocodedAddress) {
+    data = data.filter(function(geocodedAddress: any) {
       if (geocodedAddress.extra && geocodedAddress.extra.confidence) {
         return geocodedAddress.extra.confidence >= value.minConfidence;
       }
@@ -87,7 +88,7 @@ Geocoder.prototype._filter = function (value, data) {
   return data;
 };
 
-Geocoder.prototype._format = function (data) {
+Geocoder.prototype._format = function (data: any) {
   var _this = this;
   return BPromise.resolve()
     .bind(this)
@@ -98,7 +99,7 @@ Geocoder.prototype._format = function (data) {
 
       var _raw = data.raw;
 
-      data = data.map(function(result) {
+      data = data.map(function(result: any) {
         result.provider = _this._geocoder.name;
 
         return result;
@@ -109,7 +110,7 @@ Geocoder.prototype._format = function (data) {
 
       return data;
     })
-    .then(function(data) {
+    .then(function(this: any, data: any) {
       var _data = data;
       if (this._formatter && this._formatter !== 'undefined') {
         _data = this._formatter.format(_data);
@@ -119,4 +120,4 @@ Geocoder.prototype._format = function (data) {
     });
 };
 
-module.exports = Geocoder;
+export default Geocoder;

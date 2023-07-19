@@ -1,4 +1,5 @@
-var StringFormatter = function(pattern) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'StringForm... Remove this comment to see the full error message
+var StringFormatter = function(this: any, pattern: any) {
 
     if (!pattern || pattern === 'undefined') {
         throw new Error('StringFormatter need a pattern');
@@ -7,7 +8,7 @@ var StringFormatter = function(pattern) {
     this.pattern = pattern;
 };
 
-StringFormatter.prototype.format = function(data) {
+StringFormatter.prototype.format = function(data: any) {
 
     var strings = [];
 
@@ -28,4 +29,4 @@ StringFormatter.prototype.format = function(data) {
     return strings;
 };
 
-module.exports = StringFormatter;
+export default StringFormatter;

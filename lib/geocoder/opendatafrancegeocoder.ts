@@ -1,12 +1,15 @@
 var util             = require('util'),
+    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
     AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var OpendataFranceGeocoder = function OpendataFranceGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpendataFr... Remove this comment to see the full error message
+var OpendataFranceGeocoder = function OpendataFranceGeocoder(this: any, httpAdapter: any, options: any) {
     this.options = ['language','email','apiKey'];
 
+    // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
     OpendataFranceGeocoder.super_.call(this, httpAdapter, options);
 };
 
@@ -21,7 +24,7 @@ OpendataFranceGeocoder.prototype._endpoint_reverse = 'https://api-adresse.data.g
 * @param <string|object>   value    Value to geocode (Address or parameters, as specified at https://opendatafrance/api/)
 * @param <function> callback Callback method
 */
-OpendataFranceGeocoder.prototype._geocode = function(value, callback) {
+OpendataFranceGeocoder.prototype._geocode = function(value: any, callback: any) {
     var _this = this;
 
     var params = this._getCommonParams();
@@ -50,7 +53,7 @@ OpendataFranceGeocoder.prototype._geocode = function(value, callback) {
       }
     }
 
-    this.httpAdapter.get(this._endpoint, params, function(err, result) {
+    this.httpAdapter.get(this._endpoint, params, function(err: any, result: any) {
         if (err) {
             return callback(err);
         } else {
@@ -67,6 +70,7 @@ OpendataFranceGeocoder.prototype._geocode = function(value, callback) {
               }
             }
 
+            // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
             results.raw = result;
             callback(false, results);
         }
@@ -75,7 +79,7 @@ OpendataFranceGeocoder.prototype._geocode = function(value, callback) {
 
 };
 
-OpendataFranceGeocoder.prototype._formatResult = function(result) {
+OpendataFranceGeocoder.prototype._formatResult = function(result: any) {
 
     var latitude = result.geometry.coordinates[1];
     if (latitude) {
@@ -103,16 +107,23 @@ OpendataFranceGeocoder.prototype._formatResult = function(result) {
     };
 
     if (properties.type === 'housenumber') {
+      // @ts-expect-error TS(2339): Property 'streetName' does not exist on type '{ la... Remove this comment to see the full error message
       formatedResult.streetName = properties.street;
+      // @ts-expect-error TS(2339): Property 'streetNumber' does not exist on type '{ ... Remove this comment to see the full error message
       formatedResult.streetNumber = properties.housenumber;
     } else if (properties.type === 'street') {
+      // @ts-expect-error TS(2339): Property 'streetName' does not exist on type '{ la... Remove this comment to see the full error message
       formatedResult.streetName = properties.name;
     } else if (properties.type === 'city') {
+      // @ts-expect-error TS(2339): Property 'population' does not exist on type '{ la... Remove this comment to see the full error message
       formatedResult.population = properties.population;
+      // @ts-expect-error TS(2339): Property 'adm_weight' does not exist on type '{ la... Remove this comment to see the full error message
       formatedResult.adm_weight = properties.adm_weight;
     } else if (properties.type === 'village') {
+      // @ts-expect-error TS(2339): Property 'population' does not exist on type '{ la... Remove this comment to see the full error message
       formatedResult.population = properties.population;
     } else if (properties.type === 'locality') {
+      // @ts-expect-error TS(2339): Property 'streetName' does not exist on type '{ la... Remove this comment to see the full error message
       formatedResult.streetName = properties.name;
     }
 
@@ -124,7 +135,7 @@ OpendataFranceGeocoder.prototype._formatResult = function(result) {
 * @param {lat:<number>,lon:<number>, ...}  lat: Latitude, lon: Longitude, ... see https://wiki.openstreetmap.org/wiki/Nominatim#Parameters_2
 * @param <function> callback Callback method
 */
-OpendataFranceGeocoder.prototype._reverse = function(query, callback) {
+OpendataFranceGeocoder.prototype._reverse = function(query: any, callback: any) {
 
     var _this = this;
 
@@ -134,7 +145,7 @@ OpendataFranceGeocoder.prototype._reverse = function(query, callback) {
       params[k] = v;
     }
 
-    this.httpAdapter.get(this._endpoint_reverse , params, function(err, result) {
+    this.httpAdapter.get(this._endpoint_reverse , params, function(err: any, result: any) {
         if (err) {
             return callback(err);
         } else {
@@ -151,6 +162,7 @@ OpendataFranceGeocoder.prototype._reverse = function(query, callback) {
             }
           }
 
+          // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
           results.raw = result;
           callback(false, results);
         }
@@ -173,10 +185,11 @@ OpendataFranceGeocoder.prototype._getCommonParams = function(){
       if (k === 'language') {
         k = 'accept-language';
       }
+      // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       params[k] = v;
     }
 
     return params;
 };
 
-module.exports = OpendataFranceGeocoder;
+export default OpendataFranceGeocoder;

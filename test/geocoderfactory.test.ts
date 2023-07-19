@@ -1,23 +1,40 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chai'.
 const chai = require('chai');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'should'.
 const should = chai.should();
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'expect'.
 const expect = chai.expect;
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'sinon'.
 const sinon = require('sinon');
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GoogleGeoc... Remove this comment to see the full error message
 const GoogleGeocoder = require('../lib/geocoder/googlegeocoder.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'HereGeocod... Remove this comment to see the full error message
 const HereGeocoder = require('../lib/geocoder/heregeocoder.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GeocoderFa... Remove this comment to see the full error message
 const GeocoderFactory = require('../lib/geocoderfactory.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DataScienc... Remove this comment to see the full error message
 const DataScienceToolkitGeocoder = require('../lib/geocoder/datasciencetoolkitgeocoder.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpenStreet... Remove this comment to see the full error message
 const OpenStreetMapGeocoder = require('../lib/geocoder/openstreetmapgeocoder.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'LocationIQ... Remove this comment to see the full error message
 const LocationIQGeocoder = require('../lib/geocoder/locationiqgeocoder.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'PickPointG... Remove this comment to see the full error message
 const PickPointGeocoder = require('../lib/geocoder/pickpointgeocoder.js');
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'FetchAdapt... Remove this comment to see the full error message
 const FetchAdapter = require('../lib/httpadapter/fetchadapter.js');
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GpxFormatt... Remove this comment to see the full error message
 const GpxFormatter = require('../lib/formatter/gpxformatter.js');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'StringForm... Remove this comment to see the full error message
 const StringFormatter = require('../lib/formatter/stringformatter.js');
 
+// @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
 describe('GeocoderFactory', () => {
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('getGeocoder', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google", and extra business key must return google geocoder with business key', () => {
       const geocoder = GeocoderFactory.getGeocoder('google', {
         clientId: 'CLIENT_ID',
@@ -32,6 +49,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google", and extra business key must return google geocoder with business key', () => {
       const geocoder = GeocoderFactory.getGeocoder({
         provider: 'google',
@@ -47,6 +65,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google", "fetch" and extra business key and excludePartialMatches must return google geocoder with fetch adapter and business key and exclude partial matches', () => {
       const geocoder = GeocoderFactory.getGeocoder('google', {
         clientId: 'CLIENT_ID',
@@ -63,6 +82,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google" and extra business key and excludePartialMatches must return google geocoder with business key and exclude partial matches', () => {
       const geocoder = GeocoderFactory.getGeocoder('google', {
         clientId: 'CLIENT_ID',
@@ -79,6 +99,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google", "http", extra language key and extra region must return google geocoder with options language', () => {
       const geocoder = GeocoderFactory.getGeocoder('google', {
         language: 'fr',
@@ -93,6 +114,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google" and "http" and "gpx" must return google geocoder with gpx formatter', () => {
       const geocoder = GeocoderFactory.getGeocoder('google', {
         formatter: 'gpx'
@@ -106,6 +128,7 @@ describe('GeocoderFactory', () => {
       formatter.should.be.instanceof(GpxFormatter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google" and "http" and "string" must return google geocoder with string formatter', () => {
       const geocoder = GeocoderFactory.getGeocoder('google', {
         formatter: 'string',
@@ -120,6 +143,7 @@ describe('GeocoderFactory', () => {
       formatter.should.be.instanceof(StringFormatter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google" must return google geocoder with fetch adapter', () => {
       const geocoder = GeocoderFactory.getGeocoder('google');
 
@@ -129,6 +153,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here", "http" and extra business key must return here geocoder with business key', () => {
       const geocoder = GeocoderFactory.getGeocoder({
         provider: 'here',
@@ -144,6 +169,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here", "https" and extra business key must return here geocoder with business key', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -158,6 +184,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here" and "http" and language must return here geocoder with language', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -172,6 +199,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.options.language.should.be.equal('en');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here" and "http" and politicalView must return here geocoder with politicalView', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -186,6 +214,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.options.politicalView.should.be.equal('GRE');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here" and "http" and country must return here geocoder with  country', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -200,6 +229,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.options.country.should.be.equal('FR');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here" and "http" and state must return here geocoder with state', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -214,6 +244,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.options.state.should.be.equal('Île-de-France');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here" and "http" and "gpx" must return here geocoder with gpx formatter', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -229,6 +260,7 @@ describe('GeocoderFactory', () => {
       formatter.should.be.instanceof(GpxFormatter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "here" and "http" and "string" must return here geocoder with string formatter', () => {
       const geocoder = GeocoderFactory.getGeocoder('here', {
         appId: 'APP_ID',
@@ -245,6 +277,7 @@ describe('GeocoderFactory', () => {
       formatter.should.be.instanceof(StringFormatter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "datasciencetoolkit" and "http" must return datasciencetoolkit geocoder', () => {
       const geocoder = GeocoderFactory.getGeocoder('datasciencetoolkit');
 
@@ -254,6 +287,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "datasciencetoolkit" "http" and "host" option must return datasciencetoolkit geocoder with host extra', () => {
       const geocoder = GeocoderFactory.getGeocoder('datasciencetoolkit', {
         host: 'raoul.io'
@@ -266,6 +300,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.options.host.should.be.equal('raoul.io');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "openstreetmap" and "http" must return openstreetmap geocoder with adapter', () => {
       const geocoder = GeocoderFactory.getGeocoder('openstreetmap');
 
@@ -275,6 +310,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "locationiq" and "http" must return locationiq geocoder with adapter', () => {
       const geocoder = GeocoderFactory.getGeocoder('locationiq', {
         apiKey: 'API_KEY'
@@ -286,12 +322,14 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "zaertyazeaze" must throw an error', () => {
       expect(function () {
         GeocoderFactory.getGeocoder('zaertyazeaze');
       }).to.throw(Error, 'No geocoder provider find for : zaertyazeaze');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "google", "https" and extra timeout must return google geocoder with http adapter and timeout', () => {
       const timeout = 5 * 1000;
       const geocoder = GeocoderFactory.getGeocoder('google', {
@@ -307,6 +345,7 @@ describe('GeocoderFactory', () => {
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('called with "pickpoint" and API key must return pickpoint geocoder with fetch adapter', () => {
       const geocoder = GeocoderFactory.getGeocoder('pickpoint', {
         apiKey: 'API_KEY'

@@ -1,10 +1,13 @@
 var util                  = require('util'),
+    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpenStreet... Remove this comment to see the full error message
     OpenStreetMapGeocoder = require('./openstreetmapgeocoder');
 
 /**
  * Constructor
  */
-var NominatimMapquestGeocoder = function NominatimMapquestGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NominatimM... Remove this comment to see the full error message
+var NominatimMapquestGeocoder = function NominatimMapquestGeocoder(this: any, httpAdapter: any, options: any) {
+    // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
     NominatimMapquestGeocoder.super_.call(this, httpAdapter, options);
 
     if (!this.options.apiKey || this.options.apiKey == 'undefined') {
@@ -20,4 +23,4 @@ NominatimMapquestGeocoder.prototype._endpoint = 'http://open.mapquestapi.com/nom
 NominatimMapquestGeocoder.prototype._endpoint_reverse = 'http://open.mapquestapi.com/nominatim/v1/reverse';
 
 
-module.exports = NominatimMapquestGeocoder;
+export default NominatimMapquestGeocoder;

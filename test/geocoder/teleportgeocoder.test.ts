@@ -10,10 +10,13 @@
         get: function() {}
     };
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('TeleportGeocoder', () => {
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#constructor', () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an http adapter must be set', () => {
 
                 expect(function() {
@@ -21,6 +24,7 @@
                 }).to.Throw(Error, 'TeleportGeocoder need an httpAdapter');
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should be an instance of TeleportGeocoder', () => {
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
@@ -30,8 +34,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#geocode', () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv4', () => {
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
@@ -42,6 +48,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv6', () => {
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
@@ -52,6 +59,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should call mockedHttpAdapter get method', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
@@ -63,7 +71,8 @@
                 mock.verify();
             });
 
-            test('Should return geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address', (done: any) => {
                 var response = {
                     "_embedded": {
                         "city:search-results": [{
@@ -121,7 +130,7 @@
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
 
-                tpAdapter.geocode('Palo Alto, CA', function(err, results) {
+                tpAdapter.geocode('Palo Alto, CA', function(err: any, results: any) {
                     expect(err).to.equal(false);
 
                     expect(results[0]).to.deep.equal({
@@ -150,8 +159,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#reverse', () => {
-            test('Should return geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address', (done: any) => {
                 var response = {
                     "_embedded": {
                         "location:nearest-cities": [{
@@ -322,7 +333,7 @@
                 tpAdapter.reverse({
                     lat: 37.455056,
                     lon: -122.158009,
-                }, function(err, results) {
+                }, function(err: any, results: any) {
                     expect(err).to.equal(false);
                     expect(results[0]).to.deep.equal({
                         'latitude': 37.44188,

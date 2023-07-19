@@ -1,11 +1,13 @@
 var querystring = require('querystring'),
   util = require('util'),
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
   AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var MapQuestGeocoder = function OpenMapQuestGeocoder(httpAdapter, apiKey) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'MapQuestGe... Remove this comment to see the full error message
+var MapQuestGeocoder = function OpenMapQuestGeocoder(this: any, httpAdapter: any, apiKey: any) {
 
   MapQuestGeocoder.super_.call(this, httpAdapter);
 
@@ -25,12 +27,12 @@ util.inherits(MapQuestGeocoder, AbstractGeocoder);
  * @param <string>   value    Value to geocode (Address)
  * @param <function> callback Callback method
  */
-MapQuestGeocoder.prototype._geocode = function (value, callback) {
+MapQuestGeocoder.prototype._geocode = function (value: any, callback: any) {
   var _this = this;
   this.httpAdapter.get(this._endpoint + '/address', {
     'location': value,
     'key': querystring.unescape(this.apiKey)
-  }, function (err, result) {
+  }, function (err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -46,13 +48,14 @@ MapQuestGeocoder.prototype._geocode = function (value, callback) {
         results.push(_this._formatResult(locations[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   });
 };
 
-MapQuestGeocoder.prototype._formatResult = function (result) {
+MapQuestGeocoder.prototype._formatResult = function (result: any) {
   var MQConfidenceLookup = {
     POINT: 1,
     ADDRESS: 0.9,
@@ -77,6 +80,7 @@ MapQuestGeocoder.prototype._formatResult = function (result) {
     'streetName': result.street,
     'streetNumber': null,
     'extra': {
+      // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       confidence: MQConfidenceLookup[result.geocodeQuality] || 0
     }
 
@@ -88,7 +92,7 @@ MapQuestGeocoder.prototype._formatResult = function (result) {
  * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
  * @param <function> callback Callback method
  */
-MapQuestGeocoder.prototype._reverse = function (query, callback) {
+MapQuestGeocoder.prototype._reverse = function (query: any, callback: any) {
   var lat = query.lat;
   var lng = query.lon;
 
@@ -97,7 +101,7 @@ MapQuestGeocoder.prototype._reverse = function (query, callback) {
   this.httpAdapter.get(this._endpoint + '/reverse', {
     'location': lat + ',' + lng,
     'key': querystring.unescape(this.apiKey)
-  }, function (err, result) {
+  }, function (err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -114,10 +118,11 @@ MapQuestGeocoder.prototype._reverse = function (query, callback) {
         results.push(_this._formatResult(locations[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   });
 };
 
-module.exports = MapQuestGeocoder;
+export default MapQuestGeocoder;

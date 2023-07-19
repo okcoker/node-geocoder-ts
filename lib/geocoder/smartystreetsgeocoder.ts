@@ -1,4 +1,5 @@
 var util             = require('util'),
+    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
     AbstractGeocoder = require('./abstractgeocoder');
 
 /**
@@ -6,7 +7,9 @@ var util             = require('util'),
  * @param <object> httpAdapter Http Adapter
  * @param <object> options     Options
  */
-var SmartyStreets = function SmartyStreets(httpAdapter, auth_id, auth_token) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'SmartyStre... Remove this comment to see the full error message
+var SmartyStreets = function SmartyStreets(this: any, httpAdapter: any, auth_id: any, auth_token: any) {
+    // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
     SmartyStreets.super_.call(this, httpAdapter);
 
     if(!auth_id && !auth_token){
@@ -27,7 +30,7 @@ SmartyStreets.prototype._endpoint = 'https://api.smartystreets.com/street-addres
 * @param <integer>  lng      Longitude
 * @param <function> callback Callback method
 */
-SmartyStreets.prototype.reverse = function(lat, lng, callback) {
+SmartyStreets.prototype.reverse = function(lat: any, lng: any, callback: any) {
     if (typeof this._reverse != 'function') {
         throw new Error(this.constructor.name + ' doesnt support reverse geocoding!');
     }
@@ -38,7 +41,7 @@ SmartyStreets.prototype.reverse = function(lat, lng, callback) {
 /**
  * Format Result
  **/
-SmartyStreets.prototype._formatResult = function(result) {
+SmartyStreets.prototype._formatResult = function(result: any) {
   if(result){
       return [{
         'latitude' : result.metadata.latitude,
@@ -61,7 +64,7 @@ SmartyStreets.prototype._formatResult = function(result) {
 * @param <string>   value    Value to geocode
 * @param <function> callback Callback method
 */
-SmartyStreets.prototype.geocode = function(value, callback) {
+SmartyStreets.prototype.geocode = function(value: any, callback: any) {
     var _this = this;
 
     var params = {
@@ -71,13 +74,13 @@ SmartyStreets.prototype.geocode = function(value, callback) {
       'format': 'json'
     };
 
-    this.httpAdapter.get(this._endpoint,params,function(err, result){
+    this.httpAdapter.get(this._endpoint,params,function(err: any, result: any){
       if(err) {
         return callback(err);
       } else {
-        var results = [];
+        var results: any = [];
 
-        result.forEach(function(result) {
+        result.forEach(function(result: any) {
           results.push(_this._formatResult(result));
         });
 
@@ -87,4 +90,4 @@ SmartyStreets.prototype.geocode = function(value, callback) {
     });
 };
 
-module.exports = SmartyStreets;
+export default SmartyStreets;

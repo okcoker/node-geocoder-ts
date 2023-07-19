@@ -1,31 +1,28 @@
-'use strict';
+import Helper from './helper';
+import Geocoder from './geocoder';
 
-const Helper = require('./helper.js');
-const Geocoder = require('./geocoder.js');
-
-const FetchAdapter = require('./httpadapter/fetchadapter.js');
-
-const GoogleGeocoder = require('./geocoder/googlegeocoder.js');
-const HereGeocoder = require('./geocoder/heregeocoder.js');
-const AGOLGeocoder = require('./geocoder/agolgeocoder.js');
-const FreegeoipGeocoder = require('./geocoder/freegeoipgeocoder.js');
-const DataScienceToolkitGeocoder = require('./geocoder/datasciencetoolkitgeocoder.js');
-const OpenStreetMapGeocoder = require('./geocoder/openstreetmapgeocoder.js');
-const PickPointGeocoder = require('./geocoder/pickpointgeocoder.js');
-const LocationIQGeocoder = require('./geocoder/locationiqgeocoder.js');
-const MapQuestGeocoder = require('./geocoder/mapquestgeocoder.js');
-const MapzenGeocoder = require('./geocoder/mapzengeocoder.js');
-const OpenMapQuestGeocoder = require('./geocoder/openmapquestgeocoder.js');
-const YandexGeocoder = require('./geocoder/yandexgeocoder.js');
-const GeocodioGeocoder = require('./geocoder/geocodiogeocoder.js');
-const OpenCageGeocoder = require('./geocoder/opencagegeocoder.js');
-const NominatimMapquestGeocoder = require('./geocoder/nominatimmapquestgeocoder.js');
-const TomTomGeocoder = require('./geocoder/tomtomgeocoder.js');
-const VirtualEarthGeocoder = require('./geocoder/virtualearth.js');
-const SmartyStreets = require('./geocoder/smartystreetsgeocoder.js');
-const TeleportGeocoder = require('./geocoder/teleportgeocoder.js');
-const OpendataFranceGeocoder = require('./geocoder/opendatafrancegeocoder.js');
-const MapBoxGeocoder = require('./geocoder/mapboxgeocoder.js');
+import FetchAdapter from './httpadapter/fetchadapter';
+import GoogleGeocoder from './geocoder/googlegeocoder';
+import HereGeocoder from './geocoder/heregeocoder';
+import AGOLGeocoder from './geocoder/agolgeocoder';
+import FreegeoipGeocoder from './geocoder/freegeoipgeocoder';
+import DataScienceToolkitGeocoder from './geocoder/datasciencetoolkitgeocoder';
+import OpenStreetMapGeocoder from './geocoder/openstreetmapgeocoder';
+import PickPointGeocoder from './geocoder/pickpointgeocoder';
+import LocationIQGeocoder from './geocoder/locationiqgeocoder';
+import MapQuestGeocoder from './geocoder/mapquestgeocoder';
+import MapzenGeocoder from './geocoder/mapzengeocoder';
+import OpenMapQuestGeocoder from './geocoder/openmapquestgeocoder';
+import YandexGeocoder from './geocoder/yandexgeocoder';
+import GeocodioGeocoder from './geocoder/geocodiogeocoder';
+import OpenCageGeocoder from './geocoder/opencagegeocoder';
+import NominatimMapquestGeocoder from './geocoder/nominatimmapquestgeocoder';
+import TomTomGeocoder from './geocoder/tomtomgeocoder';
+import VirtualEarthGeocoder from './geocoder/virtualearth';
+import SmartyStreets from './geocoder/smartystreetsgeocoder';
+import TeleportGeocoder from './geocoder/teleportgeocoder';
+import OpendataFranceGeocoder from './geocoder/opendatafrancegeocoder';
+import MapBoxGeocoder from './geocoder/mapboxgeocoder';
 
 /**
  * Geocoder Facotry
@@ -36,7 +33,7 @@ const GeocoderFactory = {
    * @param  <string> adapterName adapter name
    * @return <object>
    */
-  _getHttpAdapter: function (adapterName, options) {
+  _getHttpAdapter: function (adapterName: any, options: any) {
     if (adapterName === 'fetch') {
       return new FetchAdapter(options);
     }
@@ -46,7 +43,7 @@ const GeocoderFactory = {
    * @param  <string> adapterName adapter name
    * @return <object>
    */
-  _getGeocoder: function (geocoderName, adapter, extra) {
+  _getGeocoder: function (geocoderName: any, adapter: any, extra: any) {
     if (geocoderName === 'google') {
       return new GoogleGeocoder(adapter, {
         clientId: extra.clientId,
@@ -158,7 +155,7 @@ const GeocoderFactory = {
    * @param  <string> adapterName adapter name
    * @return <object>
    */
-  _getFormatter: function (formatterName, extra) {
+  _getFormatter: function (formatterName: any, extra: any) {
     if (formatterName === 'gpx') {
       var GpxFormatter = require('./formatter/gpxformatter.js');
 
@@ -177,7 +174,7 @@ const GeocoderFactory = {
    * @param  <array>         extra           Extra parameters array
    * @return <object>
    */
-  getGeocoder: function (geocoderAdapter, extra) {
+  getGeocoder: function (geocoderAdapter: any, extra: any) {
     if (typeof geocoderAdapter === 'object') {
       extra = geocoderAdapter;
       geocoderAdapter = null;
@@ -211,4 +208,4 @@ const GeocoderFactory = {
   }
 };
 
-module.exports = GeocoderFactory;
+export default GeocoderFactory;

@@ -1,29 +1,37 @@
 var chai = require('chai'),
   should = chai.should(),
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'expect'.
   expect = chai.expect,
   sinon = require('sinon');
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GeocodioGe... Remove this comment to see the full error message
 var GeocodioGeocoder = require('../../lib/geocoder/geocodiogeocoder.js');
 var HttpAdapter = require('../../lib/httpadapter/fetchadapter.js');
 
+// @ts-expect-error TS(2403): Subsequent variable declarations must have the sam... Remove this comment to see the full error message
 var mockedHttpAdapter = {
   get: function () {}
 };
 
+// @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
 describe('GeocodioGeocoder', () => {
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#constructor', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('an http adapter must be set', () => {
       expect(function () {
         new GeocodioGeocoder();
       }).to.throw(Error, 'GeocodioGeocoder need an httpAdapter');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('an apiKey must be set', () => {
       expect(function () {
         new GeocodioGeocoder(mockedHttpAdapter);
       }).to.throw(Error, 'GeocodioGeocoder needs an apiKey');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should be an instance of GeocodioGeocoder', () => {
       var mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, 'API_KEY');
 
@@ -31,7 +39,9 @@ describe('GeocodioGeocoder', () => {
     });
   });
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#geocode', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should not accept IPv4', () => {
       var mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, 'API_KEY');
 
@@ -40,6 +50,7 @@ describe('GeocodioGeocoder', () => {
       }).to.throw(Error, 'GeocodioGeocoder does not support geocoding IPv4');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should not accept IPv6', () => {
       var mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, 'API_KEY');
 
@@ -49,7 +60,9 @@ describe('GeocodioGeocoder', () => {
     });
   });
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#reverse', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method', () => {
       var mock = sinon.mock(mockedHttpAdapter);
       mock

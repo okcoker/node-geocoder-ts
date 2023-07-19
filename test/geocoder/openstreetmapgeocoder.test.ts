@@ -10,15 +10,19 @@
         get: function() {}
     };
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('OpenStreetMapGeocoder', () => {
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#constructor' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an http adapter must be set', () => {
 
                 expect(function() {new OpenStreetMapGeocoder();}).to.throw(Error, 'OpenStreetMapGeocoder need an httpAdapter');
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should be an instance of OpenStreetMapGeocoder', () => {
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
@@ -28,8 +32,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#geocode' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv4', () => {
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
@@ -40,6 +46,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv6', () => {
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
@@ -50,6 +57,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should call httpAdapter get method', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
@@ -63,7 +71,8 @@
 
             });
 
-            test('Should return geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, [{
                         "place_id": "73723099",
@@ -94,7 +103,7 @@
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
 
-                osmAdapter.geocode('135 pilkington avenue, birmingham', function(err, results) {
+                osmAdapter.geocode('135 pilkington avenue, birmingham', function(err: any, results: any) {
                     mock.verify();
 
                     err.should.to.equal(false);
@@ -144,6 +153,7 @@
                 });
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should return geocoded address when quried with object', done => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, [{
@@ -182,6 +192,7 @@
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
 
+                // @ts-expect-error TS(7006): Parameter 'err' implicitly has an 'any' type.
                 osmAdapter.geocode({street:'93 Champs-Élysèes', city:'Paris', limit:1}, function(err, results) {
                     mock.verify();
 
@@ -205,6 +216,7 @@
                 });
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should ignore format and addressdetails arguments', done => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, [])
@@ -215,6 +227,7 @@
                 });
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
+                // @ts-expect-error TS(7006): Parameter 'err' implicitly has an 'any' type.
                 osmAdapter.geocode({q:'Athens',format:'xml',addressdetails:0}, function(err, results) {
                     mock.verify();
                     done();
@@ -222,7 +235,9 @@
             });
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#reverse' , () => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should return geocoded address', done => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
@@ -247,6 +262,7 @@
                     }
                 );
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
+                // @ts-expect-error TS(7006): Parameter 'err' implicitly has an 'any' type.
                 osmAdapter.reverse({lat: 40.714232, lon: -73.9612889}, function(err, results) {
                         err.should.to.equal(false);
                         results[0].should.to.deep.equal({
@@ -288,6 +304,7 @@
                 });
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should correctly set extra arguments', done => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, [])
@@ -300,14 +317,17 @@
                 });
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
+                // @ts-expect-error TS(7006): Parameter 'err' implicitly has an 'any' type.
                 osmAdapter.reverse({lat:12,lon:7,zoom:15}, function(err, results) {
                     mock.verify();
                     done();
                 });
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test(
                 'Should correctly set extra arguments from constructor extras',
+                // @ts-expect-error TS(7006): Parameter 'done' implicitly has an 'any' type.
                 done => {
                     var mock = sinon.mock(mockedHttpAdapter);
                     mock.expects('get').once().callsArgWith(2, false, [])
@@ -320,6 +340,7 @@
                     });
 
                     var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter,{zoom:9});
+                    // @ts-expect-error TS(7006): Parameter 'err' implicitly has an 'any' type.
                     osmAdapter.reverse({lat:12,lon:7}, function(err, results) {
                         mock.verify();
                         done();
@@ -327,6 +348,7 @@
                 }
             );
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should ignore format and addressdetails arguments', done => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, [])
@@ -338,6 +360,7 @@
                 });
 
                 var osmAdapter = new OpenStreetMapGeocoder(mockedHttpAdapter);
+                // @ts-expect-error TS(7006): Parameter 'err' implicitly has an 'any' type.
                 osmAdapter.reverse({lat:12,lon:7,format:'xml',addressdetails:0}, function(err, results) {
                     mock.verify();
                     done();

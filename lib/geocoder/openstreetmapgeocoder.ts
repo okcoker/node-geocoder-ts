@@ -1,12 +1,15 @@
 var util             = require('util'),
+    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
     AbstractGeocoder = require('./abstractgeocoder');
 
 /**
  * Constructor
  */
-var OpenStreetMapGeocoder = function OpenStreetMapGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpenStreet... Remove this comment to see the full error message
+var OpenStreetMapGeocoder = function OpenStreetMapGeocoder(this: any, httpAdapter: any, options: any) {
     this.options = ['language','email','apiKey', 'osmServer'];
 
+    // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
     OpenStreetMapGeocoder.super_.call(this, httpAdapter, options);
     var osmServer = (options && options.osmServer) || 'http://nominatim.openstreetmap.org';
     OpenStreetMapGeocoder.prototype._endpoint = osmServer + '/search';
@@ -24,7 +27,7 @@ OpenStreetMapGeocoder.prototype._endpoint_reverse = 'https://nominatim.openstree
 * @param <string|object>   value    Value to geocode (Address or parameters, as specified at https://wiki.openstreetmap.org/wiki/Nominatim#Parameters)
 * @param <function> callback Callback method
 */
-OpenStreetMapGeocoder.prototype._geocode = function(value, callback) {
+OpenStreetMapGeocoder.prototype._geocode = function(value: any, callback: any) {
     var _this = this;
 
     var params = this._getCommonParams();
@@ -39,7 +42,7 @@ OpenStreetMapGeocoder.prototype._geocode = function(value, callback) {
     }
     this._forceParams(params);
 
-    this.httpAdapter.get(this._endpoint , params, function(err, result) {
+    this.httpAdapter.get(this._endpoint , params, function(err: any, result: any) {
         if (err) {
             return callback(err);
         } else {
@@ -58,6 +61,7 @@ OpenStreetMapGeocoder.prototype._geocode = function(value, callback) {
               results.push(_this._formatResult(result));
             }
 
+            // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
             results.raw = result;
             callback(false, results);
         }
@@ -66,7 +70,7 @@ OpenStreetMapGeocoder.prototype._geocode = function(value, callback) {
 
 };
 
-OpenStreetMapGeocoder.prototype._formatResult = function(result) {
+OpenStreetMapGeocoder.prototype._formatResult = function(result: any) {
 
     var countryCode = result.address.country_code;
     if (countryCode) {
@@ -103,7 +107,7 @@ OpenStreetMapGeocoder.prototype._formatResult = function(result) {
 * @param {lat:<number>,lon:<number>, ...}  lat: Latitude, lon: Longitude, ... see https://wiki.openstreetmap.org/wiki/Nominatim#Parameters_2
 * @param <function> callback Callback method
 */
-OpenStreetMapGeocoder.prototype._reverse = function(query, callback) {
+OpenStreetMapGeocoder.prototype._reverse = function(query: any, callback: any) {
 
     var _this = this;
 
@@ -114,7 +118,7 @@ OpenStreetMapGeocoder.prototype._reverse = function(query, callback) {
     }
     this._forceParams(params);
 
-    this.httpAdapter.get(this._endpoint_reverse , params, function(err, result) {
+    this.httpAdapter.get(this._endpoint_reverse , params, function(err: any, result: any) {
         if (err) {
             return callback(err);
         } else {
@@ -131,6 +135,7 @@ OpenStreetMapGeocoder.prototype._reverse = function(query, callback) {
             results.push(_this._formatResult(result));
           }
 
+          // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
           results.raw = result;
           callback(false, results);
         }
@@ -153,15 +158,16 @@ OpenStreetMapGeocoder.prototype._getCommonParams = function(){
       if (k === 'language') {
         k = 'accept-language';
       }
+      // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       params[k] = v;
     }
 
     return params;
 };
 
-OpenStreetMapGeocoder.prototype._forceParams = function(params){
+OpenStreetMapGeocoder.prototype._forceParams = function(params: any){
     params.format = 'json';
     params.addressdetails = 1;
 };
 
-module.exports = OpenStreetMapGeocoder;
+export default OpenStreetMapGeocoder;

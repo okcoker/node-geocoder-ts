@@ -10,20 +10,25 @@
     get: function () {}
   };
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('NominatimMapquestGeocoder', () => {
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#constructor', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an http adapter must be set', () => {
         expect(function () {
           new NominatimMapquestGeocoder();
         }).to.throw(Error, 'NominatimMapquestGeocoder need an httpAdapter');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('an apiKey must be set', () => {
         expect(function () {
           new NominatimMapquestGeocoder(mockedHttpAdapter);
         }).to.throw(Error, 'NominatimMapquestGeocoder needs an apiKey');
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should be an instance of NominatimMapquestGeocoder', () => {
         var nmAdapter = new NominatimMapquestGeocoder(mockedHttpAdapter, {
           apiKey: 'API_KEY'
@@ -33,7 +38,9 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#geocode', () => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv4', () => {
         var nmAdapter = new NominatimMapquestGeocoder(mockedHttpAdapter, {
           apiKey: 'API_KEY'
@@ -47,6 +54,7 @@
         );
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should not accept IPv6', () => {
         var nmAdapter = new NominatimMapquestGeocoder(mockedHttpAdapter, {
           apiKey: 'API_KEY'
@@ -60,6 +68,7 @@
         );
       });
 
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
       test('Should call httpAdapter get method', () => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
@@ -82,7 +91,8 @@
         mock.verify();
       });
 
-      test('Should return geocoded address', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should return geocoded address', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -128,7 +138,7 @@
 
         nmAdapter.geocode(
           '135 pilkington avenue, birmingham',
-          function (err, results) {
+          function (err: any, results: any) {
             mock.verify();
 
             err.should.to.equal(false);
@@ -154,8 +164,10 @@
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('#reverse', () => {
-      test('Should return geocoded address', done => {
+      // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+      test('Should return geocoded address', (done: any) => {
         var mock = sinon.mock(mockedHttpAdapter);
         mock
           .expects('get')
@@ -194,7 +206,7 @@
         });
         nmAdapter.reverse(
           { lat: 40.714232, lon: -73.9612889 },
-          function (err, results) {
+          function (err: any, results: any) {
             mock.verify();
             err.should.to.equal(false);
             results[0].should.to.deep.equal({

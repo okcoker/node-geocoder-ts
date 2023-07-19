@@ -10,15 +10,19 @@
         get: function() {}
     };
 
+    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
     describe('OpendataFranceGeocoder', () => {
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#constructor' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an http adapter must be set', () => {
 
                 expect(function() {new OpendataFranceGeocoder();}).to.throw(Error, 'OpendataFranceGeocoder need an httpAdapter');
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should be an instance of OpendataFranceGeocoder', () => {
 
                 var openDataFranceGeocoder = new OpendataFranceGeocoder(mockedHttpAdapter);
@@ -28,8 +32,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#geocode' , () => {
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv4', () => {
 
                 var openDataFranceGeocoder = new OpendataFranceGeocoder(mockedHttpAdapter);
@@ -40,6 +46,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should not accept IPv6', () => {
 
                 var openDataFranceGeocoder = new OpendataFranceGeocoder(mockedHttpAdapter);
@@ -50,6 +57,7 @@
 
             });
 
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('Should call httpAdapter get method', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
@@ -63,7 +71,8 @@
 
             });
 
-            test('Should return geocoded address with string', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address with string', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                   "licence": "ODbL 1.0",
@@ -102,7 +111,7 @@
 
                 var openDataFranceGeocoder = new OpendataFranceGeocoder(mockedHttpAdapter);
 
-                openDataFranceGeocoder.geocode('1 Rue David d\'Angers', function(err, results) {
+                openDataFranceGeocoder.geocode('1 Rue David d\'Angers', function(err: any, results: any) {
                     mock.verify();
 
                     err.should.to.equal(false);
@@ -161,7 +170,8 @@
                 });
             });
 
-            test('Should return geocoded address with object', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address with object', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                   "limit": 20,
@@ -214,7 +224,7 @@
                   limit: 20
                 };
 
-                openDataFranceGeocoder.geocode(queryToGeocode, function(err, results) {
+                openDataFranceGeocoder.geocode(queryToGeocode, function(err: any, results: any) {
                     mock.verify();
 
                     err.should.to.equal(false);
@@ -278,7 +288,8 @@
                 });
             });
 
-            test('Should return geocoded address with type city', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address with type city', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                     "limit": 1,
@@ -326,7 +337,7 @@
                   limit: 1
                 };
 
-                openDataFranceGeocoder.geocode(queryToGeocode, function(err, results) {
+                openDataFranceGeocoder.geocode(queryToGeocode, function(err: any, results: any) {
                     mock.verify();
 
                     err.should.to.equal(false);
@@ -351,7 +362,8 @@
                 });
             });
 
-            test('Should return geocoded address with type locality', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address with type locality', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                     "limit": 1,
@@ -397,7 +409,7 @@
                   limit: 1
                 };
 
-                openDataFranceGeocoder.geocode(queryToGeocode, function(err, results) {
+                openDataFranceGeocoder.geocode(queryToGeocode, function(err: any, results: any) {
                     mock.verify();
 
                     err.should.to.equal(false);
@@ -421,7 +433,8 @@
                 });
             });
 
-            test('Should return geocoded address with type village', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address with type village', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                     "limit": 1,
@@ -469,7 +482,7 @@
                   limit: 1
                 };
 
-                openDataFranceGeocoder.geocode(queryToGeocode, function(err, results) {
+                openDataFranceGeocoder.geocode(queryToGeocode, function(err: any, results: any) {
                     mock.verify();
 
                     err.should.to.equal(false);
@@ -495,8 +508,10 @@
 
         });
 
+        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
         describe('#reverse' , () => {
-            test('Should return geocoded address', done => {
+            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+            test('Should return geocoded address', (done: any) => {
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, {
                     "licence": "ODbL 1.0",
@@ -533,7 +548,7 @@
                   }
                 );
                 var openDataFranceGeocoder = new OpendataFranceGeocoder(mockedHttpAdapter);
-                openDataFranceGeocoder.reverse({lat: 47.46653, lon: -0.550142}, function(err, results) {
+                openDataFranceGeocoder.reverse({lat: 47.46653, lon: -0.550142}, function(err: any, results: any) {
                         err.should.to.equal(false);
                         results[0].should.to.deep.equal({
                             latitude: 47.46653,

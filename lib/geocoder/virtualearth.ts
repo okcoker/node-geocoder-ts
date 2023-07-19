@@ -1,4 +1,5 @@
 var util = require('util');
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
 var AbstractGeocoder = require('./abstractgeocoder');
 
 /**
@@ -6,8 +7,10 @@ var AbstractGeocoder = require('./abstractgeocoder');
  * @param <object> httpAdapter Http Adapter
  * @param <object> options     Options (language, clientId, apiKey)
  */
-var VirtualEarthGeocoder = function VirtualEarthGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'VirtualEar... Remove this comment to see the full error message
+var VirtualEarthGeocoder = function VirtualEarthGeocoder(this: any, httpAdapter: any, options: any) {
 
+  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
   VirtualEarthGeocoder.super_.call(this, httpAdapter, options);
 
   if (!this.options.apiKey || this.options.apiKey == 'undefined') {
@@ -25,7 +28,7 @@ VirtualEarthGeocoder.prototype._endpoint = 'https://dev.virtualearth.net/REST/v1
 * @param <string>   value    Value to geocode (Address)
 * @param <function> callback Callback method
 */
-VirtualEarthGeocoder.prototype._geocode = function(value, callback) {
+VirtualEarthGeocoder.prototype._geocode = function(value: any, callback: any) {
 
   var _this = this;
 
@@ -34,7 +37,7 @@ VirtualEarthGeocoder.prototype._geocode = function(value, callback) {
     key   : this.options.apiKey
   };
 
-  this.httpAdapter.get(this._endpoint, params, function(err, result) {
+  this.httpAdapter.get(this._endpoint, params, function(err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -44,6 +47,7 @@ VirtualEarthGeocoder.prototype._geocode = function(value, callback) {
           results.push(_this._formatResult(result.resourceSets[0].resources[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
@@ -55,7 +59,7 @@ VirtualEarthGeocoder.prototype._geocode = function(value, callback) {
 * @param {lat:<number>, lon:<number>}  lat: Latitude, lon: Longitude
 * @param <function> callback Callback method
 */
-VirtualEarthGeocoder.prototype._reverse = function(value, callback) {
+VirtualEarthGeocoder.prototype._reverse = function(value: any, callback: any) {
 
   var _this = this;
 
@@ -65,7 +69,7 @@ VirtualEarthGeocoder.prototype._reverse = function(value, callback) {
 
   var endpoint = this._endpoint + '/' + value.lat + ',' + value.lon;
 
-  this.httpAdapter.get(endpoint, params, function(err, result) {
+  this.httpAdapter.get(endpoint, params, function(err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -75,13 +79,14 @@ VirtualEarthGeocoder.prototype._reverse = function(value, callback) {
           results.push(_this._formatResult(result.resourceSets[0].resources[i]));
       }
 
+      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
       results.raw = result;
       callback(false, results);
     }
   });
 }
 
-VirtualEarthGeocoder.prototype._formatResult = function(result) {
+VirtualEarthGeocoder.prototype._formatResult = function(result: any) {
   return {
     'latitude' : result.point.coordinates[0],
     'longitude' : result.point.coordinates[1],
@@ -94,4 +99,4 @@ VirtualEarthGeocoder.prototype._formatResult = function(result) {
   };
 };
 
-module.exports = VirtualEarthGeocoder;
+export default VirtualEarthGeocoder;

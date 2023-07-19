@@ -1,8 +1,10 @@
 var chai = require('chai');
 var should = chai.should();
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'expect'.
 var expect = chai.expect;
 var sinon = require('sinon');
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AGOLGeocod... Remove this comment to see the full error message
 var AGOLGeocoder = require('../../lib/geocoder/agolgeocoder.js');
 
 var mockedHttpAdapter = {
@@ -40,21 +42,27 @@ var mockedOptions = {
   'client_secret': "CLIENT_SECRET"
 };
 
+// @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
 describe('AGOLGeocoder', () => {
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#constructor' , () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('an http adapter must be set', () => {
       expect(function() {new AGOLGeocoder();}).to.throw(Error, 'ArcGis Online Geocoder requires a httpAdapter to be defined');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('client_id should be set', () => {
       expect(function() {new AGOLGeocoder(mockedRequestifyAdapter, {client_secret: 'CLIENT_SECRET'});}).to.throw(Error, 'You must specify the client_id and the client_secret');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('client_secret should be set', () => {
       expect(function() {new AGOLGeocoder(mockedRequestifyAdapter, {client_id: 'CLIENT_ID'});}).to.throw(Error, 'You must specify the client_id and the client_secret');
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test(
       'expect an error if HTTPAdapter is provided while options are not',
       () => {
@@ -66,6 +74,7 @@ describe('AGOLGeocoder', () => {
         }
     );
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test(
       'Should be an instance of AGOLGeocoder if an http adapter and proper options are supplied',
       () => {
@@ -76,7 +85,9 @@ describe('AGOLGeocoder', () => {
     );
   });
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#geocode' , () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should not accept IPv4', () => {
 
       var geocoder = new AGOLGeocoder(mockedRequestifyAdapter,mockedOptions);
@@ -87,6 +98,7 @@ describe('AGOLGeocoder', () => {
 
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should not accept IPv6', () => {
 
       var geocoder = new AGOLGeocoder(mockedRequestifyAdapter,mockedOptions);
@@ -97,13 +109,14 @@ describe('AGOLGeocoder', () => {
 
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call out for authentication', () => {
       var mock = sinon.mock(mockedAuthHttpAdapter);
       mock.expects('get').withArgs("https://www.arcgis.com/sharing/oauth2/token", {
         'client_id': mockedOptions.client_id,
         'grant_type': 'client_credentials',
         'client_secret': mockedOptions.client_secret
-      }).once().returns({then: function (err,result) {}});
+      }).once().returns({then: function (err: any,result: any) {}});
 
       var geocoder = new AGOLGeocoder(mockedAuthHttpAdapter,mockedOptions);
 
@@ -112,17 +125,19 @@ describe('AGOLGeocoder', () => {
       mock.verify();
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should return cached token', () => {
       var geocoder = new AGOLGeocoder(mockedAuthHttpAdapter,mockedOptions);
 
-      geocoder._getToken(function(err,token) {
+      geocoder._getToken(function(err: any,token: any) {
         token.should.equal("ABCD");
       });
-      geocoder._getToken(function(err,token) {
+      geocoder._getToken(function(err: any,token: any) {
         token.should.equal("ABCD");
       });
     });
 
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should assume cached token is invalid', () => {
       var geocoder = new AGOLGeocoder(mockedAuthHttpAdapter,mockedOptions);
 
@@ -133,13 +148,14 @@ describe('AGOLGeocoder', () => {
             geocoder.cache.token.should.equal("AAA");
 
             //Verify that expired token is replaced
-            geocoder._getToken(function(err,token) {
+            geocoder._getToken(function(err: any,token: any) {
               token.should.equal("ABCD");
             });
 
           });
 
-    test('Should return geocoded address', done => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+    test('Should return geocoded address', (done: any) => {
       var mock = sinon.mock(mockedRequestifyAdapter);
 
       mock.expects('get').once().callsArgWith(2, false,
@@ -148,10 +164,10 @@ describe('AGOLGeocoder', () => {
       var geocoder = new AGOLGeocoder(mockedRequestifyAdapter,mockedOptions);
 
             //Force valid tokens (this was tested separately)
-            geocoder._getToken = function(callback) {
+            geocoder._getToken = function(callback: any) {
               callback(false,"ABCD");
             };
-            geocoder.geocode('380 New York St, Redlands, CA 92373', function(err, results) {
+            geocoder.geocode('380 New York St, Redlands, CA 92373', function(err: any, results: any) {
               err.should.to.equal(false);
               results[0].should.to.deep.equal({
                 latitude: 34.05649072776595,
@@ -170,7 +186,8 @@ describe('AGOLGeocoder', () => {
             });
           });
 
-    test('Should handle a not "OK" status', done => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+    test('Should handle a not "OK" status', (done: any) => {
       var mock = sinon.mock(mockedRequestifyAdapter);
 
       mock.expects('get').once().callsArgWith(2, false,
@@ -179,10 +196,10 @@ describe('AGOLGeocoder', () => {
       var geocoder = new AGOLGeocoder(mockedRequestifyAdapter,mockedOptions);
 
             //Force valid tokens (this was tested separately)
-            geocoder._getToken = function(callback) {
+            geocoder._getToken = function(callback: any) {
               callback(false,"ABCD");
             };
-            geocoder.geocode('380 New York St, Redlands, CA 92373', function(err, results) {
+            geocoder.geocode('380 New York St, Redlands, CA 92373', function(err: any, results: any) {
                 //err.should.to.equal(false);
                 err.should.to.deep.equal({"code":498,"message":"Invalid Token","details":[]});
                 mock.verify();
@@ -191,7 +208,9 @@ describe('AGOLGeocoder', () => {
           });
   });
 
+  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#reverse' , () => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method', () => {
 
       var mock = sinon.mock(mockedRequestifyAdapter);
@@ -205,17 +224,18 @@ describe('AGOLGeocoder', () => {
 
     });
 
-    test('Should return geocoded address', done => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+    test('Should return geocoded address', (done: any) => {
       var mock = sinon.mock(mockedRequestifyAdapter);
       mock.expects('get').once().callsArgWith(2, false,
         '{"address":{"Address":"1190 E Kenyon Ave","Neighborhood":null,"City":"Englewood","Subregion":null,"Region":"Colorado","Postal":"80113","PostalExt":null,"CountryCode":"USA","Loc_name":"USA.PointAddress"},"location":{"x":-104.97389993455704,"y":39.649423090952013,"spatialReference":{"wkid":4326,"latestWkid":4326}}}'
         );
       var geocoder = new AGOLGeocoder(mockedRequestifyAdapter,mockedOptions);
               //Force valid tokens (this was tested separately)
-              geocoder._getToken = function(callback) {
+              geocoder._getToken = function(callback: any) {
                 callback(false,"ABCD");
               };
-              geocoder.reverse({lat:-104.98469734299971,lon:39.739146640000456}, function(err, results) {
+              geocoder.reverse({lat:-104.98469734299971,lon:39.739146640000456}, function(err: any, results: any) {
                 err.should.to.equal(false);
                 results[0].should.to.deep.equal({
                   latitude: 39.64942309095201,
@@ -233,7 +253,8 @@ describe('AGOLGeocoder', () => {
               });
             });
 
-    test('Should handle a not "OK" status', done => {
+    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
+    test('Should handle a not "OK" status', (done: any) => {
       var mock = sinon.mock(mockedRequestifyAdapter);
       mock.expects('get').once().callsArgWith(2, false,
         '{"error":{"code":42,"message":"Random Error","details":[]}}'
@@ -241,10 +262,10 @@ describe('AGOLGeocoder', () => {
 
       var geocoder = new AGOLGeocoder(mockedRequestifyAdapter,mockedOptions);
               //Force valid tokens (this was tested separately)
-              geocoder._getToken = function(callback) {
+              geocoder._getToken = function(callback: any) {
                 callback(false,"ABCD");
               };
-              geocoder.reverse({lat:40.714232,lon:-73.9612889}, function(err, results) {
+              geocoder.reverse({lat:40.714232,lon:-73.9612889}, function(err: any, results: any) {
                 err.should.to.deep.equal({"code":42,"message":"Random Error","details":[]});
                 mock.verify();
                 done();

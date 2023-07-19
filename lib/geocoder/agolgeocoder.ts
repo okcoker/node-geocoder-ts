@@ -1,4 +1,3 @@
-'use strict';
 
 var net = require('net');
 
@@ -7,7 +6,8 @@ var net = require('net');
  * @param {Object} httpAdapter Http Adapter
  * @param {Object} options     Options (language, client_id, client_secret)
  */
-var AGOLGeocoder = function AGOLGeocoder(httpAdapter, options) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AGOLGeocod... Remove this comment to see the full error message
+var AGOLGeocoder = function AGOLGeocoder(this: any, httpAdapter: any, options: any) {
 
   if (!httpAdapter || httpAdapter == 'undefined') {
     throw new Error('ArcGis Online Geocoder requires a httpAdapter to be defined');
@@ -47,12 +47,12 @@ AGOLGeocoder.prototype._cachedToken = {
   'now': function() {
     return (new Date()).getTime();
   },
-  'put': function(token, experation,cache) {
+  'put': function(token: any, experation: any,cache: any) {
     cache.token = token;
     //Shave 30 secs off experation to ensure that we expire slightly before the actual expiration
     cache.tokenExp = this.now() + (experation - 30);
   },
-  'get' : function(cache) {
+  'get' : function(cache: any) {
     if(!cache) {
       return null;
     }
@@ -65,7 +65,7 @@ AGOLGeocoder.prototype._cachedToken = {
   }
 };
 
-AGOLGeocoder.prototype._getToken = function(callback) {
+AGOLGeocoder.prototype._getToken = function(callback: any) {
   var _this = this;
 
   if(_this._cachedToken.get(_this.cache) !== null) {
@@ -79,7 +79,7 @@ AGOLGeocoder.prototype._getToken = function(callback) {
     'client_secret': _this.options.client_secret
   };
 
-  _this.httpAdapter.get(_this._authEndpoint, params, function(err, result) {
+  _this.httpAdapter.get(_this._authEndpoint, params, function(err: any, result: any) {
     if (err) {
       return callback(err);
     } else {
@@ -98,7 +98,7 @@ AGOLGeocoder.prototype._getToken = function(callback) {
  * @param {String}   value    Value to geocode (Address)
  * @param {Function} callback Callback method
  */
-AGOLGeocoder.prototype.geocode = function(value, callback) {
+AGOLGeocoder.prototype.geocode = function(value: any, callback: any) {
   var _this = this;
 
   if (net.isIP(value)) {
@@ -110,7 +110,7 @@ AGOLGeocoder.prototype.geocode = function(value, callback) {
     throw new Error('An ArcGIS Online organizational account is required to use the batch geocoding functionality');
   }
 
-  var execute = function (value,token,callback) {
+  var execute = function (value: any,token: any,callback: any) {
     var params = {
       'token':token,
       'f':'json',
@@ -118,7 +118,7 @@ AGOLGeocoder.prototype.geocode = function(value, callback) {
       'outFields': 'AddNum,StPreDir,StName,StType,City,Postal,Region,Country'
     };
 
-    _this.httpAdapter.get(_this._endpoint, params, function(err, result) {
+    _this.httpAdapter.get(_this._endpoint, params, function(err: any, result: any) {
       result = JSON.parse(result);
         if (err) {
           return callback(err);
@@ -135,13 +135,14 @@ AGOLGeocoder.prototype.geocode = function(value, callback) {
             results.push(_this._formatResult(result.locations[i]));
           }
 
+          // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
           results.raw = result;
           callback(false, results);
         }
     });
   };
 
-  this._getToken(function(err,token) {
+  this._getToken(function(err: any,token: any) {
     if (err) {
       return callback(err);
     } else {
@@ -150,7 +151,7 @@ AGOLGeocoder.prototype.geocode = function(value, callback) {
   });
 };
 
-AGOLGeocoder.prototype._formatResult = function(result) {
+AGOLGeocoder.prototype._formatResult = function(result: any) {
   if(result.address){
     return {
       'latitude' : result.location.y,
@@ -227,13 +228,13 @@ AGOLGeocoder.prototype._formatResult = function(result) {
  * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
  * @param {function} callback Callback method
  */
-AGOLGeocoder.prototype.reverse = function(query, callback) {
+AGOLGeocoder.prototype.reverse = function(query: any, callback: any) {
   var lat = query.lat;
   var long = query.lon;
 
   var _this = this;
 
-  var execute = function (lat,long,token,callback) {
+  var execute = function (lat: any,long: any,token: any,callback: any) {
     var params = {
       'token':token,
       'f':'json',
@@ -241,7 +242,7 @@ AGOLGeocoder.prototype.reverse = function(query, callback) {
       'outFields': 'AddrNum,StPreDir,StName,StType,City,Postal,Region,Country'
     };
 
-    _this.httpAdapter.get(_this._reverseEndpoint, params, function(err, result) {
+    _this.httpAdapter.get(_this._reverseEndpoint, params, function(err: any, result: any) {
       result = JSON.parse(result);
       if (err) {
         return callback(err);
@@ -255,13 +256,14 @@ AGOLGeocoder.prototype.reverse = function(query, callback) {
         var results = [];
         results.push(_this._formatResult(result));
 
+        // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
         results.raw = result;
         callback(false, results);
       }
     });
   };
 
-  this._getToken(function(err,token) {
+  this._getToken(function(err: any,token: any) {
     if (err) {
       return callback(err);
     } else {
@@ -270,4 +272,4 @@ AGOLGeocoder.prototype.reverse = function(query, callback) {
   });
 };
 
-module.exports = AGOLGeocoder;
+export default AGOLGeocoder;
