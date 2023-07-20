@@ -12,8 +12,7 @@ import type {
 } from '../../types';
 
 abstract class BaseAbstractGeocoder<T extends BaseOptions>
-  implements AbstractGeocoder
-{
+  implements AbstractGeocoder {
   name: string;
   httpAdapter: HTTPAdapter;
   supportIPv6: boolean;
@@ -32,14 +31,15 @@ abstract class BaseAbstractGeocoder<T extends BaseOptions>
 
     this.name = options.provider;
 
-    if (!httpAdapter || typeof httpAdapter == 'undefined') {
+    if (!httpAdapter) {
       throw new Error(this.constructor.name + ' need an httpAdapter');
     }
+
     this.httpAdapter = httpAdapter;
 
     this.supportIPv6 = false;
     this.supportIPv4 = false;
-    this.supportAddress = false;
+    this.supportAddress = true;
     this.options = options;
   }
 
