@@ -4,7 +4,6 @@ var chai = require('chai'),
     expect = chai.expect,
     sinon = require('sinon');
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'YandexGeoc... Remove this comment to see the full error message
 var YandexGeocoder = require('../../lib/geocoder/yandexgeocoder.js');
 
 // @ts-expect-error TS(2403): Subsequent variable declarations must have the sam... Remove this comment to see the full error message

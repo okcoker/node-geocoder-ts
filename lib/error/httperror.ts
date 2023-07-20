@@ -1,8 +1,7 @@
-var util = require('util');
+class HttpError extends Error {
+  constructor(message: any, options: any) {
+    super(message);
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'HttpError'... Remove this comment to see the full error message
-var HttpError = function(this: any, message: any, options: any) {
-    Error.call(this);
     Error.captureStackTrace(this, this.constructor);
 
     this.name = 'HttpError';
@@ -10,11 +9,11 @@ var HttpError = function(this: any, message: any, options: any) {
 
     options = options || {};
 
-    for(var k in options) {
+    for (const k in options) {
+      // @ts-expect-error ts(7053)
       this[k] = this[k] || options[k];
     }
-};
-
-util.inherits(HttpError, Error);
+  }
+}
 
 export default HttpError;

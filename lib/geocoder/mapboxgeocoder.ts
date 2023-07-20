@@ -1,86 +1,79 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
-const AbstractGeocoder = require('./abstractgeocoder');
+import BaseAbstractGeocoder from './abstractgeocoder';
+import type {
+  HTTPAdapter,
+  ResultCallback,
+  BaseOptions,
+  Location,
+  GeocodeValue
+} from '../../types';
 
 /**
  * available options
  * @see https://docs.mapbox.com/api/search/geocoding/
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OPTIONS'.
-const OPTIONS = [
-  'apiKey',
-  'language',
-  'country',
-  'autocomplete',
-  'bbox',
-  'fuzzyMatch',
-  'limit',
-  'proximity',
-  'routing'
-];
+export interface Options extends BaseOptions {
+  provider: 'mapbox';
+  apiKey: string;
+  language?: string;
+  country?: string;
+  autocomplete?: string;
+  bbox?: string;
+  fuzzyMatch?: string;
+  limit?: string;
+  proximity?: string;
+  routing?: string;
+}
 
 const OPTIONS_MAP = {
   apiKey: 'access_token'
 };
 
-/**
- * Constructor
- * @param <object> httpAdapter Http Adapter
- * @param <object> options Options (apiKey, language, country, autocomplete, bbox, fuzzyMatch, limit, proximity, routing)
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'MapBoxGeoc... Remove this comment to see the full error message
-class MapBoxGeocoder extends AbstractGeocoder {
-  constructor(httpAdapter: any, options: any) {
+class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
+  _geocodeEndpoint = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
+
+  constructor(httpAdapter: HTTPAdapter, options: Options) {
     super(httpAdapter, options);
-    this.options = options || {};
 
     if (!this.options.apiKey) {
       throw new Error('You must specify apiKey to use MapBox Geocoder');
     }
   }
 
-  /**
-   * Geocode
-   * @param <string>   value    Value to geocode (Address)
-   * @param <function> callback Callback method
-   */
-  _geocode(value: any, callback: any) {
+  _geocode(value: GeocodeValue, callback: ResultCallback) {
     let params = this._prepareQueryString({});
     let searchtext = value;
 
-    if (value.address) {
+    if (typeof value !== 'string' && value.address) {
       params = this._prepareQueryString(value);
       searchtext = value.address;
     }
 
     const endpoint = `${this._geocodeEndpoint}/${encodeURIComponent(
-      searchtext
+      searchtext as string
     )}.json`;
 
     this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      let results: any = [];
-      results.raw = result;
-
       if (err) {
-        return callback(err, results);
+        return callback(err, null);
       } else {
         const view = result.features;
         if (!view) {
-          return callback(false, results);
+          return callback(null, {
+            raw: result,
+            data: []
+          });
         }
-        results = view.map(this._formatResult);
-        results.raw = result;
+        const results = view.map(this._formatResult);
 
-        callback(false, results);
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     });
   }
 
-  /**
-   * Reverse geocoding
-   * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
-   * @param <function> callback Callback method
-   */
-  _reverse(query: any, callback: any) {
+  _reverse(query: Location, callback: ResultCallback) {
     const { lat, lon, ...other } = query;
 
     const params = this._prepareQueryString(other);
@@ -89,20 +82,22 @@ class MapBoxGeocoder extends AbstractGeocoder {
     )}.json`;
 
     this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      let results: any = [];
-      results.raw = result;
-
       if (err) {
-        return callback(err, results);
+        return callback(err, null);
       } else {
         const view = result.features;
         if (!view) {
-          return callback(false, results);
+          return callback(null, {
+            raw: result,
+            data: []
+          });
         }
-        results = view.map(this._formatResult);
-        results.raw = result;
+        const results = view.map(this._formatResult);
 
-        callback(false, results);
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     });
   }
@@ -149,26 +144,23 @@ class MapBoxGeocoder extends AbstractGeocoder {
     return extractedObj;
   }
 
-  _prepareQueryString(params: any) {
-    OPTIONS.forEach(key => {
-      const val = this.options[key];
+  _prepareQueryString(params: any): Record<string, any> {
+    const newParams: Record<string, string> = {
+      ...params
+    };
+    const options = this.options as Record<string, any>;
+    const optionMap = OPTIONS_MAP as Record<string, string>;
+
+    Object.keys(options).forEach(key => {
+      const val = options[key];
       if (val) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const _key = OPTIONS_MAP[key] || key;
-        params[_key] = val;
+        const _key = optionMap[key] || key;
+        newParams[_key] = val;
       }
     });
 
-    return params;
+    return newParams;
   }
 }
-
-Object.defineProperties(MapBoxGeocoder.prototype, {
-  _geocodeEndpoint: {
-    get: function () {
-      return 'https://api.mapbox.com/geocoding/v5/mapbox.places';
-    }
-  }
-});
 
 export default MapBoxGeocoder;

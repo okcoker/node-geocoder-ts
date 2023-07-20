@@ -9,20 +9,13 @@ const sinon = require('sinon');
 
 // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GoogleGeoc... Remove this comment to see the full error message
 const GoogleGeocoder = require('../lib/geocoder/googlegeocoder.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'HereGeocod... Remove this comment to see the full error message
 const HereGeocoder = require('../lib/geocoder/heregeocoder.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GeocoderFa... Remove this comment to see the full error message
 const GeocoderFactory = require('../lib/geocoderfactory.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DataScienc... Remove this comment to see the full error message
 const DataScienceToolkitGeocoder = require('../lib/geocoder/datasciencetoolkitgeocoder.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpenStreet... Remove this comment to see the full error message
 const OpenStreetMapGeocoder = require('../lib/geocoder/openstreetmapgeocoder.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'LocationIQ... Remove this comment to see the full error message
 const LocationIQGeocoder = require('../lib/geocoder/locationiqgeocoder.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'PickPointG... Remove this comment to see the full error message
 const PickPointGeocoder = require('../lib/geocoder/pickpointgeocoder.js');
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'FetchAdapt... Remove this comment to see the full error message
 const FetchAdapter = require('../lib/httpadapter/fetchadapter.js');
 
 // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GpxFormatt... Remove this comment to see the full error message

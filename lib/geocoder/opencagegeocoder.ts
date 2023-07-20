@@ -1,9 +1,21 @@
-var util = require('util'),
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
-  AbstractGeocoder = require('./abstractgeocoder');
+import BaseAbstractGeocoder from './abstractgeocoder';
+import type {
+  HTTPAdapter,
+  ResultCallback,
+  BaseOptions,
+  Location,
+  GeocodeValue,
+  ResultData
+} from '../../types';
+
+export interface Options extends BaseOptions {
+  provider: 'opencage';
+  apiKey: string;
+  language?: string;
+}
 
 // http://geocoder.opencagedata.com/api.html#confidence
-var ConfidenceInKM = {
+const ConfidenceInKM = {
   10: 0.25,
   9: 0.5,
   8: 1,
@@ -17,149 +29,135 @@ var ConfidenceInKM = {
   0: Number.NaN
 };
 
-/**
- * Constructor
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OpenCageGe... Remove this comment to see the full error message
-var OpenCageGeocoder = function OpenCageGeocoder(this: any, httpAdapter: any, apiKey: any, options: any) {
-  this.options = ['language'];
+class OpenCageGeocoder extends BaseAbstractGeocoder<Options> {
+  _endpoint = 'http://api.opencagedata.com/geocode/v1/json';
+  // In case we need to support v1/v2 and this changes
+  _ConfidenceInKM = ConfidenceInKM;
 
-  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
-  OpenCageGeocoder.super_.call(this, httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Options) {
+    super(httpAdapter, options);
 
-  if (!apiKey || apiKey == 'undefined') {
-    throw new Error(this.constructor.name + ' needs an apiKey');
+    if (!options.apiKey) {
+      throw new Error(this.constructor.name + ' needs an apiKey');
+    }
   }
 
-  this.apiKey = apiKey;
-  this._endpoint = 'http://api.opencagedata.com/geocode/v1/json';
-  this._ConfidenceInKM = ConfidenceInKM; // In case we need to support v1/v2 and this changes
-};
+  /**
+   * Geocode
+   * @param <string>   value    Value to geocode (Address)
+   * @param <function> callback Callback method
+   */
+  _geocode(value: GeocodeValue, callback: ResultCallback) {
+    const params = this._getCommonParams();
+    if (typeof value === 'string') {
+      params.q = value;
+    } else {
+      if (value.bounds) {
+        if (Array.isArray(value.bounds)) {
+          params.bounds = value.bounds.join(',');
+        } else {
+          params.bounds = value.bounds;
+        }
+      }
+      if (value.countryCode) {
+        params.countrycode = value.countryCode;
+      }
+      if (value.limit) {
+        params.limit = value.limit;
+      }
+      if (value.minConfidence) {
+        params.min_confidence = value.minConfidence;
+      }
+      if (value.language) {
+        params.language = value.language;
+      }
+      params.q = value.address;
+    }
 
-util.inherits(OpenCageGeocoder, AbstractGeocoder);
-
-/**
- * Geocode
- * @param <string>   value    Value to geocode (Address)
- * @param <function> callback Callback method
- */
-OpenCageGeocoder.prototype._geocode = function (value: any, callback: any) {
-  var _this = this;
-
-  var params = this._getCommonParams();
-  if (value.address) {
-    if (value.bounds) {
-      if (Array.isArray(value.bounds)) {
-        params.bounds = value.bounds.join(',');
+    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
+      if (err) {
+        return callback(err, null);
       } else {
-        params.bounds = value.bounds;
+        const results: ResultData[] = [];
+
+        if (result && result.results instanceof Array) {
+          result.results.forEach((data: any) => {
+            results.push(this._formatResult(data));
+          });
+        }
+
+        callback(null, {
+          data: results,
+          raw: result
+        });
       }
-    }
-    if (value.countryCode) {
-      params.countrycode = value.countryCode;
-    }
-    if (value.limit) {
-      params.limit = value.limit;
-    }
-    if (value.minConfidence) {
-      params.min_confidence = value.minConfidence;
-    }
-    if (value.language) {
-      params.language = value.language;
-    }
-    params.q = value.address;
-  } else {
-    params.q = value;
+    });
   }
 
-  this.httpAdapter.get(this._endpoint, params, function (err: any, result: any) {
-    if (err) {
-      return callback(err);
-    } else {
-      var results = [];
+  _formatResult(result: any) {
+    const confidence = result.confidence || 0;
 
-      if (result && result.results instanceof Array) {
-        for (var i = 0; i < result.results.length; i++) {
-          results.push(_this._formatResult(result.results[i]));
-        }
+    return {
+      latitude: result.geometry.lat,
+      longitude: result.geometry.lng,
+      country: result.components.country,
+      city: result.components.city,
+      state: result.components.state,
+      zipcode: result.components.postcode,
+      streetName: result.components.road,
+      streetNumber: result.components.house_number,
+      countryCode: result.components.country_code,
+      county: result.components.county,
+      extra: {
+        confidence: confidence,
+        confidenceKM:
+          ConfidenceInKM[result.confidence as keyof typeof ConfidenceInKM] ||
+          Number.NaN
       }
-
-      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
-      results.raw = result;
-      callback(false, results);
-    }
-  });
-};
-
-OpenCageGeocoder.prototype._formatResult = function (result: any) {
-  var confidence = result.confidence || 0;
-  return {
-    latitude: result.geometry.lat,
-    longitude: result.geometry.lng,
-    country: result.components.country,
-    city: result.components.city,
-    state: result.components.state,
-    zipcode: result.components.postcode,
-    streetName: result.components.road,
-    streetNumber: result.components.house_number,
-    countryCode: result.components.country_code,
-    county: result.components.county,
-    extra: {
-      confidence: confidence,
-      confidenceKM: this._ConfidenceInKM[result.confidence] || Number.NaN
-    }
-  };
-};
-
-/**
- * Reverse geocoding
- * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
- * @param <function> callback Callback method
- */
-OpenCageGeocoder.prototype._reverse = function (query: any, callback: any) {
-  var lat = query.lat;
-  var lng = query.lon;
-
-  var _this = this;
-
-  var params = this._getCommonParams();
-  params.q = lat + ' ' + lng;
-
-  this.httpAdapter.get(this._endpoint, params, function (err: any, result: any) {
-    if (err) {
-      callback(err);
-    } else {
-      var results = [];
-
-      if (result && result.results instanceof Array) {
-        for (var i = 0; i < result.results.length; i++) {
-          results.push(_this._formatResult(result.results[i]));
-        }
-      }
-
-      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
-      results.raw = result;
-      callback(false, results);
-    }
-  });
-};
-
-/**
- * Prepare common params
- *
- * @return <Object> common params
- */
-OpenCageGeocoder.prototype._getCommonParams = function () {
-  var params = {};
-  // @ts-expect-error TS(2339): Property 'key' does not exist on type '{}'.
-  params.key = this.apiKey;
-
-  if (this.options.language) {
-    // @ts-expect-error TS(2339): Property 'language' does not exist on type '{}'.
-    params.language = this.options.language;
+    };
   }
 
-  return params;
-};
+  _reverse(query: Location, callback: ResultCallback) {
+    const lat = query.lat;
+    const lng = query.lon;
+    const params = this._getCommonParams();
+    params.q = lat + ' ' + lng;
+
+    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
+      if (err) {
+        callback(err, null);
+      } else {
+        const results: ResultData[] = [];
+
+        if (result && Array.isArray(result.results)) {
+          result.results.forEach((data: any) => {
+            results.push(this._formatResult(data));
+          });
+        }
+
+        callback(null, {
+          raw: result,
+          data: results
+        });
+      }
+    });
+  }
+
+  /**
+   * Prepare common params
+   *
+   * @return <Object> common params
+   */
+  _getCommonParams(): Record<string, any> {
+    const params: Record<string, any> = {};
+    params.key = this.options.apiKey;
+
+    if (this.options.language) {
+      params.language = this.options.language;
+    }
+
+    return params;
+  }
+}
 
 export default OpenCageGeocoder;

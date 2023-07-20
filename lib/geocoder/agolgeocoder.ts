@@ -1,275 +1,279 @@
+import net from 'net';
+import BaseAbstractGeocoder from './abstractgeocoder';
+import type {
+  HTTPAdapter,
+  Location,
+  ResultCallback,
+  BaseOptions,
+  NodeCallback,
+  ResultData
+} from '../../types';
 
-var net = require('net');
+export interface Options extends BaseOptions {
+  provider: 'agol';
+  client_id: string;
+  client_secret: string;
+}
 
-/**
- * Constructor
- * @param {Object} httpAdapter Http Adapter
- * @param {Object} options     Options (language, client_id, client_secret)
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AGOLGeocod... Remove this comment to see the full error message
-var AGOLGeocoder = function AGOLGeocoder(this: any, httpAdapter: any, options: any) {
+class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
+  cache: any;
 
-  if (!httpAdapter || httpAdapter == 'undefined') {
-    throw new Error('ArcGis Online Geocoder requires a httpAdapter to be defined');
-  }
+  _authEndpoint = 'https://www.arcgis.com/sharing/oauth2/token';
+  _endpoint =
+    'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find';
+  _reverseEndpoint =
+    'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
 
-  if (!options || options == 'undefined') {
-    options = {};
-  }
+  constructor(httpAdapter: HTTPAdapter, options: Options) {
+    super(httpAdapter, options);
 
-  if (!options.client_id || options.client_id == 'undefined') {
-    options.client_id = null;
-  }
-
-  if (!options.client_secret || options.client_secret == 'undefined') {
-    options.client_secret = null;
-  }
-
-  if (!options.client_secret || !options.client_id) {
-
-    throw new Error('You must specify the client_id and the client_secret');
-  }
-
-  this.options = options;
-
-  this.httpAdapter = httpAdapter;
-  this.cache = {};
-};
-
-AGOLGeocoder.prototype._authEndpoint = 'https://www.arcgis.com/sharing/oauth2/token';
-AGOLGeocoder.prototype._endpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find';
-AGOLGeocoder.prototype._reverseEndpoint = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
-
-//Cached vars
-
-
-AGOLGeocoder.prototype._cachedToken = {
-  'now': function() {
-    return (new Date()).getTime();
-  },
-  'put': function(token: any, experation: any,cache: any) {
-    cache.token = token;
-    //Shave 30 secs off experation to ensure that we expire slightly before the actual expiration
-    cache.tokenExp = this.now() + (experation - 30);
-  },
-  'get' : function(cache: any) {
-    if(!cache) {
-      return null;
+    if (!httpAdapter || typeof httpAdapter == 'undefined') {
+      throw new Error(
+        'ArcGis Online Geocoder requires a httpAdapter to be defined'
+      );
     }
 
-    if(this.now() <= cache.tokenExp) {
-      return cache.token;
-    } else {
-      return null;
-    }
+    this.cache = {};
   }
-};
 
-AGOLGeocoder.prototype._getToken = function(callback: any) {
-  var _this = this;
+  //Cached vars
 
-  if(_this._cachedToken.get(_this.cache) !== null) {
-    callback(_this._cachedToken.get());
-    return;
+  _cachedToken = {
+    now: function () {
+      return new Date().getTime();
+    },
+    put: function (token: any, experation: any, cache: any) {
+      cache.token = token;
+      //Shave 30 secs off experation to ensure that we expire slightly before the actual expiration
+      cache.tokenExp = this.now() + (experation - 30);
+    },
+    get: function (cache?: any) {
+      if (!cache) {
+        return null;
+      }
+
+      if (this.now() <= cache.tokenExp) {
+        return cache.token;
+      } else {
+        return null;
+      }
     }
-
-  var params = {
-    'grant_type': 'client_credentials',
-    'client_id': _this.options.client_id,
-    'client_secret': _this.options.client_secret
   };
 
-  _this.httpAdapter.get(_this._authEndpoint, params, function(err: any, result: any) {
-    if (err) {
-      return callback(err);
-    } else {
-      result = JSON.parse(result);
-      var tokenExpiration = (new Date()).getTime() + result.expires_in;
-      var token = result.access_token;
-      _this._cachedToken.put(token,tokenExpiration,_this.cache);
-
-      callback(false, token);
+  _getToken(callback: NodeCallback<string>) {
+    if (this._cachedToken.get(this.cache) !== null) {
+      callback(this._cachedToken.get());
+      return;
     }
-  });
-};
 
-/**
- * Geocode
- * @param {String}   value    Value to geocode (Address)
- * @param {Function} callback Callback method
- */
-AGOLGeocoder.prototype.geocode = function(value: any, callback: any) {
-  var _this = this;
-
-  if (net.isIP(value)) {
-    throw new Error('The AGOL geocoder does not support IP addresses');
-  }
-
-  if (value instanceof Array) {
-    //As defined in http://resources.arcgis.com/en/help/arcgis-rest-api/#/Batch_geocoding/02r300000003000000/
-    throw new Error('An ArcGIS Online organizational account is required to use the batch geocoding functionality');
-  }
-
-  var execute = function (value: any,token: any,callback: any) {
-    var params = {
-      'token':token,
-      'f':'json',
-      'text':value,
-      'outFields': 'AddNum,StPreDir,StName,StType,City,Postal,Region,Country'
+    const params = {
+      grant_type: 'client_credentials',
+      client_id: this.options.client_id,
+      client_secret: this.options.client_secret
     };
 
-    _this.httpAdapter.get(_this._endpoint, params, function(err: any, result: any) {
-      result = JSON.parse(result);
+    this.httpAdapter.get(
+      this._authEndpoint,
+      params,
+      (err: any, result: any) => {
         if (err) {
           return callback(err);
         } else {
+          result = JSON.parse(result);
+          const tokenExpiration = new Date().getTime() + result.expires_in;
+          const token = `${result.access_token}`;
+          this._cachedToken.put(token, tokenExpiration, this.cache);
+
+          callback(null, token);
+        }
+      }
+    );
+  }
+
+  /**
+   * Geocode
+   * @param {String}   value    Value to geocode (Address)
+   * @param {Function} callback Callback method
+   */
+  geocode(value: any, callback: ResultCallback) {
+    if (net.isIP(value)) {
+      throw new Error('The AGOL geocoder does not support IP addresses');
+    }
+
+    if (value instanceof Array) {
+      //As defined in http://resources.arcgis.com/en/help/arcgis-rest-api/#/Batch_geocoding/02r300000003000000/
+      throw new Error(
+        'An ArcGIS Online organizational account is required to use the batch geocoding functionality'
+      );
+    }
+
+    const execute = (value: any, token: any, callback: ResultCallback) => {
+      const params = {
+        token: token,
+        f: 'json',
+        text: value,
+        outFields: 'AddNum,StPreDir,StName,StType,City,Postal,Region,Country'
+      };
+
+      this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
+        result = JSON.parse(result);
+        if (err) {
+          return callback(err, null);
+        } else {
           //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
-          if(result.error){
-            callback(result.error);
+          if (result.error) {
+            callback(result.error, null);
 
             return null;
           }
 
-          var results = [];
-          for(var i = 0; i < result.locations.length; i++) {
-            results.push(_this._formatResult(result.locations[i]));
-          }
+          const results = result.locations.map((location: any) => {
+            return this._formatResult(location);
+          });
 
-          // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
           results.raw = result;
-          callback(false, results);
+          callback(null, results);
         }
-    });
-  };
-
-  this._getToken(function(err: any,token: any) {
-    if (err) {
-      return callback(err);
-    } else {
-      execute(value,token,callback);
-    }
-  });
-};
-
-AGOLGeocoder.prototype._formatResult = function(result: any) {
-  if(result.address){
-    return {
-      'latitude' : result.location.y,
-      'longitude' : result.location.x,
-      'country' : result.address.CountryCode,
-      'city' : result.address.City,
-      'state' : result.address.Region,
-      'zipcode' : result.address.Postal,
-      'countryCode' : result.address.CountryCode,
-      'address': result.address.Address,
-      'neighborhood': result.address.Neighborhood,
-      'loc_name': result.address.Loc_name
-    };
-  }
-
-  var country = null;
-  var countryCode = null;
-  var city = null;
-  var state = null;
-  var stateCode = null;
-  var zipcode = null;
-  var streetPreDir = null;
-  var streetType = null;
-  var streetName = null;
-  var streetNumber = null;
-
-  var attributes = result.feature.attributes;
-  for (var property in attributes) {
-    if (attributes.hasOwnProperty(property)) {
-      if(property == 'City') {
-        city = attributes[property];
-      }
-      if(property == 'Postal') {
-        zipcode = attributes[property];
-      }
-      if(property == 'Region') {
-        state = attributes[property];
-      }
-      if(property == 'StPreDir') {
-        streetPreDir = attributes[property];
-      }
-      if(property == 'AddNum') {
-        streetNumber = attributes[property];
-      }
-      if(property == 'StName') {
-        streetName = attributes[property];
-      }
-      if(property == 'StType') {
-        streetType = attributes[property];
-      }
-      if(property == 'Country') {
-        countryCode = attributes[property];
-        country = attributes[property];
-      }
-    }
-  }
-
-  return {
-    'latitude' : result.feature.geometry.y,
-    'longitude' : result.feature.geometry.x,
-    'country' : country,
-    'city' : city,
-    'state' : state,
-    'stateCode' : stateCode,
-    'zipcode' : zipcode,
-    'streetName': streetPreDir + ' ' + streetName + ' ' + streetType,
-    'streetNumber' : streetNumber,
-    'countryCode' : countryCode
-  };
-};
-
-/**
- * Reverse geocoding
- * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
- * @param {function} callback Callback method
- */
-AGOLGeocoder.prototype.reverse = function(query: any, callback: any) {
-  var lat = query.lat;
-  var long = query.lon;
-
-  var _this = this;
-
-  var execute = function (lat: any,long: any,token: any,callback: any) {
-    var params = {
-      'token':token,
-      'f':'json',
-      'location' : long + ',' + lat,
-      'outFields': 'AddrNum,StPreDir,StName,StType,City,Postal,Region,Country'
+      });
     };
 
-    _this.httpAdapter.get(_this._reverseEndpoint, params, function(err: any, result: any) {
-      result = JSON.parse(result);
+    this._getToken(function (err: any, token: any) {
       if (err) {
-        return callback(err);
+        return callback(err, null);
       } else {
-        //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
-        if(result.error){
-          callback(result.error,{raw:result});
-          return null;
-        }
-
-        var results = [];
-        results.push(_this._formatResult(result));
-
-        // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
-        results.raw = result;
-        callback(false, results);
+        execute(value, token, callback);
       }
     });
-  };
+  }
 
-  this._getToken(function(err: any,token: any) {
-    if (err) {
-      return callback(err);
-    } else {
-      execute(lat,long,token,callback);
+  _formatResult(result: any): ResultData {
+    if (result.address) {
+      return {
+        latitude: result.location.y,
+        longitude: result.location.x,
+        country: result.address.CountryCode,
+        city: result.address.City,
+        state: result.address.Region,
+        zipcode: result.address.Postal,
+        countryCode: result.address.CountryCode,
+        address: result.address.Address,
+        neighborhood: result.address.Neighborhood,
+        loc_name: result.address.Loc_name
+      };
     }
-  });
-};
+
+    let country: string | undefined = undefined;
+    let countryCode: string | undefined = undefined;
+    let city: string | undefined = undefined;
+    let state: string | undefined = undefined;
+    const stateCode: string | undefined = undefined;
+    let zipcode: string | undefined = undefined;
+    let streetPreDir: string | undefined = undefined;
+    let streetType: string | undefined = undefined;
+    let streetName: string | undefined = undefined;
+    let streetNumber: string | undefined = undefined;
+
+    const attributes = result.feature.attributes;
+    for (const property in attributes) {
+      if (attributes[property]) {
+        if (property == 'City') {
+          city = attributes[property];
+        }
+        if (property == 'Postal') {
+          zipcode = attributes[property];
+        }
+        if (property == 'Region') {
+          state = attributes[property];
+        }
+        if (property == 'StPreDir') {
+          streetPreDir = attributes[property];
+        }
+        if (property == 'AddNum') {
+          streetNumber = attributes[property];
+        }
+        if (property == 'StName') {
+          streetName = attributes[property];
+        }
+        if (property == 'StType') {
+          streetType = attributes[property];
+        }
+        if (property == 'Country') {
+          countryCode = attributes[property];
+          country = attributes[property];
+        }
+      }
+    }
+
+    return {
+      latitude: result.feature.geometry.y,
+      longitude: result.feature.geometry.x,
+      country: country,
+      city: city,
+      state: state,
+      stateCode: stateCode,
+      zipcode: zipcode,
+      streetName: streetPreDir + ' ' + streetName + ' ' + streetType,
+      streetNumber: streetNumber,
+      countryCode: countryCode
+    };
+  }
+
+  /**
+   * Reverse geocoding
+   * @param {function} callback Callback method
+   */
+  reverse(query: Location, callback: ResultCallback) {
+    const lat = query.lat;
+    const long = query.lon;
+
+    const execute = (
+      lat: number,
+      long: number,
+      token: string,
+      callback: ResultCallback
+    ) => {
+      const params = {
+        token: token,
+        f: 'json',
+        location: long + ',' + lat,
+        outFields: 'AddrNum,StPreDir,StName,StType,City,Postal,Region,Country'
+      };
+
+      this.httpAdapter.get(
+        this._reverseEndpoint,
+        params,
+        (err: any, result: any) => {
+          result = JSON.parse(result);
+          if (err) {
+            return callback(err, null);
+          } else {
+            //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
+            if (result.error) {
+              callback(result.error, null);
+              return null;
+            }
+
+            const data = [this._formatResult(result)];
+
+            callback(null, {
+              data,
+              raw: result
+            });
+          }
+        }
+      );
+    };
+
+    this._getToken((err, token) => {
+      if (err) {
+        return callback(err, null);
+      } else {
+        // probably need to check for empty token here?
+        // leaving as is for backwards compatibility
+        execute(lat, long, token || '', callback);
+      }
+    });
+  }
+}
 
 export default AGOLGeocoder;

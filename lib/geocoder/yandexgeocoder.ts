@@ -1,147 +1,162 @@
+import BaseAbstractGeocoder from './abstractgeocoder';
+import type {
+  HTTPAdapter,
+  ResultCallback,
+  BaseOptions,
+  Location,
+  ResultData
+} from '../../types';
 
-var util = require('util');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
-var AbstractGeocoder = require('./abstractgeocoder');
-
-/**
- * Constructor
- * @param <object> httpAdapter Http Adapter
- * @param <object> options     Options (language, clientId, apiKey)
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'YandexGeoc... Remove this comment to see the full error message
-var YandexGeocoder = function YandexGeocoder(this: any, httpAdapter: any, options: any) {
-  this.options = ['apiKey'];
-  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
-  YandexGeocoder.super_.call(this, httpAdapter, options);
-};
-
-util.inherits(YandexGeocoder, AbstractGeocoder);
-
-function _findKey(result: any, wantedKey: any) {
-  var val = null;
-  Object.keys(result).every(function(key) {
-
-  if (key === wantedKey) {
-    val = result[key];
-    return false;
-  }
-
-  if (typeof result[key] === 'object') {
-    val = _findKey(result[key], wantedKey);
-
-    return val === null ? true : false;
-  }
-
-  return true;
-  });
-
-  return val;
+export interface Options extends BaseOptions {
+  provider: 'yandex';
+  apiKey: string;
+  /**
+   * ex: `ru_RU`, `uk_UA`
+   */
+  language?: string;
+  /**
+   * defaults to 10
+   */
+  results?: number;
+  /**
+   * defaults to 0
+   */
+  skip?: number;
+  /**
+   * Type of toponym (only for reverse geocoding)
+   * ex: `house`, `street`, `metro`, `district`, `locality`
+   */
+  kind?: string;
+  /**
+   * ex: `[{lat: 1.0, lng:2.0},{lat: 1.1, lng:2.2}]`
+   */
+  bbox?: [{ lat: number; lng: number }, { lat: number; lng: number }];
+  /**
+   * Limit search in bbox (1) or not limit (0)
+   */
+  rspn?: string;
 }
 
-function _formatResult(result: any) {
-  var position = result.GeoObject.Point.pos.split(' ');
-  result = result.GeoObject.metaDataProperty.GeocoderMetaData.AddressDetails;
+class YandexGeocoder extends BaseAbstractGeocoder<Options> {
+  // Yandex geocoding API endpoint
+  _endpoint = 'https://geocode-maps.yandex.ru/1.x/';
+
+  constructor(httpAdapter: HTTPAdapter, options: Options) {
+    super(httpAdapter, options);
+  }
+
+  _geocode(value: string, callback: ResultCallback) {
+    const params = {
+      ..._processOptionsToParams(this.options),
+      geocode: value,
+      format: 'json'
+    };
+
+    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
+      if (err) {
+        return callback(err, null);
+      } else {
+        const results: any = [];
+
+        result.response.GeoObjectCollection.featureMember.forEach(function (
+          geopoint: any
+        ) {
+          results.push(_formatResult(geopoint));
+        });
+
+        results.raw = result;
+        callback(null, results);
+      }
+    });
+  }
+
+  _reverse(query: Location, callback: ResultCallback) {
+    const lat = query.lat;
+    const lng = query.lon;
+
+    const value = lng + ',' + lat;
+
+    this._geocode(value, callback);
+  }
+}
+
+function _formatResult(result: any): ResultData {
+  const position = result.GeoObject.Point.pos.split(' ');
+  const data =
+    result.GeoObject.metaDataProperty.GeocoderMetaData.AddressDetails;
 
   return {
-    'latitude' : parseFloat(position[1]),
-    'longitude' : parseFloat(position[0]),
-    'city' : _findKey(result, 'LocalityName'),
-    'state' : _findKey(result, 'AdministrativeAreaName'),
-    'streetName': _findKey(result, 'ThoroughfareName'),
-    'streetNumber' : _findKey(result, 'PremiseNumber'),
-    'countryCode' : _findKey(result, 'CountryNameCode'),
-    'country' : _findKey(result, 'CountryName'),
-    'formattedAddress' : _findKey(result, 'AddressLine')
+    latitude: parseFloat(position[1]),
+    longitude: parseFloat(position[0]),
+    city: _findKey(data, 'LocalityName'),
+    state: _findKey(data, 'AdministrativeAreaName'),
+    streetName: _findKey(data, 'ThoroughfareName'),
+    streetNumber: _findKey(data, 'PremiseNumber'),
+    countryCode: _findKey(data, 'CountryNameCode'),
+    country: _findKey(data, 'CountryName'),
+    formattedAddress: _findKey(data, 'AddressLine')
   };
 }
 
-function _processOptionsToParams(params: any, options: any){
+function _processOptionsToParams(
+  options: Options
+): Record<string, string | number> {
+  const params: Record<string, string | number> = {};
 
-  //language (language_region, ex: `ru_RU`, `uk_UA`)
   if (options.language) {
     params.lang = options.language;
   }
 
-  //results count (default 10)
   if (options.results) {
     params.results = options.results;
   }
 
-  //skip count (default 0)
   if (options.skip) {
     params.skip = options.skip;
   }
 
-  //Type of toponym (only for reverse geocoding)
-  //could be `house`, `street`, `metro`, `district`, `locality`
   if (options.kind) {
     params.kind = options.kind;
   }
 
-  //BBox (ex: `[[lat: 1.0, lng:2.0],[lat: 1.1, lng:2.2]]`)
   if (options.bbox) {
-    if (options.bbox.length === 2){
+    if (options.bbox.length === 2) {
       params.bbox = options.bbox[0].lng + ',' + options.bbox[0].lat;
       params.bbox = params.bbox + '~';
-      params.bbox = params.bbox + options.bbox[1].lng + ',' + options.bbox[1].lat;
+      params.bbox =
+        params.bbox + options.bbox[1].lng + ',' + options.bbox[1].lat;
     }
   }
 
-  //Limit search in bbox (1) or not limit (0)
   if (options.rspn) {
     params.rspn = options.rspn;
   }
 
-  if(options.apiKey) {
+  if (options.apiKey) {
     params.apikey = options.apiKey;
   }
+
+  return params;
 }
 
-// Yandex geocoding API endpoint
-YandexGeocoder.prototype._endpoint = 'https://geocode-maps.yandex.ru/1.x/';
-
-/**
-* Geocode
-* @param <string>   value    Value to geocode (Address)
-* @param <function> callback Callback method
-*/
-YandexGeocoder.prototype._geocode = function(value: any, callback: any) {
-  var params = {
-    geocode : value,
-    format: 'json'
-  };
-
-  _processOptionsToParams(params, this.options);
-
-  this.httpAdapter.get(this._endpoint, params, function(err: any, result: any) {
-    if (err) {
-      return callback(err);
-    } else {
-      var results: any = [];
-
-      result.response.GeoObjectCollection.featureMember.forEach(function(geopoint: any) {
-        results.push(_formatResult(geopoint));
-      });
-
-      results.raw = result;
-      callback(false, results);
+function _findKey(result: any, wantedKey: string): string | undefined {
+  let val;
+  Object.keys(result).every(function (key) {
+    if (key === wantedKey) {
+      val = result[key];
+      return false;
     }
+
+    if (typeof result[key] === 'object') {
+      val = _findKey(result[key], wantedKey);
+
+      return val === null ? true : false;
+    }
+
+    return true;
   });
-};
 
-/**
- * Reverse geocoding
- * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
- * @param <function> callback Callback method
- */
-YandexGeocoder.prototype._reverse = function (query: any, callback: any) {
-  var lat = query.lat;
-  var lng = query.lon;
-
-  var value = lng + ',' + lat;
-
-  this._geocode(value, callback);
-};
-
+  return val;
+}
 
 export default YandexGeocoder;

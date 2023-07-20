@@ -4,7 +4,6 @@ var chai = require('chai'),
   expect = chai.expect,
   sinon = require('sinon');
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GeocodioGe... Remove this comment to see the full error message
 var GeocodioGeocoder = require('../../lib/geocoder/geocodiogeocoder.js');
 var HttpAdapter = require('../../lib/httpadapter/fetchadapter.js');
 

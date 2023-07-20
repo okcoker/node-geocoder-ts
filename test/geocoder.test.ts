@@ -7,9 +7,7 @@ var assert = chai.assert;
 // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'sinon'.
 var sinon  = require('sinon');
 
-// @ts-expect-error TS(2403): Subsequent variable declarations must have the sam... Remove this comment to see the full error message
 var Geocoder = require('../lib/geocoder.js');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
 const AbstractGeocoder = require('../lib/geocoder/abstractgeocoder.js');
 
 var stupidGeocoder = {
@@ -52,7 +50,6 @@ describe('Geocoder', () => {
   describe('#constructor' , () => {
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should set _geocoder', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
 
       geocoder._geocoder.should.be.equal(stupidGeocoder);
@@ -63,7 +60,6 @@ describe('Geocoder', () => {
   describe('#geocode' , () => {
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call geocoder geocode method', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
 
       return geocoder.geocode('127.0.0.1')
@@ -75,7 +71,6 @@ describe('Geocoder', () => {
 
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should return a promise', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
 
       var promise = geocoder.geocode('127.0.0.1');
@@ -89,7 +84,6 @@ describe('Geocoder', () => {
   describe('#batchGeocode' , () => {
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call stupidGeocoder geocoder method x times', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
       return geocoder.batchGeocode([
         '127.0.0.1',
@@ -102,7 +96,6 @@ describe('Geocoder', () => {
 
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should return a promise', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
 
       var promise = geocoder.batchGeocode(['127.0.0.1']);
@@ -113,7 +106,6 @@ describe('Geocoder', () => {
 
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call stupidBatchGeocoder.batchGeocoder method only once when implemented', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidBatchGeocoder);
       return geocoder.batchGeocode([
         '127.0.0.1',
@@ -129,7 +121,6 @@ describe('Geocoder', () => {
   describe('#reverse' , () => {
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call stupidGeocoder reverse method', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
 
       return geocoder.reverse(1, 2)
@@ -141,7 +132,6 @@ describe('Geocoder', () => {
 
     // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should return a promise', () => {
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       var geocoder = new Geocoder(stupidGeocoder);
 
       var promise = geocoder.reverse('127.0.0.1');

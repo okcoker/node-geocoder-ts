@@ -1,211 +1,250 @@
-import Helper from './helper';
 import Geocoder from './geocoder';
 
-import FetchAdapter from './httpadapter/fetchadapter';
-import GoogleGeocoder from './geocoder/googlegeocoder';
-import HereGeocoder from './geocoder/heregeocoder';
-import AGOLGeocoder from './geocoder/agolgeocoder';
-import FreegeoipGeocoder from './geocoder/freegeoipgeocoder';
-import DataScienceToolkitGeocoder from './geocoder/datasciencetoolkitgeocoder';
-import OpenStreetMapGeocoder from './geocoder/openstreetmapgeocoder';
-import PickPointGeocoder from './geocoder/pickpointgeocoder';
-import LocationIQGeocoder from './geocoder/locationiqgeocoder';
-import MapQuestGeocoder from './geocoder/mapquestgeocoder';
-import MapzenGeocoder from './geocoder/mapzengeocoder';
-import OpenMapQuestGeocoder from './geocoder/openmapquestgeocoder';
-import YandexGeocoder from './geocoder/yandexgeocoder';
-import GeocodioGeocoder from './geocoder/geocodiogeocoder';
-import OpenCageGeocoder from './geocoder/opencagegeocoder';
-import NominatimMapquestGeocoder from './geocoder/nominatimmapquestgeocoder';
-import TomTomGeocoder from './geocoder/tomtomgeocoder';
-import VirtualEarthGeocoder from './geocoder/virtualearth';
-import SmartyStreets from './geocoder/smartystreetsgeocoder';
-import TeleportGeocoder from './geocoder/teleportgeocoder';
-import OpendataFranceGeocoder from './geocoder/opendatafrancegeocoder';
-import MapBoxGeocoder from './geocoder/mapboxgeocoder';
+import FetchAdapter, { FetchAdapterOptions } from './httpadapter/fetchadapter';
+
+import GpxFormatter, {
+  Options as GpxFormatterOptions
+} from './formatter/gpxformatter';
+import StringFormatter, {
+  Options as StringFormatterOptions
+} from './formatter/stringformatter';
+
+import GoogleGeocoder, {
+  Options as GoogleOptions
+} from './geocoder/googlegeocoder';
+import HereGeocoder, { Options as HereOptions } from './geocoder/heregeocoder';
+import AGOLGeocoder, { Options as AGOLOptions } from './geocoder/agolgeocoder';
+import FreegeoipGeocoder, {
+  Options as FreegeoipOptions
+} from './geocoder/freegeoipgeocoder';
+import DataScienceToolkitGeocoder, {
+  Options as DataScienceToolkitOptions
+} from './geocoder/datasciencetoolkitgeocoder';
+import OpenStreetMapGeocoder, {
+  Options as OpenStreetMapOptions
+} from './geocoder/openstreetmapgeocoder';
+import PickPointGeocoder, {
+  Options as PickPointOptions
+} from './geocoder/pickpointgeocoder';
+import LocationIQGeocoder, {
+  Options as LocationIQOptions
+} from './geocoder/locationiqgeocoder';
+import MapQuestGeocoder, {
+  Options as MapQuestOptions
+} from './geocoder/mapquestgeocoder';
+import MapzenGeocoder, {
+  Options as MapzenOptions
+} from './geocoder/mapzengeocoder';
+import OpenMapQuestGeocoder, {
+  Options as OpenMapQuestOptions
+} from './geocoder/openmapquestgeocoder';
+import YandexGeocoder, {
+  Options as YandexOptions
+} from './geocoder/yandexgeocoder';
+import GeocodioGeocoder, {
+  Options as GeocodioOptions
+} from './geocoder/geocodiogeocoder';
+import OpenCageGeocoder, {
+  Options as OpenCageOptions
+} from './geocoder/opencagegeocoder';
+import NominatimMapquestGeocoder, {
+  Options as NominatimMapquestOptions
+} from './geocoder/nominatimmapquestgeocoder';
+import TomTomGeocoder, {
+  Options as TomTomOptions
+} from './geocoder/tomtomgeocoder';
+import VirtualEarthGeocoder, {
+  Options as VirtualEarthOptions
+} from './geocoder/virtualearth';
+import SmartyStreets, {
+  Options as SmartOptions
+} from './geocoder/smartystreetsgeocoder';
+import TeleportGeocoder, {
+  Options as TeleportOptions
+} from './geocoder/teleportgeocoder';
+import OpendataFranceGeocoder, {
+  Options as OpendataFranceOptions
+} from './geocoder/opendatafrancegeocoder';
+import MapBoxGeocoder, {
+  Options as MapBoxOptions
+} from './geocoder/mapboxgeocoder';
+
+import type {
+  Adapter,
+  AbstractGeocoder,
+  Provider,
+  Formatter,
+  HTTPAdapter
+} from '../types';
 
 /**
- * Geocoder Facotry
+ * Return an http adapter by name
+ * @param  <string> adapterName adapter name
+ * @return <object>
  */
-const GeocoderFactory = {
-  /**
-   * Return an http adapter by name
-   * @param  <string> adapterName adapter name
-   * @return <object>
-   */
-  _getHttpAdapter: function (adapterName: any, options: any) {
-    if (adapterName === 'fetch') {
-      return new FetchAdapter(options);
-    }
-  },
-  /**
-   * Return a geocoder adapter by name
-   * @param  <string> adapterName adapter name
-   * @return <object>
-   */
-  _getGeocoder: function (geocoderName: any, adapter: any, extra: any) {
-    if (geocoderName === 'google') {
-      return new GoogleGeocoder(adapter, {
-        clientId: extra.clientId,
-        apiKey: extra.apiKey,
-        language: extra.language,
-        region: extra.region,
-        excludePartialMatches: extra.excludePartialMatches,
-        channel: extra.channel
-      });
-    }
-    if (geocoderName === 'here') {
-      return new HereGeocoder(adapter, {
-        apiKey: extra.apiKey,
-        appId: extra.appId,
-        appCode: extra.appCode,
-        language: extra.language,
-        politicalView: extra.politicalView,
-        country: extra.country,
-        state: extra.state,
-        production: extra.production,
-        limit: extra.limit
-      });
-    }
-    if (geocoderName === 'agol') {
-      return new AGOLGeocoder(adapter, {
-        client_id: extra.client_id,
-        client_secret: extra.client_secret
-      });
-    }
-    if (geocoderName === 'freegeoip') {
-      return new FreegeoipGeocoder(adapter);
-    }
-    if (geocoderName === 'datasciencetoolkit') {
-      return new DataScienceToolkitGeocoder(adapter, { host: extra.host });
-    }
-    if (geocoderName === 'openstreetmap') {
-      return new OpenStreetMapGeocoder(adapter, {
-        language: extra.language,
-        osmServer: extra.osmServer
-      });
-    }
-    if (geocoderName === 'pickpoint') {
-      return new PickPointGeocoder(adapter, {
-        language: extra.language,
-        apiKey: extra.apiKey
-      });
-    }
-    if (geocoderName === 'locationiq') {
-      return new LocationIQGeocoder(adapter, extra.apiKey);
-    }
-    if (geocoderName === 'mapquest') {
-      return new MapQuestGeocoder(adapter, extra.apiKey);
-    }
-    if (geocoderName === 'mapzen') {
-      return new MapzenGeocoder(adapter, extra.apiKey);
-    }
-    if (geocoderName === 'openmapquest') {
-      return new OpenMapQuestGeocoder(adapter, extra.apiKey);
-    }
-    if (geocoderName === 'yandex') {
-      return new YandexGeocoder(adapter, {
-        apiKey: extra.apiKey,
-        language: extra.language,
-        results: extra.results,
-        skip: extra.skip,
-        kind: extra.kind,
-        bbox: extra.bbox,
-        rspn: extra.rspn
-      });
-    }
-    if (geocoderName === 'geocodio') {
-      return new GeocodioGeocoder(adapter, extra.apiKey);
-    }
-    if (geocoderName === 'opencage') {
-      return new OpenCageGeocoder(adapter, extra.apiKey, extra);
-    }
-    if (geocoderName === 'nominatimmapquest') {
-      return new NominatimMapquestGeocoder(adapter, {
-        language: extra.language,
-        apiKey: extra.apiKey
-      });
-    }
-    if (geocoderName === 'tomtom') {
-      return new TomTomGeocoder(adapter, {
-        apiKey: extra.apiKey,
-        country: extra.country,
-        limit: extra.limit
-      });
-    }
-    if (geocoderName === 'virtualearth') {
-      return new VirtualEarthGeocoder(adapter, { apiKey: extra.apiKey });
-    }
-    if (geocoderName === 'smartystreets') {
-      return new SmartyStreets(adapter, extra.auth_id, extra.auth_token);
-    }
-    if (geocoderName === 'teleport') {
-      return new TeleportGeocoder(adapter, extra.apiKey, extra);
-    }
-    if (geocoderName === 'opendatafrance') {
-      return new OpendataFranceGeocoder(adapter);
-    }
-    if (geocoderName === 'mapbox') {
-      return new MapBoxGeocoder(adapter, extra);
-    }
-    throw new Error('No geocoder provider find for : ' + geocoderName);
-  },
-  /**
-   * Return an formatter adapter by name
-   * @param  <string> adapterName adapter name
-   * @return <object>
-   */
-  _getFormatter: function (formatterName: any, extra: any) {
-    if (formatterName === 'gpx') {
-      var GpxFormatter = require('./formatter/gpxformatter.js');
-
-      return new GpxFormatter();
-    }
-
-    if (formatterName === 'string') {
-      var StringFormatter = require('./formatter/stringformatter.js');
-
-      return new StringFormatter(extra.formatterPattern);
-    }
-  },
-  /**
-   * Return a geocoder
-   * @param  <string|object> geocoderAdapter Geocoder adapter name or adapter object
-   * @param  <array>         extra           Extra parameters array
-   * @return <object>
-   */
-  getGeocoder: function (geocoderAdapter: any, extra: any) {
-    if (typeof geocoderAdapter === 'object') {
-      extra = geocoderAdapter;
-      geocoderAdapter = null;
-    }
-
-    if (!extra) {
-      extra = {};
-    }
-
-    if (extra.provider) {
-      geocoderAdapter = extra.provider;
-    }
-
-    if (!geocoderAdapter) {
-      geocoderAdapter = 'google';
-    }
-
-    const httpAdapter = this._getHttpAdapter('fetch', extra);
-
-    if (Helper.isString(geocoderAdapter)) {
-      geocoderAdapter = this._getGeocoder(geocoderAdapter, httpAdapter, extra);
-    }
-
-    var formatter = extra.formatter;
-
-    if (Helper.isString(formatter)) {
-      formatter = this._getFormatter(formatter, extra);
-    }
-
-    return new Geocoder(geocoderAdapter, formatter);
+function _getHttpAdapter(
+  adapterName: Adapter,
+  options?: FetchAdapterOptions
+): HTTPAdapter {
+  return new FetchAdapter(options);
+}
+/**
+ * Return a geocoder adapter by name
+ * @param  adapter - Name of fetch adapter
+ * @param  options - Adapter options
+ */
+function _getGeocoder(
+  adapter: HTTPAdapter,
+  options: AllAdapterOptions
+): AbstractGeocoder {
+  switch (options.provider) {
+    case 'google':
+      return new GoogleGeocoder(adapter, options);
+    case 'here':
+      return new HereGeocoder(adapter, options);
+    case 'agol':
+      return new AGOLGeocoder(adapter, options);
+    case 'freegeoip':
+      return new FreegeoipGeocoder(adapter, options);
+    case 'datasciencetoolkit':
+      return new DataScienceToolkitGeocoder(adapter, options);
+    case 'openstreetmap':
+      return new OpenStreetMapGeocoder(adapter, options);
+    case 'pickpoint':
+      return new PickPointGeocoder(adapter, options);
+    case 'locationiq':
+      return new LocationIQGeocoder(adapter, options);
+    case 'mapquest':
+      return new MapQuestGeocoder(adapter, options);
+    case 'mapzen':
+      return new MapzenGeocoder(adapter, options);
+    case 'openmapquest':
+      return new OpenMapQuestGeocoder(adapter, options);
+    case 'yandex':
+      return new YandexGeocoder(adapter, options);
+    case 'geocodio':
+      return new GeocodioGeocoder(adapter, options);
+    case 'opencage':
+      return new OpenCageGeocoder(adapter, options);
+    case 'nominatimmapquest':
+      return new NominatimMapquestGeocoder(adapter, options);
+    case 'tomtom':
+      return new TomTomGeocoder(adapter, options);
+    case 'virtualearth':
+      return new VirtualEarthGeocoder(adapter, options);
+    case 'smartystreets':
+      return new SmartyStreets(adapter, options);
+    case 'teleport':
+      return new TeleportGeocoder(adapter, options);
+    case 'opendatafrance':
+      return new OpendataFranceGeocoder(adapter, options);
+    case 'mapbox':
+      return new MapBoxGeocoder(adapter, options);
   }
-};
+}
 
-export default GeocoderFactory;
+/**
+ * Return an formatter adapter by name
+ * @param  <string> adapterName adapter name
+ * @return <object>
+ */
+function _getFormatter(
+  options: AllFormatterOptions['formatter']
+): Formatter<any> | undefined {
+  if (options?.name === 'gpx') {
+    return new GpxFormatter(options);
+  }
+
+  if (options?.name === 'string') {
+    return new StringFormatter(options);
+  }
+}
+
+function getGeocoder(geocoderAdapter?: Provider): AbstractGeocoder;
+function getGeocoder(
+  geocoderAdapter: Provider,
+  options: FactoryOptions
+): AbstractGeocoder;
+function getGeocoder(geocoderAdapter: FactoryOptions): AbstractGeocoder;
+function getGeocoder(
+  geocoderAdapter: Provider | FactoryOptions | undefined,
+  options?: FactoryOptions
+): AbstractGeocoder {
+  const geocoderOptions: FactoryOptions = (typeof geocoderAdapter === 'object'
+    ? geocoderAdapter
+    : options) || {
+    provider: 'google',
+    fetch: undefined,
+    formatter: undefined
+  };
+  const httpAdapter = _getHttpAdapter('fetch', geocoderOptions);
+  const adapter = _getGeocoder(httpAdapter, geocoderOptions);
+  let formatter: Formatter<any> | undefined;
+
+  if (geocoderOptions.formatter) {
+    formatter = _getFormatter(geocoderOptions.formatter);
+  }
+
+  return new Geocoder(adapter, formatter);
+}
+
+type AllAdapterOptions =
+  | GoogleOptions
+  | HereOptions
+  | AGOLOptions
+  | FreegeoipOptions
+  | DataScienceToolkitOptions
+  | OpenStreetMapOptions
+  | PickPointOptions
+  | LocationIQOptions
+  | MapQuestOptions
+  | MapzenOptions
+  | OpenMapQuestOptions
+  | YandexOptions
+  | GeocodioOptions
+  | OpenCageOptions
+  | NominatimMapquestOptions
+  | TomTomOptions
+  | VirtualEarthOptions
+  | SmartOptions
+  | TeleportOptions
+  | OpendataFranceOptions
+  | MapBoxOptions;
+
+interface AllFormatterOptions {
+  formatter: GpxFormatterOptions | StringFormatterOptions;
+}
+
+type FactoryOptions = FetchAdapterOptions &
+  AllAdapterOptions &
+  AllFormatterOptions;
+
+export default getGeocoder;
+export {
+  AllAdapterOptions,
+  AllFormatterOptions,
+  FactoryOptions,
+  GpxFormatterOptions,
+  StringFormatterOptions,
+  GoogleOptions,
+  HereOptions,
+  AGOLOptions,
+  FreegeoipOptions,
+  DataScienceToolkitOptions,
+  OpenStreetMapOptions,
+  PickPointOptions,
+  LocationIQOptions,
+  MapQuestOptions,
+  MapzenOptions,
+  OpenMapQuestOptions,
+  YandexOptions,
+  GeocodioOptions,
+  OpenCageOptions,
+  NominatimMapquestOptions,
+  TomTomOptions,
+  VirtualEarthOptions,
+  SmartOptions,
+  TeleportOptions,
+  OpendataFranceOptions,
+  MapBoxOptions
+};

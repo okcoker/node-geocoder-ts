@@ -1,154 +1,160 @@
-const readline = require('readline');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
-const AbstractGeocoder = require('./abstractgeocoder');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ValueError... Remove this comment to see the full error message
-const ValueError = require('./../error/valueerror');
+import readline from 'readline';
+import ValueError from './../error/valueerror';
+import BaseAbstractGeocoder from './abstractgeocoder';
+import type {
+  HTTPAdapter,
+  ResultCallback,
+  BatchResult,
+  BatchResultCallback,
+  BaseOptions,
+  Location,
+  GeocodeValue
+} from '../../types';
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OPTIONS'.
-const OPTIONS = [
-  'apiKey',
-  'appId',
-  'appCode',
-  'language',
-  'politicalView',
-  'country',
-  'state',
-  'production'
-];
+export interface Options extends BaseOptions {
+  provider: 'here';
+  appId: string;
+  apiKey: string;
+  appCode?: string;
+  limit?: number;
+  language?: string;
+  politicalView?: string;
+  country?: string;
+  state?: string;
+  production?: boolean;
+}
 
-/**
- * Constructor
- * @param <object> httpAdapter Http Adapter
- * @param <object> options     Options (appId, appCode, language, politicalView, country, state, production)
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'HereGeocod... Remove this comment to see the full error message
-class HereGeocoder extends AbstractGeocoder {
-  constructor(httpAdapter: any, options: any) {
+class HereGeocoder extends BaseAbstractGeocoder<Options> {
+  // Here geocoding API endpoint
+  _geocodeEndpoint = 'https://geocoder.ls.hereapi.com/6.2/geocode.json';
+
+  // Here reverse geocoding API endpoint
+  _reverseEndpoint =
+    'https://reverse.geocoder.ls.hereapi.com/6.2/reversegeocode.json';
+
+  // Here batch geocoding API endpoint
+  _batchGeocodeEndpoint = 'https://batch.geocoder.ls.hereapi.com/6.2/jobs';
+
+  constructor(httpAdapter: HTTPAdapter, options: Options) {
     super(httpAdapter, options);
-    this.options = options;
-    OPTIONS.forEach(option => {
-      if (!options[option] || options[option] == 'undefined') {
-        this.options[option] = null;
-      }
-    });
 
     if (!this.options.apiKey && !(this.options.appId && this.options.appCode)) {
       throw new Error('You must specify apiKey to use Here Geocoder');
     }
   }
 
-  /**
-   * Geocode
-   * @param <string>   value    Value to geocode (Address)
-   * @param <function> callback Callback method
-   */
-  _geocode(value: any, callback: any) {
-    var _this = this;
-    var params = this._prepareQueryString();
+  _geocode(
+    value: GeocodeValue & {
+      address?: string;
+      language?: string;
+      politicalView?: string;
+      country?: string;
+      state?: string;
+      zipcode?: string;
+    },
+    callback: ResultCallback
+  ) {
+    const params = this._prepareQueryString();
 
     if (value.address) {
       if (value.language) {
-        // @ts-expect-error TS(2339): Property 'language' does not exist on type '{ addi... Remove this comment to see the full error message
         params.language = value.language;
       }
       if (value.politicalView) {
-        // @ts-expect-error TS(2339): Property 'politicalview' does not exist on type '{... Remove this comment to see the full error message
         params.politicalview = value.politicalView;
       }
       if (value.country) {
-        // @ts-expect-error TS(2339): Property 'country' does not exist on type '{ addit... Remove this comment to see the full error message
         params.country = value.country;
         if (value.state) {
-          // @ts-expect-error TS(2339): Property 'state' does not exist on type '{ additio... Remove this comment to see the full error message
           params.state = value.state;
         } else {
-          // @ts-expect-error TS(2339): Property 'state' does not exist on type '{ additio... Remove this comment to see the full error message
           delete params.state;
         }
       }
       if (value.zipcode) {
-        // @ts-expect-error TS(2339): Property 'postalcode' does not exist on type '{ ad... Remove this comment to see the full error message
         params.postalcode = value.zipcode;
       }
-      // @ts-expect-error TS(2339): Property 'searchtext' does not exist on type '{ ad... Remove this comment to see the full error message
       params.searchtext = value.address;
     } else {
-      // @ts-expect-error TS(2339): Property 'searchtext' does not exist on type '{ ad... Remove this comment to see the full error message
       params.searchtext = value;
     }
 
-    this.httpAdapter.get(this._geocodeEndpoint, params, function (err: any, result: any) {
-      var results: any = [];
-      results.raw = result;
+    this.httpAdapter.get(
+      this._geocodeEndpoint,
+      params,
+      (err: any, result: any) => {
+        if (err) {
+          return callback(err, null);
+        } else {
+          if (result.type === 'ApplicationError') {
+            return callback(new ValueError(result.Details), null);
+          }
+          if (result.error === 'Unauthorized') {
+            return callback(new ValueError(result.error_description), null);
+          }
+          const view = result.Response.View[0];
+          if (!view) {
+            return callback(null, {
+              raw: result,
+              data: []
+            });
+          }
 
-      if (err) {
-        return callback(err, results);
-      } else {
-        if (result.type === 'ApplicationError') {
-          // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
-          return callback(new ValueError(result.Details), results);
-        }
-        if (result.error === 'Unauthorized') {
-          // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
-          return callback(new ValueError(result.error_description), results);
-        }
-        var view = result.Response.View[0];
-        if (!view) {
-          return callback(false, results);
-        }
+          // Format each geocoding result
+          const results = view.Result.map((data: any) => {
+            return this._formatResult(data);
+          });
 
-        // Format each geocoding result
-        results = view.Result.map(_this._formatResult);
-        results.raw = result;
-
-        callback(false, results);
+          callback(null, {
+            data: results,
+            raw: result
+          });
+        }
       }
-    });
+    );
   }
 
-  /**
-   * Reverse geocoding
-   * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
-   * @param <function> callback Callback method
-   */
-  _reverse(query: any, callback: any) {
-    var lat = query.lat;
-    var lng = query.lon;
+  _reverse(query: Location, callback: ResultCallback) {
+    const lat = query.lat;
+    const lng = query.lon;
+    const params = this._prepareQueryString();
 
-    var _this = this;
-    var params = this._prepareQueryString();
-    // @ts-expect-error TS(2339): Property 'pos' does not exist on type '{ additiona... Remove this comment to see the full error message
     params.pos = lat + ',' + lng;
-    // @ts-expect-error TS(2339): Property 'mode' does not exist on type '{ addition... Remove this comment to see the full error message
     params.mode = 'trackPosition';
 
-    this.httpAdapter.get(this._reverseEndpoint, params, function (err: any, result: any) {
-      var results: any = [];
-      results.raw = result;
+    this.httpAdapter.get(
+      this._reverseEndpoint,
+      params,
+      (err: any, result: any) => {
+        if (err) {
+          return callback(err, null);
+        } else {
+          const view = result.Response.View[0];
+          if (!view) {
+            return callback(null, {
+              raw: result,
+              data: []
+            });
+          }
 
-      if (err) {
-        return callback(err, results);
-      } else {
-        var view = result.Response.View[0];
-        if (!view) {
-          return callback(false, results);
+          // Format each geocoding result
+          const results = view.Result.map((data: any) => {
+            return this._formatResult(data);
+          });
+
+          callback(null, {
+            data: results,
+            raw: result
+          });
         }
-
-        // Format each geocoding result
-        results = view.Result.map(_this._formatResult);
-        results.raw = result;
-
-        callback(false, results);
       }
-    });
+    );
   }
 
-  _formatResult(result: any) {
-    var location = result.Location || {};
-    var address = location.Address || {};
-    var i;
-
-    var extractedObj = {
+  _formatResult(result: any): ResultData {
+    const location = result.Location || {};
+    const address = location.Address || {};
+    const extractedObj = {
       formattedAddress: address.Label || null,
       latitude: location.DisplayPosition.Latitude,
       longitude: location.DisplayPosition.Longitude,
@@ -166,11 +172,14 @@ class HereGeocoder extends AbstractGeocoder {
         herePlaceId: location.LocationId || null,
         confidence: result.Relevance || 0
       },
-      administrativeLevels: {}
+      administrativeLevels: {
+        level1long: undefined,
+        level2long: undefined
+      }
     };
 
-    for (i = 0; i < address.AdditionalData.length; i++) {
-      var additionalData = address.AdditionalData[i];
+    for (let i = 0; i < address.AdditionalData.length; i++) {
+      const additionalData = address.AdditionalData[i];
       switch (additionalData.key) {
         //Country 2-digit code
         case 'Country2':
@@ -182,13 +191,11 @@ class HereGeocoder extends AbstractGeocoder {
           break;
         //State name
         case 'StateName':
-          // @ts-expect-error TS(2339): Property 'level1long' does not exist on type '{}'.
           extractedObj.administrativeLevels.level1long = additionalData.value;
           extractedObj.state = additionalData.value;
           break;
         //County name
         case 'CountyName':
-          // @ts-expect-error TS(2339): Property 'level2long' does not exist on type '{}'.
           extractedObj.administrativeLevels.level2long = additionalData.value;
           extractedObj.county = additionalData.value;
       }
@@ -196,58 +203,51 @@ class HereGeocoder extends AbstractGeocoder {
 
     return extractedObj;
   }
-  _prepareQueryString() {
-    var params = {
+
+  _prepareQueryString(): Record<string, any> {
+    const params: Record<string, any> = {
       additionaldata: 'Country2,true',
       gen: 8
     };
 
     // Deprecated
     if (this.options.appId) {
-      // @ts-expect-error TS(2339): Property 'app_id' does not exist on type '{ additi... Remove this comment to see the full error message
       params.app_id = this.options.appId;
     }
     // Deprecated
     if (this.options.appCode) {
-      // @ts-expect-error TS(2339): Property 'app_code' does not exist on type '{ addi... Remove this comment to see the full error message
       params.app_code = this.options.appCode;
     }
 
     if (this.options.apiKey) {
-      // @ts-expect-error TS(2339): Property 'apiKey' does not exist on type '{ additi... Remove this comment to see the full error message
       params.apiKey = this.options.apiKey;
     }
     if (this.options.language) {
-      // @ts-expect-error TS(2339): Property 'language' does not exist on type '{ addi... Remove this comment to see the full error message
       params.language = this.options.language;
     }
     if (this.options.politicalView) {
-      // @ts-expect-error TS(2339): Property 'politicalview' does not exist on type '{... Remove this comment to see the full error message
       params.politicalview = this.options.politicalView;
     }
     if (this.options.country) {
-      // @ts-expect-error TS(2339): Property 'country' does not exist on type '{ addit... Remove this comment to see the full error message
       params.country = this.options.country;
     }
     if (this.options.state) {
-      // @ts-expect-error TS(2339): Property 'state' does not exist on type '{ additio... Remove this comment to see the full error message
       params.state = this.options.state;
     }
     if (this.options.limit) {
-      // @ts-expect-error TS(2339): Property 'maxresults' does not exist on type '{ ad... Remove this comment to see the full error message
       params.maxresults = this.options.limit;
     }
 
     return params;
   }
 
-  async _batchGeocode(values: any, callback: any) {
+  async _batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
     try {
       const jobId = await this.__createJob(values);
       await this.__pollJobStatus(jobId);
       const rawResults = await this._getJobResults(jobId);
       const results = this.__parseBatchResults(rawResults);
-      callback(false, results);
+      callback(null, results);
     } catch (error) {
       callback(error, null);
     }
@@ -260,7 +260,8 @@ class HereGeocoder extends AbstractGeocoder {
       '\n' +
       values
         .map(
-          (value: any, ix: any) => `${ix + 1}|"${value}"${country ? `|${country}` : ''}`
+          (value: any, ix: any) =>
+            `${ix + 1}|"${value}"${country ? `|${country}` : ''}`
         )
         .join(' \n') +
       '\n';
@@ -281,7 +282,7 @@ class HereGeocoder extends AbstractGeocoder {
         accept: 'application/json'
       }
     };
-    const creteJobReq = await new Promise((resolve, reject) => {
+    const creteJobReq = await new Promise<Response>((resolve, reject) => {
       this.httpAdapter.post(
         this._batchGeocodeEndpoint,
         params,
@@ -292,7 +293,6 @@ class HereGeocoder extends AbstractGeocoder {
         }
       );
     });
-    // @ts-expect-error TS(2571): Object is of type 'unknown'.
     const jobRes = await creteJobReq.json();
     if (jobRes.type === 'ApplicationError') {
       throw new Error(jobRes.Details);
@@ -309,13 +309,12 @@ class HereGeocoder extends AbstractGeocoder {
       action: 'status'
     };
     for (; !completed && stalledResultsCount > 0; stalledResultsCount--) {
-      const jobStatus = await new Promise((resolve, reject) => {
+      const jobStatus = await new Promise<any>((resolve, reject) => {
         this.httpAdapter.get(url, params, (err: any, result: any) => {
           if (err) return reject(err);
           resolve(result);
         });
       });
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       if (jobStatus.Response.Status === 'completed') {
         completed = true;
         break;
@@ -326,13 +325,13 @@ class HereGeocoder extends AbstractGeocoder {
     }
   }
 
-  async _getJobResults(jobId: any) {
+  private async _getJobResults(jobId: any) {
     // fetch job results
     const params = {
       ...this._prepareQueryString(),
       outputcompressed: false
     };
-    const jobResult = await new Promise((resolve, reject) => {
+    const jobResult = await new Promise<any>((resolve, reject) => {
       this.httpAdapter.get(
         `${this._batchGeocodeEndpoint}/${jobId}/result`,
         params,
@@ -344,7 +343,6 @@ class HereGeocoder extends AbstractGeocoder {
       );
     });
     const jobResultLineReadeer = readline.createInterface({
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       input: jobResult.body,
       crlfDelay: Infinity
     });
@@ -390,7 +388,7 @@ class HereGeocoder extends AbstractGeocoder {
     }
 
     // fetch job erros sepparately
-    const jobErrors = await new Promise((resolve, reject) => {
+    const jobErrors = await new Promise<any>((resolve, reject) => {
       this.httpAdapter.get(
         `${this._batchGeocodeEndpoint}/${jobId}/errors`,
         params,
@@ -402,7 +400,6 @@ class HereGeocoder extends AbstractGeocoder {
       );
     });
     const jobErrorsLineReader = readline.createInterface({
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
       input: jobErrors.body,
       crlfDelay: Infinity
     });
@@ -419,12 +416,12 @@ class HereGeocoder extends AbstractGeocoder {
     return res;
   }
 
-  __parseBatchResults(results: any) {
+  private __parseBatchResults(results: any): BatchResult[] {
     return results.map((result: any) => {
       const { values, error } = result;
       return {
         error,
-        value: values.map((value: any) => {
+        data: values.map((value: any) => {
           const {
             latitude,
             longitude,
@@ -461,28 +458,5 @@ class HereGeocoder extends AbstractGeocoder {
     });
   }
 }
-
-Object.defineProperties(HereGeocoder.prototype, {
-  // Here geocoding API endpoint
-  _geocodeEndpoint: {
-    get: function () {
-      return 'https://geocoder.ls.hereapi.com/6.2/geocode.json';
-    }
-  },
-
-  // Here reverse geocoding API endpoint
-  _reverseEndpoint: {
-    get: function () {
-      return 'https://reverse.geocoder.ls.hereapi.com/6.2/reversegeocode.json';
-    }
-  },
-
-  // Here batch geocoding API endpoint
-  _batchGeocodeEndpoint: {
-    get: function () {
-      return 'https://batch.geocoder.ls.hereapi.com/6.2/jobs';
-    }
-  }
-});
 
 export default HereGeocoder;

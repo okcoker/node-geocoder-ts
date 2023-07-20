@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "jest --maxWorkers=2 ./test",
-    "lint": "eslint lib",
+    "lint": "prettier --check 'lib/**/*.{ts,js}'",
+    "pretty": "prettier --write 'lib/**/*.{ts,js}'",
     "ts-migrate": "ts-migrate",
     "ci": "npm run lint && npm run test",
     "test:integration": "jest --maxWorkers=2 ./integration_test"
@@ -38,38 +39,27 @@
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.38",
+    "@types/chai": "^4.3.5",
+    "@types/jest": "^29.5.3",
+    "@types/node-fetch": "^2.6.4",
+    "@types/sinon": "^10.0.15",
+    "@typescript-eslint/eslint-plugin": "^6.1.0",
+    "@typescript-eslint/parser": "^6.1.0",
     "chai": "^3.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^27.2.3",
+    "eslint-plugin-n": "^16.0.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
     "jest": "^27.5.0",
+    "prettier": "^3.0.0",
     "sinon": "^1.17.3",
     "ts-migrate": "^0.1.35",
     "typescript": "^5.1.6"
-  },
-  "eslintConfig": {
-    "env": {
-      "node": true,
-      "es6": true
-    },
-    "parserOptions": {
-      "ecmaVersion": 2019,
-      "sourceType": "module"
-    },
-    "rules": {
-      "strict": 0,
-      "quotes": [
-        1,
-        "single"
-      ],
-      "no-console": 1,
-      "camelcase": 0,
-      "no-underscore-dangle": 0,
-      "no-shadow": 0,
-      "no-multi-spaces": 0,
-      "eqeqeq": 0,
-      "key-spacing": 0,
-      "comma-spacing": 0,
-      "no-unreachable": 1
-    }
   },
   "jest": {
     "testEnvironment": "node"

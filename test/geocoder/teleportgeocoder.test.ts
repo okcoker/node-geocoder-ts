@@ -1,13 +1,13 @@
-(function() {
-    var chai = require('chai');
+(function () {
+    import chai from 'chai';
     var should = chai.should();
     var expect = chai.expect;
-    var sinon = require('sinon');
+    import sinon from 'sinon';
 
     var TeleportGeocoder = require('../../lib/geocoder/teleportgeocoder.js');
 
     var mockedHttpAdapter = {
-        get: function() {}
+        get: function () { }
     };
 
     // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
@@ -19,7 +19,7 @@
             // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
             test('an http adapter must be set', () => {
 
-                expect(function() {
+                expect(function () {
                     new TeleportGeocoder();
                 }).to.Throw(Error, 'TeleportGeocoder need an httpAdapter');
             });
@@ -42,7 +42,7 @@
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
 
-                expect(function() {
+                expect(function () {
                     tpAdapter.geocode('127.0.0.1');
                 }).to.Throw(Error, 'TeleportGeocoder does not support geocoding IPv4');
 
@@ -53,7 +53,7 @@
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
 
-                expect(function() {
+                expect(function () {
                     tpAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001');
                 }).to.Throw(Error, 'TeleportGeocoder does not support geocoding IPv6');
 
@@ -63,7 +63,7 @@
             test('Should call mockedHttpAdapter get method', () => {
 
                 var mock = sinon.mock(mockedHttpAdapter);
-                mock.expects('get').once().returns({then: function() {}});
+                mock.expects('get').once().returns({ then: function () { } });
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
                 tpAdapter.geocode('New York, NY');
@@ -130,7 +130,7 @@
 
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
 
-                tpAdapter.geocode('Palo Alto, CA', function(err: any, results: any) {
+                tpAdapter.geocode('Palo Alto, CA', function (err: any, results: any) {
                     expect(err).to.equal(false);
 
                     expect(results[0]).to.deep.equal({
@@ -328,12 +328,12 @@
 
                 var mock = sinon.mock(mockedHttpAdapter);
                 mock.expects('get').once().callsArgWith(2, false, response);
-                
+
                 var tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
                 tpAdapter.reverse({
                     lat: 37.455056,
                     lon: -122.158009,
-                }, function(err: any, results: any) {
+                }, function (err: any, results: any) {
                     expect(err).to.equal(false);
                     expect(results[0]).to.deep.equal({
                         'latitude': 37.44188,

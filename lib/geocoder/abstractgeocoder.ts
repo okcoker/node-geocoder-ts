@@ -1,127 +1,115 @@
+import net from 'net';
+import ValueError from '../error/valueerror';
+import type {
+  HTTPAdapter,
+  Location,
+  AbstractGeocoder,
+  ResultCallback,
+  BatchResultCallback,
+  GeocodeValue,
+  BatchResult,
+  BaseOptions
+} from '../../types';
 
-var net = require('net');
-// @ts-expect-error TS(2403): Subsequent variable declarations must have the sam... Remove this comment to see the full error message
-var ValueError = require('../error/valueerror.js');
+abstract class BaseAbstractGeocoder<T extends BaseOptions>
+  implements AbstractGeocoder
+{
+  name: string;
+  httpAdapter: HTTPAdapter;
+  supportIPv6: boolean;
+  supportIPv4: boolean;
+  supportAddress: boolean;
+  options: T;
 
-function formatGeocoderName(name: any) {
-  return name.toLowerCase().replace(/geocoder$/, '');
-}
+  _geocode?(value: GeocodeValue, callback: ResultCallback): void;
+  _reverse?(value: Location, callback: ResultCallback): void;
+  _batchGeocode?(values: GeocodeValue[], callback: BatchResultCallback): void;
 
-/**
- * AbstractGeocoder Constructor
- * @param <object> httpAdapter Http Adapter
- * @param <object> options     Options
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
-var AbstractGeocoder = function(this: any, httpAdapter: any, options: any) {
-  if (!this.constructor.name) {
-    throw new Error('The Constructor must be named');
+  constructor(httpAdapter: HTTPAdapter, options: T) {
+    if (!this.constructor.name) {
+      throw new Error('The Constructor must be named');
+    }
+
+    this.name = options.provider;
+
+    if (!httpAdapter || typeof httpAdapter == 'undefined') {
+      throw new Error(this.constructor.name + ' need an httpAdapter');
+    }
+    this.httpAdapter = httpAdapter;
+
+    this.supportIPv6 = false;
+    this.supportIPv4 = false;
+    this.supportAddress = false;
+    this.options = options;
   }
 
-  this.name = formatGeocoderName(this.constructor.name);
+  reverse(query: Location, callback: ResultCallback) {
+    if (typeof this._reverse !== 'function') {
+      throw new ValueError(
+        this.constructor.name + ' does not support reverse geocoding'
+      );
+    }
 
-  if (!httpAdapter || httpAdapter == 'undefined') {
-    throw new Error(this.constructor.name + ' need an httpAdapter');
-  }
-  this.httpAdapter = httpAdapter;
-
-  if (!options || options == 'undefined') {
-    options = {};
-  }
-
-  if (this.options) {
-    this.options.forEach(function(option: any) {
-      if (!options[option] || options[option] == 'undefined') {
-        options[option] = null;
-      }
-    });
+    this._reverse(query, callback);
   }
 
-  this.options = options;
-};
+  geocode(value: GeocodeValue, callback: ResultCallback) {
+    const address = typeof value === 'string' ? value : `${value.address}`;
 
-/**
- * Reverse geocoding
- * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
- * @param <function> callback Callback method
- */
-AbstractGeocoder.prototype.reverse = function(query: any, callback: any) {
-  if (typeof this._reverse != 'function') {
-    throw new Error(this.constructor.name + ' no support reverse geocoding');
+    if (typeof this._geocode !== 'function') {
+      throw new ValueError(
+        this.constructor.name + ' does not support geocoding'
+      );
+    }
+
+    if (net.isIPv4(address) && !this.supportIPv4) {
+      throw new ValueError(
+        this.constructor.name + ' does not support geocoding IPv4'
+      );
+    }
+
+    if (net.isIPv6(address) && !this.supportIPv6) {
+      throw new ValueError(
+        this.constructor.name + ' does not support geocoding IPv6'
+      );
+    }
+
+    if (
+      this.supportAddress === false &&
+      !net.isIPv4(address) &&
+      !net.isIPv6(address)
+    ) {
+      throw new ValueError(
+        this.constructor.name + ' does not support geocoding address'
+      );
+    }
+
+    return this._geocode(value, callback);
   }
 
-  return this._reverse(query, callback);
-};
-
-/**
- * Geocode
- * @param <string>   value    Value to geocode
- * @param <function> callback Callback method
- */
-AbstractGeocoder.prototype.geocode = function(value: any, callback: any) {
-  var address = value;
-  if (typeof value === 'object') {
-    address = value.address;
-  }
-  if (typeof this._geocode != 'function') {
-    // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
-    throw new ValueError(this.constructor.name + ' does not support geocoding');
-  }
-  if (
-    net.isIPv4(address) &&
-    (!this.supportIPv4 || this.supportIPv4 == 'undefined')
-  ) {
-    // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
-    throw new ValueError(
-      this.constructor.name + ' does not support geocoding IPv4'
-    );
-  }
-
-  if (
-    net.isIPv6(address) &&
-    (!this.supportIPv6 || this.supportIPv6 == 'undefined')
-  ) {
-    // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
-    throw new ValueError(
-      this.constructor.name + ' does not support geocoding IPv6'
-    );
-  }
-
-  if (
-    this.supportAddress === false &&
-    !net.isIPv4(address) && !net.isIPv6(address)
-  ) {
-    // @ts-expect-error TS(7009): 'new' expression, whose target lacks a construct s... Remove this comment to see the full error message
-    throw new ValueError(
-      this.constructor.name + ' does not support geocoding address'
-    );
-  }
-
-  return this._geocode(value, callback);
-};
-
-/**
- * Batch Geocode
- * @param <string[]>   values    Valueas to geocode
- * @param <function> callback Callback method
- */
- AbstractGeocoder.prototype.batchGeocode = function(values: any, callback: any) {
-  if (typeof this._batchGeocode === 'function') {
-    this._batchGeocode(values, callback);
-  } else {
-    Promise.all(
-      values.map((value: any) => new Promise(resolve => {
-        this.geocode(value, (error: any, value: any) => {
-          resolve({
-            error,
-            value
+  /**
+   * Batch Geocode
+   * @param <string[]>   values    Valueas to geocode
+   * @param <function> callback Callback method
+   */
+  batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
+    if (typeof this._batchGeocode === 'function') {
+      this._batchGeocode(values, callback);
+    } else {
+      const promises = values.map((value: any) => {
+        return new Promise<BatchResult>(resolve => {
+          this.geocode(value, (error, result) => {
+            resolve({
+              error,
+              data: result
+            } as BatchResult);
           });
         });
-      })
-      )
-    )
-      .then(data => callback(null, data));
-  }
-};
+      });
 
-export default AbstractGeocoder;
+      Promise.all(promises).then(data => callback(null, data));
+    }
+  }
+}
+
+export default BaseAbstractGeocoder;

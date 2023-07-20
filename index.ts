@@ -1,5 +1,60 @@
-import GeocoderFactory from './lib/geocoderfactory';
+import getGeocoder from './lib/geocoderfactory';
+import type {
+    AllAdapterOptions,
+    AllFormatterOptions,
+    FactoryOptions,
+    GpxFormatterOptions,
+    StringFormatterOptions,
+    GoogleOptions,
+    HereOptions,
+    AGOLOptions,
+    FreegeoipOptions,
+    DataScienceToolkitOptions,
+    OpenStreetMapOptions,
+    PickPointOptions,
+    LocationIQOptions,
+    MapQuestOptions,
+    MapzenOptions,
+    OpenMapQuestOptions,
+    YandexOptions,
+    GeocodioOptions,
+    OpenCageOptions,
+    NominatimMapquestOptions,
+    TomTomOptions,
+    VirtualEarthOptions,
+    SmartOptions,
+    TeleportOptions,
+    OpendataFranceOptions,
+    MapBoxOptions
+} from './lib/geocoderfactory';
 
-const Exports = GeocoderFactory.getGeocoder.bind(GeocoderFactory);
-
-export default Exports;
+export default getGeocoder;
+export * from './types';
+export type {
+    AllAdapterOptions,
+    AllFormatterOptions,
+    FactoryOptions,
+    GpxFormatterOptions,
+    StringFormatterOptions,
+    GoogleOptions,
+    HereOptions,
+    AGOLOptions,
+    FreegeoipOptions,
+    DataScienceToolkitOptions,
+    OpenStreetMapOptions,
+    PickPointOptions,
+    LocationIQOptions,
+    MapQuestOptions,
+    MapzenOptions,
+    OpenMapQuestOptions,
+    YandexOptions,
+    GeocodioOptions,
+    OpenCageOptions,
+    NominatimMapquestOptions,
+    TomTomOptions,
+    VirtualEarthOptions,
+    SmartOptions,
+    TeleportOptions,
+    OpendataFranceOptions,
+    MapBoxOptions
+}

@@ -1,31 +1,156 @@
-var util = require('util');
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AbstractGe... Remove this comment to see the full error message
-var AbstractGeocoder = require('./abstractgeocoder');
+import BaseAbstractGeocoder from './abstractgeocoder';
+import type {
+  HTTPAdapter,
+  ResultCallback,
+  BaseOptions,
+  Location,
+  GeocodeValue,
+  ResultData
+} from '../../types';
 
-/**
- * Constructor
- */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'TeleportGe... Remove this comment to see the full error message
-var TeleportGeocoder = function TeleportGeocoder(this: any, httpAdapter: any, options: any) {
-  // @ts-expect-error TS(2339): Property 'super_' does not exist on type '(this: a... Remove this comment to see the full error message
-  TeleportGeocoder.super_.call(this, httpAdapter, options);
+export interface Options extends BaseOptions {
+  provider: 'teleport';
+}
 
-  var base = 'https://api.teleport.org/api';
-  this._cities_endpoint = base + '/cities/';
-  this._locations_endpoint = base + '/locations/';
-};
+class TeleportGeocoder extends BaseAbstractGeocoder<Options> {
+  _cities_endpoint: string;
+  _locations_endpoint: string;
 
-util.inherits(TeleportGeocoder, AbstractGeocoder);
+  constructor(httpAdapter: HTTPAdapter, options: Options) {
+    super(httpAdapter, options);
+
+    const base = 'https://api.teleport.org/api';
+    this._cities_endpoint = base + '/cities/';
+    this._locations_endpoint = base + '/locations/';
+  }
+
+  _geocode(value: GeocodeValue, callback: ResultCallback) {
+    const params: Record<string, any> = {};
+    params.search = value;
+    params.embed =
+      'city:search-results/city:item/{city:country,city:admin1_division,city:urban_area}';
+
+    this.httpAdapter.get(
+      this._cities_endpoint,
+      params,
+      (err: any, result: any) => {
+        if (err) {
+          return callback(err, null);
+        } else {
+          let results: ResultData[] = [];
+
+          if (result) {
+            const searchResults =
+              getEmbeddedPath(result, 'city:search-results') || [];
+            results = searchResults.map((data: number) => {
+              const confidence = ((25 - data) / 25.0) * 10;
+              return this._formatResult(
+                searchResults[data],
+                'city:item',
+                confidence
+              );
+            });
+          }
+
+          callback(null, {
+            data: results,
+            raw: result
+          });
+        }
+      }
+    );
+  }
+
+  _formatResult(
+    result: any,
+    cityRelationName: string,
+    confidence: number
+  ): ResultData {
+    const city = getEmbeddedPath(result, cityRelationName);
+    const admin1 = getEmbeddedPath(city, 'city:admin1_division') || {};
+    const country = getEmbeddedPath(city, 'city:country') || {};
+    const urban_area = getEmbeddedPath(city, 'city:urban_area') || {};
+    const urban_area_links = urban_area._links || {};
+    const extra: Record<string, any> = {
+      confidence: confidence,
+      urban_area: urban_area.name,
+      urban_area_api_url: (urban_area_links.self || {}).href,
+      urban_area_web_url: urban_area.teleport_city_url
+    };
+    if (result.distance_km) {
+      extra.distance_km = result.distance_km;
+    }
+    if (result.matching_full_name) {
+      extra.matching_full_name = result.matching_full_name;
+    }
+
+    return {
+      latitude: city.location.latlon.latitude,
+      longitude: city.location.latlon.longitude,
+      city: city.name,
+      country: country.name,
+      countryCode: country.iso_alpha2,
+      state: admin1.name,
+      stateCode: admin1.geonames_admin1_code,
+      extra: extra
+    };
+  }
+
+  _reverse(query: Location, callback: ResultCallback) {
+    const lat = query.lat;
+    const lng = query.lon;
+    const suffix = lat + ',' + lng;
+
+    const params: Record<string, string> = {};
+    params.embed =
+      'location:nearest-cities/location:nearest-city/{city:country,city:admin1_division,city:urban_area}';
+
+    this.httpAdapter.get(
+      this._locations_endpoint + suffix,
+      params,
+      (err: any, result: any) => {
+        if (err) {
+          throw err;
+        } else {
+          const results: ResultData[] = [];
+
+          if (result) {
+            const searchResults =
+              getEmbeddedPath(result, 'location:nearest-cities') || [];
+
+            searchResults.forEach((data: any) => {
+              const searchResult = searchResults[data];
+              const confidence =
+                (Math.max(0, 25 - searchResult.distance_km) / 25) * 10;
+              results.push(
+                this._formatResult(
+                  searchResult,
+                  'location:nearest-city',
+                  confidence
+                )
+              );
+            });
+          }
+
+          callback(null, {
+            raw: result,
+            data: results
+          });
+        }
+      }
+    );
+  }
+}
 
 function getEmbeddedPath(parent: any, path: any) {
-  var elements = path.split('/');
-  for ( var i in elements) {
-    var element = elements[i];
-    var embedded = parent._embedded;
+  const elements = path.split('/');
+  for (const i in elements) {
+    const element = elements[i];
+    const embedded = parent._embedded;
     if (!embedded) {
       return undefined;
     }
-    var child = embedded[element];
+    const child = embedded[element];
     if (!child) {
       return undefined;
     }
@@ -33,114 +158,5 @@ function getEmbeddedPath(parent: any, path: any) {
   }
   return parent;
 }
-
-/**
- * Geocode
- *
- * @param <string>    value     Value to geocode (Address)
- * @param <function>  callback  Callback method
- */
-TeleportGeocoder.prototype._geocode = function(value: any, callback: any) {
-  var _this = this;
-
-  var params = {};
-  // @ts-expect-error TS(2339): Property 'search' does not exist on type '{}'.
-  params.search = value;
-  // @ts-expect-error TS(2339): Property 'embed' does not exist on type '{}'.
-  params.embed = 'city:search-results/city:item/{city:country,city:admin1_division,city:urban_area}';
-
-  this.httpAdapter.get(this._cities_endpoint, params, function(err: any, result: any) {
-    if (err) {
-      return callback(err);
-    } else {
-      var results = [];
-
-      if (result) {
-        var searchResults = getEmbeddedPath(result, 'city:search-results') || [];
-        for (var i in searchResults) {
-          // @ts-expect-error TS(2363): The right-hand side of an arithmetic operation mus... Remove this comment to see the full error message
-          var confidence = (25 - i) / 25.0 * 10;
-          results.push(_this._formatResult(searchResults[i], 'city:item', confidence));
-        }
-      }
-
-      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
-      results.raw = result;
-      callback(false, results);
-    }
-  });
-};
-
-TeleportGeocoder.prototype._formatResult = function(result: any, cityRelationName: any, confidence: any) {
-  var city = getEmbeddedPath(result, cityRelationName);
-  var admin1 = getEmbeddedPath(city, 'city:admin1_division') || {};
-  var country = getEmbeddedPath(city, 'city:country') || {};
-  var urban_area = getEmbeddedPath(city, 'city:urban_area') || {};
-  var urban_area_links = urban_area._links || {};
-  var extra = {
-    confidence: confidence,
-    urban_area: urban_area.name,
-    urban_area_api_url: (urban_area_links.self || {}).href,
-    urban_area_web_url: urban_area.teleport_city_url
-  };
-  if (result.distance_km) {
-    // @ts-expect-error TS(2339): Property 'distance_km' does not exist on type '{ c... Remove this comment to see the full error message
-    extra.distance_km = result.distance_km;
-  }
-  if (result.matching_full_name) {
-    // @ts-expect-error TS(2339): Property 'matching_full_name' does not exist on ty... Remove this comment to see the full error message
-    extra.matching_full_name = result.matching_full_name;
-  }
-
-  return {
-    'latitude': city.location.latlon.latitude,
-    'longitude': city.location.latlon.longitude,
-    'city': city.name,
-    'country': country.name,
-    'countryCode': country.iso_alpha2,
-    'state': admin1.name,
-    'stateCode': admin1.geonames_admin1_code,
-    'extra': extra
-  };
-};
-
-/**
- * Reverse geocoding
- *
- * @param {lat:<number>,lon:<number>}  lat: Latitude, lon: Longitude
- * @param <function> callback          Callback method
- */
-TeleportGeocoder.prototype._reverse = function(query: any, callback: any) {
-  var lat = query.lat;
-  var lng = query.lon;
-  var suffix = lat + ',' + lng;
-
-  var _this = this;
-
-  var params = {};
-  // @ts-expect-error TS(2339): Property 'embed' does not exist on type '{}'.
-  params.embed = 'location:nearest-cities/location:nearest-city/{city:country,city:admin1_division,city:urban_area}';
-
-  this.httpAdapter.get(this._locations_endpoint + suffix, params, function(err: any, result: any) {
-    if (err) {
-      throw err;
-    } else {
-      var results = [];
-
-      if (result) {
-        var searchResults = getEmbeddedPath(result, 'location:nearest-cities') || [];
-        for ( var i in searchResults) {
-          var searchResult = searchResults[i];
-          var confidence = Math.max(0, 25 - searchResult.distance_km) / 25 * 10;
-          results.push(_this._formatResult(searchResult, 'location:nearest-city', confidence));
-        }
-      }
-
-      // @ts-expect-error TS(2339): Property 'raw' does not exist on type 'any[]'.
-      results.raw = result;
-      callback(false, results);
-    }
-  });
-};
 
 export default TeleportGeocoder;
