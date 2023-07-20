@@ -5,9 +5,9 @@ export interface Options extends FormatterOptions {
 }
 
 class GpxFormatter implements Formatter<Options> {
-  options: Options;
+  options: Omit<Options, 'name'>;
 
-  constructor(options: Options) {
+  constructor(options: Omit<Options, 'name'> = {}) {
     this.options = options;
   }
 

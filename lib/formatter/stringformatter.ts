@@ -6,9 +6,9 @@ export interface Options extends FormatterOptions {
 }
 
 class StringFormatter implements Formatter<Options> {
-  options: Options;
+  options: Omit<Options, 'name'>;
 
-  constructor(options: Options) {
+  constructor(options: Omit<Options, 'name'>) {
     if (!options.pattern) {
       throw new Error('StringFormatter need a pattern');
     }
