@@ -8,13 +8,16 @@ import type {
   BatchResultCallback,
   BaseOptions,
   Location,
-  GeocodeValue
+  GeocodeValue,
+  ResultData
 } from '../../types';
 
 export interface Options extends BaseOptions {
   provider: 'here';
-  appId: string;
   apiKey: string;
+  // @deprecated
+  appId?: string;
+  // @deprecated
   appCode?: string;
   limit?: number;
   language?: string;
@@ -35,7 +38,10 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
   // Here batch geocoding API endpoint
   _batchGeocodeEndpoint = 'https://batch.geocoder.ls.hereapi.com/6.2/jobs';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'here' });
 
     if (!this.options.apiKey && !(this.options.appId && this.options.appCode)) {
@@ -154,22 +160,22 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
   _formatResult(result: any): ResultData {
     const location = result.Location || {};
     const address = location.Address || {};
-    const extractedObj = {
-      formattedAddress: address.Label || null,
+    const extractedObj: Record<string, any> = {
+      formattedAddress: address.Label,
       latitude: location.DisplayPosition.Latitude,
       longitude: location.DisplayPosition.Longitude,
-      country: null,
-      countryCode: address.Country || null,
-      state: address.State || null,
-      county: address.County || null,
-      city: address.City || null,
-      zipcode: address.PostalCode || null,
-      district: address.District || null,
-      streetName: address.Street || null,
-      streetNumber: address.HouseNumber || null,
-      building: address.Building || null,
+      // country: null,
+      countryCode: address.Country,
+      state: address.State,
+      county: address.County,
+      city: address.City,
+      zipcode: address.PostalCode,
+      district: address.District,
+      streetName: address.Street,
+      streetNumber: address.HouseNumber,
+      building: address.Building,
       extra: {
-        herePlaceId: location.LocationId || null,
+        herePlaceId: location.LocationId,
         confidence: result.Relevance || 0
       },
       administrativeLevels: {

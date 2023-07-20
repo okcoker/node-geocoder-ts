@@ -1,54 +1,44 @@
-(function () {
-    var chai = require('chai'),
-        should = chai.should(),
-        expect = chai.expect,
-        sinon = require('sinon');
+import chai from 'chai';
+import sinon from 'sinon';
+import PickPointGeocoder from 'lib/geocoder/pickpointgeocoder';
+import { buildHttpAdapter } from 'test/helpers/mocks';
+import { HTTPAdapter } from 'types';
 
-    var PickPointGeocoder = require('../../lib/geocoder/pickpointgeocoder.js');
+chai.should();
+const expect = chai.expect;
+const mockedHttpAdapter = buildHttpAdapter({
+  get: sinon.stub(),
+  supportsHttps: sinon.stub()
+});
 
-    var mockedHttpAdapter = {
-        get: sinon.stub(),
-        supportsHttps: sinon.stub()
-    };
-
-    // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
-    describe('PickPointGeocoder', () => {
-
-        // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
-        describe('#constructor', () => {
-
-            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
-            test('should be an instance of PickPointGeocoder', () => {
-                mockedHttpAdapter.supportsHttps.returns(true);
-                var geocoder = new PickPointGeocoder(mockedHttpAdapter, {apiKey: 'API_KEY'});
-                geocoder.should.be.instanceof(PickPointGeocoder);
-            });
-
-            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
-            test('an http adapter must be set', () => {
-                expect(function () {
-                    new PickPointGeocoder();
-                }).to.throw(Error, 'PickPointGeocoder need an httpAdapter');
-            });
-
-            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
-            test('the adapter should support https', () => {
-                mockedHttpAdapter.supportsHttps.returns(false);
-                expect(function () {
-                    new PickPointGeocoder(mockedHttpAdapter);
-                }).to.throw(Error, 'You must use https http adapter');
-            });
-
-            // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
-            test('an apiKey must be set', () => {
-                mockedHttpAdapter.supportsHttps.returns(true);
-                expect(function () {
-                    new PickPointGeocoder(mockedHttpAdapter);
-                }).to.throw(Error, 'PickPointGeocoder needs an apiKey');
-            });
-
-        });
-
+describe('PickPointGeocoder', () => {
+  describe('#constructor', () => {
+    test('should be an instance of PickPointGeocoder', () => {
+      (mockedHttpAdapter.supportsHttps as any).returns(true);
+      const geocoder = new PickPointGeocoder(mockedHttpAdapter, {
+        apiKey: 'API_KEY'
+      });
+      geocoder.should.be.instanceof(PickPointGeocoder);
     });
 
-})();
+    test('an http adapter must be set', () => {
+      expect(function () {
+        new PickPointGeocoder('' as unknown as HTTPAdapter);
+      }).to.throw(Error, 'PickPointGeocoder need an httpAdapter');
+    });
+
+    test('the adapter should support https', () => {
+      (mockedHttpAdapter.supportsHttps as any).returns(false);
+      expect(function () {
+        new PickPointGeocoder(mockedHttpAdapter);
+      }).to.throw(Error, 'You must use https http adapter');
+    });
+
+    test('an apiKey must be set', () => {
+      (mockedHttpAdapter.supportsHttps as any).returns(true);
+      expect(function () {
+        new PickPointGeocoder(mockedHttpAdapter);
+      }).to.throw(Error, 'PickPointGeocoder needs an apiKey');
+    });
+  });
+});

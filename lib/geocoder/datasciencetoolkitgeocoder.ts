@@ -11,7 +11,10 @@ export interface Options extends BaseOptions {
  * Constructor
  */
 class DataScienceToolkitGeocoder extends BaseAbstractGeocoder<Options> {
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = {}
+  ) {
     super(httpAdapter, { ...options, provider: 'datasciencetoolkit' });
 
     this.supportIPv4 = true;

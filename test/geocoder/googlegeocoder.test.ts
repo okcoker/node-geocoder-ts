@@ -1,52 +1,35 @@
+import chai from 'chai';
+import sinon from 'sinon';
+import GoogleGeocoder from 'lib/geocoder/googlegeocoder';
+import { buildHttpAdapter } from 'test/helpers/mocks';
+import { HTTPAdapter } from 'types';
 
-var chai = require('chai'),
-  should = chai.should(),
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'expect'.
-  expect = chai.expect,
-  sinon = require('sinon');
+chai.should();
+const expect = chai.expect;
+const mockedHttpAdapter = buildHttpAdapter();
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GoogleGeoc... Remove this comment to see the full error message
-var GoogleGeocoder = require('../../lib/geocoder/googlegeocoder.js');
-var HttpAdapter = require('../../lib/httpadapter/fetchadapter.js');
-
-// @ts-expect-error TS(2403): Subsequent variable declarations must have the sam... Remove this comment to see the full error message
-var mockedHttpAdapter = {
-  get: function () {
-    return {};
-  },
-  supportsHttps: function () {
-    return true;
-  }
-};
-
-// @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
 describe('GoogleGeocoder', () => {
-  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#constructor', () => {
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('an http adapter must be set', () => {
       expect(function () {
-        new GoogleGeocoder();
+        new GoogleGeocoder('' as unknown as HTTPAdapter, {});
       }).to.throw(Error, 'GoogleGeocoder need an httpAdapter');
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('if a clientId is specified an apiKey must be set', () => {
       expect(function () {
         new GoogleGeocoder(mockedHttpAdapter, { clientId: 'CLIENT_ID' });
       }).to.throw(Error, 'You must specify a apiKey (privateKey)');
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should be an instance of GoogleGeocoder if an http adapter is provided', () => {
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
       googleAdapter.should.be.instanceof(GoogleGeocoder);
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should be an instance of GoogleGeocoder if an http adapter, clientId, and apiKer are provided', () => {
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         clientId: 'CLIENT_ID',
         apiKey: 'API_KEY'
       });
@@ -55,29 +38,28 @@ describe('GoogleGeocoder', () => {
     });
   });
 
-  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#geocode', () => {
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should not accept IPv4', () => {
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
       expect(function () {
-        googleAdapter.geocode('127.0.0.1');
+        googleAdapter.geocode('127.0.0.1', () => {});
       }).to.throw(Error, 'GoogleGeocoder does not support geocoding IPv4');
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should not accept IPv6', () => {
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
       expect(function () {
-        googleAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001');
+        googleAdapter.geocode(
+          '2001:0db8:0000:85a3:0000:0000:ac1f:8001',
+          () => {}
+        );
       }).to.throw(Error, 'GoogleGeocoder does not support geocoding IPv6');
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should accept `language` and `region` as options', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -90,23 +72,25 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         language: 'fr',
         region: '.ru'
       });
 
-      googleAdapter.geocode({
-        address: '1 champs élysée Paris',
-        language: 'ru-RU',
-        region: '.de'
-      });
+      googleAdapter.geocode(
+        {
+          address: '1 champs élysée Paris',
+          language: 'ru-RU',
+          region: '.de'
+        },
+        () => {}
+      );
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -116,16 +100,15 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.geocode('1 champs élysée Paris');
+      googleAdapter.geocode('1 champs élysée Paris', () => {});
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method with language if specified', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -136,18 +119,17 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         language: 'fr'
       });
 
-      googleAdapter.geocode('1 champs élysée Paris');
+      googleAdapter.geocode('1 champs élysée Paris', () => {});
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method with region if specified', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -158,18 +140,17 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         region: 'fr'
       });
 
-      googleAdapter.geocode('1 champs élysée Paris');
+      googleAdapter.geocode('1 champs élysée Paris', () => {});
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method with components if called with object', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -180,20 +161,22 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.geocode({
-        address: '1 champs élysée Paris',
-        zipcode: '75008',
-        country: 'FR'
-      });
+      googleAdapter.geocode(
+        {
+          address: '1 champs élysée Paris',
+          zipcode: '75008',
+          country: 'FR'
+        },
+        () => {}
+      );
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method with zipcode if country is missing', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -204,19 +187,21 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.geocode({
-        address: '1 champs élysée Paris',
-        zipcode: '75008'
-      });
+      googleAdapter.geocode(
+        {
+          address: '1 champs élysée Paris',
+          zipcode: '75008'
+        },
+        () => {}
+      );
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method with key if specified', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -227,18 +212,17 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         apiKey: 'hey-you-guys'
       });
 
-      googleAdapter.geocode('1 champs élysée Paris');
+      googleAdapter.geocode('1 champs élysée Paris', () => {});
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should return geocoded address', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
@@ -274,75 +258,77 @@ describe('GoogleGeocoder', () => {
             }
           ]
         });
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
-        err.should.to.equal(false);
-        results[0].should.to.deep.equal({
-          latitude: 37.386,
-          longitude: -122.0838,
-          country: 'France',
-          city: 'Paris',
-          zipcode: '75008',
-          streetName: 'Champs-Élysées',
-          streetNumber: '1',
-          countryCode: 'Fr',
-          administrativeLevels: {
-            level1long: 'Île-de-France',
-            level1short: 'IDF'
-          },
-          extra: {
-            confidence: 0,
-            premise: null,
-            subpremise: null,
-            neighborhood: 'neighborhood',
-            establishment: null,
-            googlePlaceId: null
-          },
-          formattedAddress: null
-        });
+      googleAdapter.geocode(
+        '1 champs élysées Paris',
+        function (err: any, results: any) {
+          expect(err).equal(null);
+          results.data[0].should.to.deep.equal({
+            latitude: 37.386,
+            longitude: -122.0838,
+            country: 'France',
+            city: 'Paris',
+            zipcode: '75008',
+            streetName: 'Champs-Élysées',
+            streetNumber: '1',
+            countryCode: 'Fr',
+            administrativeLevels: {
+              level1long: 'Île-de-France',
+              level1short: 'IDF'
+            },
+            extra: {
+              confidence: 0,
+              premise: null,
+              subpremise: null,
+              neighborhood: 'neighborhood',
+              establishment: null,
+              googlePlaceId: null
+            },
+            formattedAddress: null
+          });
 
-        results.raw.should.deep.equal({
-          status: 'OK',
-          results: [
-            {
-              geometry: {
-                location: {
-                  lat: 37.386,
-                  lng: -122.0838
-                }
-              },
-              address_components: [
-                { types: ['country'], long_name: 'France', short_name: 'Fr' },
-                { types: ['locality'], long_name: 'Paris' },
-                { types: ['postal_code'], long_name: '75008' },
-                { types: ['route'], long_name: 'Champs-Élysées' },
-                { types: ['street_number'], long_name: '1' },
-                {
-                  types: ['administrative_area_level_1'],
-                  long_name: 'Île-de-France',
-                  short_name: 'IDF'
+          results.raw.should.deep.equal({
+            status: 'OK',
+            results: [
+              {
+                geometry: {
+                  location: {
+                    lat: 37.386,
+                    lng: -122.0838
+                  }
                 },
-                {
-                  types: ['sublocality_level_1', 'sublocality', 'political'],
-                  long_name: 'neighborhood'
-                }
-              ],
-              country_code: 'US',
-              country_name: 'United States',
-              locality: 'Mountain View'
-            }
-          ]
-        });
+                address_components: [
+                  { types: ['country'], long_name: 'France', short_name: 'Fr' },
+                  { types: ['locality'], long_name: 'Paris' },
+                  { types: ['postal_code'], long_name: '75008' },
+                  { types: ['route'], long_name: 'Champs-Élysées' },
+                  { types: ['street_number'], long_name: '1' },
+                  {
+                    types: ['administrative_area_level_1'],
+                    long_name: 'Île-de-France',
+                    short_name: 'IDF'
+                  },
+                  {
+                    types: ['sublocality_level_1', 'sublocality', 'political'],
+                    long_name: 'neighborhood'
+                  }
+                ],
+                country_code: 'US',
+                country_name: 'United States',
+                locality: 'Mountain View'
+              }
+            ]
+          });
 
-        mock.verify();
-        done();
-      });
+          mock.verify();
+          done();
+        }
+      );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should correctly match most specific neighborhood response value', (done: any) => {
-      var response = {
+      const response = {
         results: [
           {
             address_components: [
@@ -407,9 +393,9 @@ describe('GoogleGeocoder', () => {
         status: 'OK'
       };
 
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock.expects('get').once().callsArgWith(2, false, response);
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
       googleAdapter.geocode(
         '350 5th Ave, New York, NY 10118',
@@ -421,56 +407,53 @@ describe('GoogleGeocoder', () => {
       );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should handle a not "OK" status', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(2, false, {
-          status: 'OVER_QUERY_LIMIT',
-          error_message: 'You have exceeded your rate-limit for this API.',
-          results: []
-        });
-
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
-
-      googleAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
-        err.message.should.to.equal(
-          'Status is OVER_QUERY_LIMIT. You have exceeded your rate-limit for this API.'
-        );
-
-        results.raw.should.deep.equal({
-          status: 'OVER_QUERY_LIMIT',
-          error_message: 'You have exceeded your rate-limit for this API.',
-          results: []
-        });
-
-        mock.verify();
-        done();
+      const mock = sinon.mock(mockedHttpAdapter);
+      mock.expects('get').once().callsArgWith(2, false, {
+        status: 'OVER_QUERY_LIMIT',
+        error_message: 'You have exceeded your rate-limit for this API.',
+        results: []
       });
+
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
+
+      googleAdapter.geocode(
+        '1 champs élysées Paris',
+        function (err: any, results: any) {
+          err.message.should.to.equal(
+            'Status is OVER_QUERY_LIMIT. You have exceeded your rate-limit for this API.'
+          );
+
+          results.raw.should.deep.equal({
+            status: 'OVER_QUERY_LIMIT',
+            error_message: 'You have exceeded your rate-limit for this API.',
+            results: []
+          });
+
+          mock.verify();
+          done();
+        }
+      );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should handle a not "OK" status and no error_message', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
         .callsArgWith(2, false, { status: 'INVALID_REQUEST', results: [] });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
+      googleAdapter.geocode('1 champs élysées Paris', function (err: any) {
         err.message.should.to.equal('Status is INVALID_REQUEST.');
         mock.verify();
         done();
       });
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should exclude partial match geocoded address if excludePartialMatches option is set to true', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
 
       mock
         .expects('get')
@@ -504,24 +487,26 @@ describe('GoogleGeocoder', () => {
             }
           ]
         });
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         clientId: 'clientId',
         apiKey: 'apiKey',
         excludePartialMatches: true
       });
 
-      googleAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
-        err.should.to.equal(false);
-        results.length.should.eql(0);
+      googleAdapter.geocode(
+        '1 champs élysées Paris',
+        function (err: any, results: any) {
+          expect(err).equal(null);
+          results.length.should.eql(0);
 
-        mock.verify();
-        done();
-      });
+          mock.verify();
+          done();
+        }
+      );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should include partial match geocoded address if excludePartialMatches option is set to false', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
@@ -554,74 +539,76 @@ describe('GoogleGeocoder', () => {
             }
           ]
         });
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         excludePartialMatches: false
       });
 
-      googleAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
-        err.should.to.equal(false);
-        results[0].should.to.deep.equal({
-          latitude: 37.386,
-          longitude: -122.0838,
-          country: 'France',
-          city: 'Paris',
-          zipcode: '75008',
-          streetName: 'Champs-Élysées',
-          streetNumber: '1',
-          countryCode: 'Fr',
-          administrativeLevels: {
-            level1long: 'Île-de-France',
-            level1short: 'IDF'
-          },
-          extra: {
-            confidence: 0,
-            premise: null,
-            subpremise: null,
-            neighborhood: null,
-            establishment: null,
-            googlePlaceId: null
-          },
-          formattedAddress: null
-        });
+      googleAdapter.geocode(
+        '1 champs élysées Paris',
+        function (err: any, results: any) {
+          expect(err).equal(null);
+          results.data[0].should.to.deep.equal({
+            latitude: 37.386,
+            longitude: -122.0838,
+            country: 'France',
+            city: 'Paris',
+            zipcode: '75008',
+            streetName: 'Champs-Élysées',
+            streetNumber: '1',
+            countryCode: 'Fr',
+            administrativeLevels: {
+              level1long: 'Île-de-France',
+              level1short: 'IDF'
+            },
+            extra: {
+              confidence: 0,
+              premise: null,
+              subpremise: null,
+              neighborhood: null,
+              establishment: null,
+              googlePlaceId: null
+            },
+            formattedAddress: null
+          });
 
-        results.raw.should.deep.equal({
-          status: 'OK',
-          results: [
-            {
-              geometry: {
-                location: {
-                  lat: 37.386,
-                  lng: -122.0838
-                }
-              },
-              address_components: [
-                { types: ['country'], long_name: 'France', short_name: 'Fr' },
-                { types: ['locality'], long_name: 'Paris' },
-                { types: ['postal_code'], long_name: '75008' },
-                { types: ['route'], long_name: 'Champs-Élysées' },
-                { types: ['street_number'], long_name: '1' },
-                {
-                  types: ['administrative_area_level_1'],
-                  long_name: 'Île-de-France',
-                  short_name: 'IDF'
-                }
-              ],
-              country_code: 'US',
-              country_name: 'United States',
-              locality: 'Mountain View',
-              partial_match: true
-            }
-          ]
-        });
+          results.raw.should.deep.equal({
+            status: 'OK',
+            results: [
+              {
+                geometry: {
+                  location: {
+                    lat: 37.386,
+                    lng: -122.0838
+                  }
+                },
+                address_components: [
+                  { types: ['country'], long_name: 'France', short_name: 'Fr' },
+                  { types: ['locality'], long_name: 'Paris' },
+                  { types: ['postal_code'], long_name: '75008' },
+                  { types: ['route'], long_name: 'Champs-Élysées' },
+                  { types: ['street_number'], long_name: '1' },
+                  {
+                    types: ['administrative_area_level_1'],
+                    long_name: 'Île-de-France',
+                    short_name: 'IDF'
+                  }
+                ],
+                country_code: 'US',
+                country_name: 'United States',
+                locality: 'Mountain View',
+                partial_match: true
+              }
+            ]
+          });
 
-        mock.verify();
-        done();
-      });
+          mock.verify();
+          done();
+        }
+      );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should include partial match geocoded address if excludePartialMatches option is not set', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
@@ -654,90 +641,90 @@ describe('GoogleGeocoder', () => {
             }
           ]
         });
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.geocode('1 champs élysées Paris', function (err: any, results: any) {
-        err.should.to.equal(false);
-        results[0].should.to.deep.equal({
-          latitude: 37.386,
-          longitude: -122.0838,
-          country: 'France',
-          city: 'Paris',
-          zipcode: '75008',
-          streetName: 'Champs-Élysées',
-          streetNumber: '1',
-          countryCode: 'Fr',
-          administrativeLevels: {
-            level1long: 'Île-de-France',
-            level1short: 'IDF'
-          },
-          extra: {
-            confidence: 0,
-            premise: null,
-            subpremise: null,
-            neighborhood: null,
-            establishment: null,
-            googlePlaceId: null
-          },
-          formattedAddress: null
-        });
+      googleAdapter.geocode(
+        '1 champs élysées Paris',
+        function (err: any, results: any) {
+          expect(err).equal(null);
+          results.data[0].should.to.deep.equal({
+            latitude: 37.386,
+            longitude: -122.0838,
+            country: 'France',
+            city: 'Paris',
+            zipcode: '75008',
+            streetName: 'Champs-Élysées',
+            streetNumber: '1',
+            countryCode: 'Fr',
+            administrativeLevels: {
+              level1long: 'Île-de-France',
+              level1short: 'IDF'
+            },
+            extra: {
+              confidence: 0,
+              premise: null,
+              subpremise: null,
+              neighborhood: null,
+              establishment: null,
+              googlePlaceId: null
+            },
+            formattedAddress: null
+          });
 
-        results.raw.should.deep.equal({
-          status: 'OK',
-          results: [
-            {
-              geometry: {
-                location: {
-                  lat: 37.386,
-                  lng: -122.0838
-                }
-              },
-              address_components: [
-                { types: ['country'], long_name: 'France', short_name: 'Fr' },
-                { types: ['locality'], long_name: 'Paris' },
-                { types: ['postal_code'], long_name: '75008' },
-                { types: ['route'], long_name: 'Champs-Élysées' },
-                { types: ['street_number'], long_name: '1' },
-                {
-                  types: ['administrative_area_level_1'],
-                  long_name: 'Île-de-France',
-                  short_name: 'IDF'
-                }
-              ],
-              country_code: 'US',
-              country_name: 'United States',
-              locality: 'Mountain View',
-              partial_match: true
-            }
-          ]
-        });
+          results.raw.should.deep.equal({
+            status: 'OK',
+            results: [
+              {
+                geometry: {
+                  location: {
+                    lat: 37.386,
+                    lng: -122.0838
+                  }
+                },
+                address_components: [
+                  { types: ['country'], long_name: 'France', short_name: 'Fr' },
+                  { types: ['locality'], long_name: 'Paris' },
+                  { types: ['postal_code'], long_name: '75008' },
+                  { types: ['route'], long_name: 'Champs-Élysées' },
+                  { types: ['street_number'], long_name: '1' },
+                  {
+                    types: ['administrative_area_level_1'],
+                    long_name: 'Île-de-France',
+                    short_name: 'IDF'
+                  }
+                ],
+                country_code: 'US',
+                country_name: 'United States',
+                locality: 'Mountain View',
+                partial_match: true
+              }
+            ]
+          });
 
-        mock.verify();
-        done();
-      });
+          mock.verify();
+          done();
+        }
+      );
     });
   });
 
-  // @ts-expect-error TS(2582): Cannot find name 'describe'. Do you need to instal... Remove this comment to see the full error message
   describe('#reverse', () => {
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.reverse({ lat: 10.0235, lon: -2.3662 });
+      googleAdapter.reverse({ lat: 10.0235, lon: -2.3662 }, () => {});
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should return geocoded address', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
@@ -773,12 +760,12 @@ describe('GoogleGeocoder', () => {
             }
           ]
         });
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
       googleAdapter.reverse(
         { lat: 40.714232, lon: -73.9612889 },
         function (err: any, results: any) {
-          err.should.to.equal(false);
-          results[0].should.to.deep.equal({
+          expect(err).equal(null);
+          results.data[0].should.to.deep.equal({
             latitude: 40.714232,
             longitude: -73.9612889,
             country: 'United States',
@@ -841,9 +828,8 @@ describe('GoogleGeocoder', () => {
       );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should accept `language`, `result_type` and `location_type` as options', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -856,36 +842,35 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
-      googleAdapter.reverse({
-        lat: 40.714232,
-        lon: -73.9612889,
-        language: 'ru-RU',
-        result_type: 'country',
-        location_type: 'ROOFTOP'
-      });
+      googleAdapter._reverse(
+        {
+          lat: 40.714232,
+          lon: -73.9612889,
+          language: 'ru-RU',
+          result_type: 'country',
+          location_type: 'ROOFTOP'
+        },
+        () => {}
+      );
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should handle a not "OK" status', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(2, false, {
-          status: 'OVER_QUERY_LIMIT',
-          error_message: 'You have exceeded your rate-limit for this API.',
-          results: []
-        });
+      const mock = sinon.mock(mockedHttpAdapter);
+      mock.expects('get').once().callsArgWith(2, false, {
+        status: 'OVER_QUERY_LIMIT',
+        error_message: 'You have exceeded your rate-limit for this API.',
+        results: []
+      });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
       googleAdapter.reverse(
         { lat: 40.714232, lon: -73.9612889 },
-        function (err: any, results: any) {
+        function (err: any) {
           err.message.should.to.equal(
             'Status is OVER_QUERY_LIMIT. You have exceeded your rate-limit for this API.'
           );
@@ -895,19 +880,18 @@ describe('GoogleGeocoder', () => {
       );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should handle a not "OK" status and no error_message', (done: any) => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .once()
         .callsArgWith(2, false, { status: 'INVALID_REQUEST', results: [] });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter);
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {});
 
       googleAdapter.reverse(
         { lat: 40.714232, lon: -73.9612889 },
-        function (err: any, results: any) {
+        function (err: any) {
           err.message.should.to.equal('Status is INVALID_REQUEST.');
           mock.verify();
           done();
@@ -915,9 +899,8 @@ describe('GoogleGeocoder', () => {
       );
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should call httpAdapter get method with signed url if clientId and apiKey specified', () => {
-      var mock = sinon.mock(mockedHttpAdapter);
+      const mock = sinon.mock(mockedHttpAdapter);
       mock
         .expects('get')
         .withArgs('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -929,23 +912,22 @@ describe('GoogleGeocoder', () => {
         .once()
         .returns({ then: function () {} });
 
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         clientId: 'raoul',
         apiKey: 'foo'
       });
 
-      googleAdapter.geocode('1 champs élysée Paris');
+      googleAdapter.geocode('1 champs élysée Paris', () => {});
 
       mock.verify();
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should generate signatures with all / characters replaced with _', () => {
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         clientId: 'james',
         apiKey: 'foo'
       });
-      var params = {
+      const params: Record<string, any> = {
         sensor: false,
         client: 'james',
         address: 'qqslfzxytfr'
@@ -954,17 +936,15 @@ describe('GoogleGeocoder', () => {
         'https://maps.googleapis.com/maps/api/geocode/json',
         params
       );
-      // @ts-expect-error TS(2339): Property 'signature' does not exist on type '{ sen... Remove this comment to see the full error message
       expect(params.signature).to.equal('ww_ja1wA8YBE_cfwmx9EQ_5y2pI=');
     });
 
-    // @ts-expect-error TS(2582): Cannot find name 'test'. Do you need to install ty... Remove this comment to see the full error message
     test('Should generate signatures with all + characters replaced with -', () => {
-      var googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
+      const googleAdapter = new GoogleGeocoder(mockedHttpAdapter, {
         clientId: 'james',
         apiKey: 'foo'
       });
-      var params = {
+      const params: Record<string, any> = {
         sensor: false,
         client: 'james',
         address: 'lomxcefgkxr'
@@ -973,7 +953,6 @@ describe('GoogleGeocoder', () => {
         'https://maps.googleapis.com/maps/api/geocode/json',
         params
       );
-      // @ts-expect-error TS(2339): Property 'signature' does not exist on type '{ sen... Remove this comment to see the full error message
       expect(params.signature).to.equal('zLXE-mmcsjp2RobIXjMd9h3P-zM=');
     });
   });

@@ -20,7 +20,10 @@ class TomTomGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://api.tomtom.com/search/2/geocode';
   _batchGeocodingEndpoint = 'https://api.tomtom.com/search/2/batch.json';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'tomtom' });
     if (!options.apiKey) {
       throw new Error('You must specify an apiKey');

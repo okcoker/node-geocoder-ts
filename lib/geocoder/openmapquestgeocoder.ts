@@ -31,7 +31,10 @@ const MQConfidenceLookup = {
 class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://open.mapquestapi.com/geocoding/v1';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'openmapquest' });
     if (!options.apiKey) {
       throw new Error(this.constructor.name + ' needs an apiKey');
@@ -53,9 +56,9 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
             return callback(
               new Error(
                 'Status is ' +
-                result.info.statuscode +
-                ' ' +
-                result.info.messages[0]
+                  result.info.statuscode +
+                  ' ' +
+                  result.info.messages[0]
               ),
               null
             );
@@ -88,7 +91,7 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
       extra: {
         confidence:
           MQConfidenceLookup[
-          result.geocodeQuality as keyof typeof MQConfidenceLookup
+            result.geocodeQuality as keyof typeof MQConfidenceLookup
           ] || 0
       }
     };

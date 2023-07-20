@@ -19,7 +19,10 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://api-adresse.data.gouv.fr/search';
   _endpoint_reverse = 'https://api-adresse.data.gouv.fr/reverse';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = {}
+  ) {
     super(httpAdapter, { ...options, provider: 'opendatafrance' });
   }
 

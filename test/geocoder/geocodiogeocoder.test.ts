@@ -6,7 +6,7 @@ import { HTTPAdapter } from 'types';
 
 chai.should();
 const expect = chai.expect;
-const mockedHttpAdapter = buildHttpAdapter()
+const mockedHttpAdapter = buildHttpAdapter();
 
 describe('GeocodioGeocoder', () => {
   describe('#constructor', () => {
@@ -23,7 +23,9 @@ describe('GeocodioGeocoder', () => {
     });
 
     test('Should be an instance of GeocodioGeocoder', () => {
-      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, { apiKey: 'API_KEY' });
+      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, {
+        apiKey: 'API_KEY'
+      });
 
       mapquestAdapter.should.be.instanceof(GeocodioGeocoder);
     });
@@ -31,18 +33,25 @@ describe('GeocodioGeocoder', () => {
 
   describe('#geocode', () => {
     test('Should not accept IPv4', () => {
-      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, { apiKey: 'API_KEY' });
+      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, {
+        apiKey: 'API_KEY'
+      });
 
       expect(function () {
-        mapquestAdapter.geocode('127.0.0.1', () => { });
+        mapquestAdapter.geocode('127.0.0.1', () => {});
       }).to.throw(Error, 'GeocodioGeocoder does not support geocoding IPv4');
     });
 
     test('Should not accept IPv6', () => {
-      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, { apiKey: 'API_KEY' });
+      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, {
+        apiKey: 'API_KEY'
+      });
 
       expect(function () {
-        mapquestAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001', () => { });
+        mapquestAdapter.geocode(
+          '2001:0db8:0000:85a3:0000:0000:ac1f:8001',
+          () => {}
+        );
       }).to.throw(Error, 'GeocodioGeocoder does not support geocoding IPv6');
     });
   });
@@ -53,11 +62,13 @@ describe('GeocodioGeocoder', () => {
       mock
         .expects('get')
         .once()
-        .returns({ then: function () { } });
+        .returns({ then: function () {} });
 
-      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, { apiKey: 'API_KEY' });
+      const mapquestAdapter = new GeocodioGeocoder(mockedHttpAdapter, {
+        apiKey: 'API_KEY'
+      });
 
-      mapquestAdapter.reverse({ lat: 10.0235, lon: -2.3662 }, () => { });
+      mapquestAdapter.reverse({ lat: 10.0235, lon: -2.3662 }, () => {});
 
       mock.verify();
     });

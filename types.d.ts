@@ -1,26 +1,4 @@
-export type Provider =
-  | 'agol'
-  | 'freegeoip'
-  | 'datasciencetoolkit'
-  | 'geocodio'
-  | 'google'
-  | 'here'
-  | 'locationiq'
-  | 'mapbox'
-  | 'mapquest'
-  | 'mapzen'
-  | 'nominatimmapquest'
-  | 'opencage'
-  | 'opendatafrance'
-  | 'openmapquest'
-  | 'openstreetmap'
-  | 'pickpoint'
-  | 'smartystreets'
-  | 'teleport'
-  | 'tomtom'
-  | 'virtualearth'
-  | 'yandex';
-
+import type { Provider } from 'lib/providers';
 export type Adapter =
   | 'fetch'
 
@@ -88,16 +66,34 @@ export interface ResultWithProvider {
   raw: any;
 }
 
-export type BatchResult = {
-  error: null;
-  data: Result[];
-} | {
-  error: Error;
-  data: null;
+export interface ResultFormatted {
+  data: ReturnType<Formatter<any>['format']>;
+  raw: any;
 }
 
-export type BatchResultWithProvider = {
-  data: ResultWithProvider[];
+type Success<T> = {
+  data: T;
+  error: null
+}
+type Failure = {
+  data: null;
+  error: any;
+}
+
+export type MaybeResultMaybeError = Success<Result> | Failure;
+export type MaybeResultWithProviderMaybeError = Success<ResultWithProvider> | Failure;
+export type MaybeResultFormattedMaybeError = Success<ResultFormatted> | Failure;
+
+export interface BatchResult {
+  data: MaybeResultMaybeError[];
+}
+
+export interface BatchResultWithProvider {
+  data: MaybeResultWithProviderMaybeError[];
+}
+
+export interface BatchResultFormatted {
+  data: MaybeResultFormattedMaybeError[];
 }
 
 export interface NodeCallback<T> {
@@ -112,7 +108,7 @@ export interface ResultCallback {
 
 export interface BatchResultCallback {
   (err: any, result: null): void;
-  (err: null, result: BatchResult[]): void;
+  (err: null, result: BatchResult): void;
 }
 
 export interface Query {
@@ -137,11 +133,6 @@ export interface Formatter<T extends FormatterOptions> {
   format: (data: ResultData[]) => string | string[];
 }
 
-export interface FormattedResult {
-  data: ReturnType<Formatter<any>['format']>;
-  raw: any;
-}
-
 export interface HTTPAdapter {
   supportsHttps(): boolean;
   get<T>(url: string, params: Record<string, any>, callback: NodeCallback<T>, fullResponse?: boolean): void
@@ -149,16 +140,25 @@ export interface HTTPAdapter {
 }
 
 
-export type GeocodeObject = Record<string, string | number>
+export type GeocodeObject = Record<string, string | number | string[] | number[]>
 export type GeocodeValue = string | GeocodeObject
 
-export interface AbstractGeocoder {
-  reverse?(query: Location, callback: ResultCallback): void;
+export interface AbstractGeocoderMethods {
+  reverse(query: Location, callback: ResultCallback): void;
 
-  geocode?(value: GeocodeValue, callback: ResultCallback): void;
+  geocode(value: GeocodeValue, callback: ResultCallback): void;
 
-  batchGeocode?(values: GeocodeValue[], callback: BatchResultCallback): void;
+  batchGeocode(values: GeocodeValue[], callback: BatchResultCallback): void;
 }
+
+export interface AbstractGeocoderAdapter extends AbstractGeocoderMethods {
+  name: Provider;
+}
+
+export interface AbstractGeocoder extends AbstractGeocoderMethods {
+  _adapter: AbstractGeocoderAdapter
+}
+
 
 export type Nullable<T> = T | null
 

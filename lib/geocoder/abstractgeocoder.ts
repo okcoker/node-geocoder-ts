@@ -3,16 +3,17 @@ import ValueError from '../error/valueerror';
 import type {
   HTTPAdapter,
   Location,
-  AbstractGeocoder,
+  AbstractGeocoderAdapter,
   ResultCallback,
   BatchResultCallback,
   GeocodeValue,
-  BatchResult,
+  MaybeResultMaybeError,
   BaseOptions
 } from '../../types';
 
 abstract class BaseAbstractGeocoder<T extends BaseOptions>
-  implements AbstractGeocoder {
+  implements AbstractGeocoderAdapter
+{
   name: string;
   httpAdapter: HTTPAdapter;
   supportIPv6: boolean;
@@ -97,17 +98,17 @@ abstract class BaseAbstractGeocoder<T extends BaseOptions>
       this._batchGeocode(values, callback);
     } else {
       const promises = values.map((value: any) => {
-        return new Promise<BatchResult>(resolve => {
+        return new Promise<MaybeResultMaybeError>(resolve => {
           this.geocode(value, (error, result) => {
             resolve({
               error,
-              data: result
-            } as BatchResult);
+              ...result
+            } as MaybeResultMaybeError);
           });
         });
       });
 
-      Promise.all(promises).then(data => callback(null, data));
+      Promise.all(promises).then(data => callback(null, { data }));
     }
   }
 }

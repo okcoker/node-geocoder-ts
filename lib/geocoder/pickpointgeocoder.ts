@@ -11,7 +11,10 @@ class PickPointGeocoder extends OpenStreetMapGeocoder {
   _endpoint = 'https://api.pickpoint.io/v1/forward';
   _endpoint_reverse = 'https://api.pickpoint.io/v1/reverse';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = {}
+  ) {
     const overrideOptions: Options = { ...options, provider: 'pickpoint' };
     super(httpAdapter, overrideOptions);
 

@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "jest --maxWorkers=2 ./test",
-    "lint": "prettier --check 'lib/**/*.{ts,js}'",
-    "pretty": "prettier --write 'lib/**/*.{ts,js}'",
+    "lint": "eslint lib test integration_test && prettier --check '{lib,test,integration_test}/**/*.{ts,js}'",
+    "pretty": "prettier --write '{lib,test,integration_test}/**/*.{ts,js}'",
     "ts-migrate": "ts-migrate",
     "ci": "npm run lint && npm run test",
     "test:integration": "jest --maxWorkers=2 ./integration_test"

@@ -23,8 +23,15 @@ class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
    * Geocoder for LocationIQ
    * http://locationiq.org/#docs
    */
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'locationiq' });
+
+    if (!options.apiKey) {
+      throw new Error('LocationIQGeocoder needs an apiKey');
+    }
 
     this.options.apiKey = querystring.unescape(this.options.apiKey);
   }
@@ -36,7 +43,6 @@ class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
       params.q = value;
     } else {
       for (const k in value) {
-        // @ts-expect-error ts(7053)
         const v = value[k];
         switch (k) {
           default:
@@ -82,12 +88,12 @@ class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
     );
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  _reverse(query: Location & { zoom?: number }, callback: ResultCallback) {
     const params = this._getCommonParams();
+    const record = query as Record<string, any>;
 
-    for (const k in query) {
-      // @ts-expect-error ts(7053)
-      const v = query[k];
+    for (const k in record) {
+      const v = record[k];
       params[k] = v;
     }
     this._forceParams(params);

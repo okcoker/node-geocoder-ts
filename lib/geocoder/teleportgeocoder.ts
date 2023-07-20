@@ -16,7 +16,10 @@ class TeleportGeocoder extends BaseAbstractGeocoder<Options> {
   _cities_endpoint: string;
   _locations_endpoint: string;
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = {}
+  ) {
     super(httpAdapter, { ...options, provider: 'teleport' });
 
     const base = 'https://api.teleport.org/api';

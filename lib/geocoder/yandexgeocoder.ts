@@ -41,7 +41,10 @@ class YandexGeocoder extends BaseAbstractGeocoder<Options> {
   // Yandex geocoding API endpoint
   _endpoint = 'https://geocode-maps.yandex.ru/1.x/';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'yandex' });
   }
 

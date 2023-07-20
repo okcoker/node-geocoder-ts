@@ -12,11 +12,17 @@ class NominatimMapquestGeocoder extends OpenStreetMapGeocoder {
   _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search';
   _endpoint_reverse = 'http://open.mapquestapi.com/nominatim/v1/reverse';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
-    const overrideOptions: Options = { ...options, provider: 'nominatimmapquest' };
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
+    const overrideOptions: Options = {
+      ...options,
+      provider: 'nominatimmapquest'
+    };
     super(httpAdapter, overrideOptions);
 
-    if (!this.options.apiKey || this.options.apiKey == 'undefined') {
+    if (!this.options.apiKey) {
       throw new Error(this.constructor.name + ' needs an apiKey');
     }
   }

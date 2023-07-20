@@ -14,13 +14,17 @@ export interface Options extends BaseOptions {
   email?: string;
   apiKey?: string;
   osmServer?: string;
+  zoom?: number;
 }
 
 class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint: string;
   _endpoint_reverse: string;
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = {}
+  ) {
     super(httpAdapter, { ...options, provider: 'openstreetmap' });
 
     const osmServer = options.osmServer || 'http://nominatim.openstreetmap.org';
@@ -104,7 +108,14 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  _reverse(
+    query: Location & {
+      format?: 'xml' | 'json';
+      addressdetails?: number;
+      zoom?: number;
+    },
+    callback: ResultCallback
+  ) {
     const params = this._getCommonParams();
     const record = query as Record<string, any>;
 

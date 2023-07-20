@@ -25,7 +25,10 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
   _reverseEndpoint =
     'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { client_id: '', client_secret: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'agol' });
 
     if (!httpAdapter) {
@@ -212,7 +215,9 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
       state: state,
       stateCode: stateCode,
       zipcode: zipcode,
-      streetName: [streetPreDir, streetName, streetType].filter(Boolean).join(' '),
+      streetName: [streetPreDir, streetName, streetType]
+        .filter(Boolean)
+        .join(' '),
       streetNumber: streetNumber,
       countryCode: countryCode
     };

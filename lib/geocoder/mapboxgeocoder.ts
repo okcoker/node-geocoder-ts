@@ -31,7 +31,10 @@ const OPTIONS_MAP = {
 class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
   _geocodeEndpoint = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'mapbox' });
 
     if (!this.options.apiKey) {
@@ -45,7 +48,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
 
     if (typeof value !== 'string' && value.address) {
       params = this._prepareQueryString(value);
-      searchtext = value.address;
+      searchtext = value.address.toString();
     }
 
     const endpoint = `${this._geocodeEndpoint}/${encodeURIComponent(

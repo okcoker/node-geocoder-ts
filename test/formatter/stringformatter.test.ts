@@ -1,4 +1,3 @@
-
 import chai from 'chai';
 import StringFormatter from '../../lib/formatter/stringformatter';
 
@@ -9,7 +8,9 @@ const expect = chai.expect;
 describe('StringFormatter', () => {
   describe('#constructor', () => {
     test('a string pattern must be set', () => {
-      expect(function () { new StringFormatter({ pattern: '' }); }).to.throw(Error, 'StringFormatter need a pattern');
+      expect(function () {
+        new StringFormatter({ pattern: '' });
+      }).to.throw(Error, 'StringFormatter need a pattern');
     });
   });
 
@@ -19,16 +20,18 @@ describe('StringFormatter', () => {
         pattern: '%P %p %n %S %z %T %t %c'
       });
 
-      const results = formatter.format([{
-        country: 'France',
-        countryCode: 'FR',
-        streetNumber: '29',
-        streetName: 'rue chevreul',
-        zipcode: '69007',
-        state: 'Rhone alpes',
-        stateCode: 'RA',
-        city: 'Lyon',
-      }]);
+      const results = formatter.format([
+        {
+          country: 'France',
+          countryCode: 'FR',
+          streetNumber: '29',
+          streetName: 'rue chevreul',
+          zipcode: '69007',
+          state: 'Rhone alpes',
+          stateCode: 'RA',
+          city: 'Lyon'
+        }
+      ]);
 
       results.should.have.length(1);
       const str = results[0];
@@ -38,4 +41,3 @@ describe('StringFormatter', () => {
     });
   });
 });
-

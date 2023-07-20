@@ -69,13 +69,8 @@ import MapBoxGeocoder, {
   Options as MapBoxOptions
 } from './geocoder/mapboxgeocoder';
 
-import type {
-  Adapter,
-  AbstractGeocoder,
-  Provider,
-  Formatter,
-  HTTPAdapter
-} from '../types';
+import type { Adapter, AbstractGeocoder, Formatter, HTTPAdapter } from 'types';
+import type { Provider } from 'lib/providers';
 
 /**
  * Return an http adapter by name
@@ -160,20 +155,25 @@ function _getFormatter(
   }
 }
 
-function getGeocoder(geocoderAdapter?: Provider): AbstractGeocoder;
-function getGeocoder(
+// @todo type this better so we can get the actual geocoder type
+// based on the `Provider`
+function getGeocoder<T>(geocoderAdapter: Provider): T;
+function getGeocoder<T extends AbstractGeocoder>(
   geocoderAdapter: Provider,
-  options: FactoryOptions
-): AbstractGeocoder;
-function getGeocoder(geocoderAdapter: FactoryOptions): AbstractGeocoder;
+  options: Omit<FactoryOptions, 'provider'>
+): T;
+function getGeocoder<T extends AbstractGeocoder>(
+  geocoderAdapter: FactoryOptions
+): T;
 function getGeocoder(
-  geocoderAdapter: Provider | FactoryOptions | undefined,
-  options?: FactoryOptions
+  geocoderAdapter: Provider | FactoryOptions,
+  options?: FactoryOptions | Omit<FactoryOptions, 'provider'>
 ): AbstractGeocoder {
+  const defaultProvider: Provider = 'google';
   const geocoderOptions: FactoryOptions = (typeof geocoderAdapter === 'object'
     ? geocoderAdapter
-    : options) || {
-    provider: 'google',
+    : { provider: defaultProvider, formatter: undefined, ...options }) || {
+    provider: defaultProvider,
     fetch: undefined,
     formatter: undefined
   };

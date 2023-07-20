@@ -34,7 +34,10 @@ class OpenCageGeocoder extends BaseAbstractGeocoder<Options> {
   // In case we need to support v1/v2 and this changes
   _ConfidenceInKM = ConfidenceInKM;
 
-  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+  constructor(
+    httpAdapter: HTTPAdapter,
+    options: Omit<Options, 'provider'> = { apiKey: '' }
+  ) {
     super(httpAdapter, { ...options, provider: 'opencage' });
 
     if (!options.apiKey) {

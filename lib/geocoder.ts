@@ -1,16 +1,21 @@
-import {
+import type {
   Formatter,
-  Result,
   Location,
   GeocodeValue,
   AbstractGeocoder,
-  FormattedResult,
+  ResultFormatted,
+  Result,
   ResultWithProvider,
-  ResultDataWithProvider
-} from '../types';
+  ResultDataWithProvider,
+  BatchResult,
+  BatchResultWithProvider,
+  BatchResultFormatted,
+  AbstractGeocoderAdapter
+} from 'types';
+import { Provider, providers } from 'lib/providers';
 
-class Geocoder {
-  _geocoder: typeof AbstractGeocoder;
+class Geocoder implements AbstractGeocoder {
+  _adapter: AbstractGeocoderAdapter;
   _formatter?: Formatter<any>;
 
   /**
@@ -18,8 +23,8 @@ class Geocoder {
    * @param <object> geocoder  Geocoder Adapter
    * @param <object> formatter Formatter adapter or null
    */
-  constructor(geocoder: AbstractGeocoder, formatter?: Formatter<any>) {
-    this._geocoder = geocoder;
+  constructor(adapter: AbstractGeocoderAdapter, formatter?: Formatter<any>) {
+    this._adapter = adapter;
     this._formatter = formatter;
   }
 
@@ -28,11 +33,17 @@ class Geocoder {
    */
   geocode(
     value: GeocodeValue
-  ): Promise<ResultWithProvider | Result | FormattedResult> {
+  ): Promise<ResultWithProvider | Result | ResultFormatted> {
     return new Promise((resolve, reject) => {
-      this._geocoder.geocode(value, (err, result) => {
+      this._adapter.geocode(value, (err: any, result: Result | null) => {
         if (err) {
           reject(err);
+          return;
+        }
+
+        // This shouldnt happen but the ResultCallback interface type isn't perfect
+        if (!result) {
+          reject(new Error('Unexpected error with the result'));
           return;
         }
 
@@ -46,11 +57,17 @@ class Geocoder {
 
   reverse(
     query: Location
-  ): Promise<ResultWithProvider | Result | FormattedResult> {
+  ): Promise<ResultWithProvider | Result | ResultFormatted> {
     return new Promise((resolve, reject) => {
-      this._geocoder.reverse(query, (err, result) => {
+      this._adapter.reverse(query, (err: any, result: Result | null) => {
         if (err) {
           reject(err);
+          return;
+        }
+
+        // This shouldnt happen but the ResultCallback interface type isn't perfect
+        if (!result) {
+          reject(new Error('Unexpected error with the result'));
           return;
         }
 
@@ -70,19 +87,28 @@ class Geocoder {
    */
   batchGeocode(
     values: GeocodeValue[]
-  ): Promise<(ResultWithProvider | Result | FormattedResult)[]> {
+  ): Promise<BatchResultWithProvider | BatchResult | BatchResultFormatted> {
     return new Promise((resolve, reject) => {
-      this._geocoder.batchGeocode(values, (err, result) => {
-        if (err) {
-          reject(err);
-          return;
+      this._adapter.batchGeocode(
+        values,
+        (err: any, result: BatchResult | null) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          // This shouldnt happen but the BatchResultCallback interface type isn't perfect
+          if (!result) {
+            reject(new Error('Unexpected error with the result'));
+            return;
+          }
+
+          const filtered = this._batchFilter(values, result);
+          const formatted = this._batchFormat(filtered);
+
+          resolve(formatted);
         }
-
-        const filtered = this._batchFilter(values, result);
-        const formatted = this._batchFormat(filtered);
-
-        resolve(formatted);
-      });
+      );
     });
   }
 
@@ -100,7 +126,10 @@ class Geocoder {
 
       data = data.filter(geocodedAddress => {
         const confidence = geocodedAddress?.extra?.confidence;
-        if (typeof confidence === 'number') {
+        if (
+          typeof confidence === 'number' &&
+          typeof valueConfidence === 'number'
+        ) {
           return confidence >= valueConfidence;
         }
         return true;
@@ -115,7 +144,7 @@ class Geocoder {
 
   private _format(
     result: Result
-  ): Result | ResultWithProvider | FormattedResult {
+  ): Result | ResultWithProvider | ResultFormatted {
     if (!result.data) {
       return result;
     }
@@ -123,7 +152,7 @@ class Geocoder {
     const newData: ResultDataWithProvider[] = result.data.map(data => {
       return {
         ...data,
-        provider: this._geocoder.name
+        provider: this._adapter.name
       };
     });
 
@@ -142,15 +171,118 @@ class Geocoder {
     return newResult;
   }
 
+  // There's probably a better way to type this
   private _batchFormat(
-    results: Result[]
-  ): (Result | ResultWithProvider | FormattedResult)[] {
-    return results.map(result => this._format(result));
+    batchResult: BatchResult
+  ): BatchResult | BatchResultWithProvider | BatchResultFormatted {
+    if (batchResult.data === null) {
+      return batchResult;
+    }
+
+    const formatted = batchResult.data.map(result => {
+      if (result.data) {
+        const formattedData = this._format(result.data);
+
+        return {
+          data: formattedData,
+          error: null
+        };
+      }
+
+      return {
+        data: null,
+        error: result.error
+      };
+    });
+
+    if (isBatchResultFormatted(formatted)) {
+      return formatted;
+    }
+
+    if (isBatchResultWithProvider(formatted)) {
+      return formatted;
+    }
+
+    return batchResult;
   }
 
-  private _batchFilter(values: GeocodeValue[], results: Result[]): Result[] {
-    return results.map((result, i) => this._filter(values[i], result));
+  private _batchFilter(
+    values: GeocodeValue[],
+    batchResult: BatchResult
+  ): BatchResult {
+    if (batchResult.data === null) {
+      return batchResult;
+    }
+
+    const results = batchResult.data.map((batchResult, i) => {
+      return {
+        data: batchResult.data
+          ? this._filter(values[i], batchResult.data)
+          : null,
+        error: batchResult.error
+      };
+    });
+
+    return {
+      data: results
+    };
   }
 }
+
+function isBatchResultFormatted(obj: any): obj is BatchResultFormatted {
+  return (
+    obj.data &&
+    Array.isArray(obj.data) &&
+    obj.data.some((result: any) => {
+      return isResultFormatted(result);
+    })
+  );
+}
+
+function isBatchResultWithProvider(obj: any): obj is BatchResultWithProvider {
+  return (
+    obj.data &&
+    Array.isArray(obj.data) &&
+    obj.data.some((result: any) => {
+      return isResultWithProvider(result);
+    })
+  );
+}
+
+function isResultFormatted(
+  obj: Result | ResultWithProvider | ResultFormatted
+): obj is ResultFormatted {
+  return (
+    Array.isArray(obj.data) &&
+    (typeof obj.data[0] === 'string' ||
+      (Array.isArray(obj.data[0]) && typeof obj.data[0][0] === 'string'))
+  );
+}
+
+function isProvider(obj: any): obj is Provider {
+  return providers.includes(obj);
+}
+
+function isResultWithProvider(
+  obj: Result | ResultWithProvider | ResultFormatted
+): obj is ResultWithProvider {
+  return (
+    Array.isArray(obj.data) &&
+    typeof obj.data[0] !== 'string' &&
+    isProvider(obj.data[0]?.provider)
+  );
+}
+
+// function isResultFormattedArray(
+//   obj: (Result | ResultWithProvider | ResultFormatted)[]
+// ): obj is ResultFormatted[] {
+//   return obj[0] && isResultFormatted(obj[0]);
+// }
+
+// function isResultWithProviderArray(
+//   obj: (Result | ResultWithProvider | ResultFormatted)[]
+// ): obj is ResultWithProvider[] {
+//   return obj[0] && isResultWithProvider(obj[0]);
+// }
 
 export default Geocoder;
