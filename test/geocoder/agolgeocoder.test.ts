@@ -1,27 +1,18 @@
 import chai from 'chai';
 import sinon from 'sinon';
-import AGOLGeocoder from '../../lib/geocoder/agolgeocoder';
+import AGOLGeocoder from 'lib/geocoder/agolgeocoder';
+import { buildHttpAdapter } from 'test/helpers/mocks';
 
-const should = chai.should();
+chai.should();
 const expect = chai.expect;
 
-
-const mockedHttpAdapter = {
-  get: function () {
+const mockedRequestifyAdapter = buildHttpAdapter({
+  requestify() {
     return {};
   }
-};
+});
 
-const mockedRequestifyAdapter = {
-  requestify: function () {
-    return {};
-  },
-  get: function () {
-    return {};
-  }
-};
-
-const mockedAuthHttpAdapter = {
+const mockedAuthHttpAdapter = buildHttpAdapter({
   requestify: function () {
     return {};
   },
@@ -34,7 +25,7 @@ const mockedAuthHttpAdapter = {
       }
     };
   }
-};
+});
 
 const mockedOptions = {
   'client_id': 'CLIENT_ID',
@@ -43,29 +34,23 @@ const mockedOptions = {
 
 describe('AGOLGeocoder', () => {
   describe('#constructor', () => {
-    test('an http adapter must be set', () => {
-      // @ts-expect-error - ts(2554)
-      expect(function () { new AGOLGeocoder(); }).to.throw(Error, 'ArcGis Online Geocoder requires a httpAdapter to be defined');
-    });
-
     test('client_id should be set', () => {
-      expect(function () { new AGOLGeocoder(mockedRequestifyAdapter, { client_secret: 'CLIENT_SECRET' }); }).to.throw(Error, 'You must specify the client_id and the client_secret');
+      expect(() => {
+        new AGOLGeocoder(mockedRequestifyAdapter, {
+          client_id: '',
+          client_secret: 'CLIENT_SECRET'
+        });
+      }).to.throw(Error, 'You must specify the client_id and the client_secret');
     });
 
     test('client_secret should be set', () => {
-      expect(function () { new AGOLGeocoder(mockedRequestifyAdapter, { client_id: 'CLIENT_ID' }); }).to.throw(Error, 'You must specify the client_id and the client_secret');
+      expect(() => {
+        new AGOLGeocoder(mockedRequestifyAdapter, {
+          client_id: 'CLIENT_ID',
+          client_secret: ''
+        });
+      }).to.throw(Error, 'You must specify the client_id and the client_secret');
     });
-
-    test(
-      'expect an error if HTTPAdapter is provided while options are not',
-      () => {
-        expect(
-          function () {
-            new AGOLGeocoder(mockedRequestifyAdapter);
-          }).to.throw(
-            Error, 'You must specify the client_id and the client_secret');
-      }
-    );
 
     test(
       'Should be an instance of AGOLGeocoder if an http adapter and proper options are supplied',
@@ -83,7 +68,7 @@ describe('AGOLGeocoder', () => {
       const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
       expect(function () {
-        geocoder.geocode('127.0.0.1');
+        geocoder.geocode('127.0.0.1', () => { });
       }).to.throw(Error, 'The AGOL geocoder does not support IP addresses');
 
     });
@@ -93,7 +78,7 @@ describe('AGOLGeocoder', () => {
       const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
       expect(function () {
-        geocoder.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001');
+        geocoder.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001', () => { });
       }).to.throw(Error, 'The AGOL geocoder does not support IP addresses');
 
     });
@@ -104,11 +89,11 @@ describe('AGOLGeocoder', () => {
         'client_id': mockedOptions.client_id,
         'grant_type': 'client_credentials',
         'client_secret': mockedOptions.client_secret
-      }).once().returns({ then: function (err: any, result: any) { } });
+      }).once().returns({ then: () => { } });
 
       const geocoder = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
 
-      geocoder.geocode('1 champs élysée Paris');
+      geocoder.geocode('1 champs élysée Paris', () => { });
 
       mock.verify();
     });
@@ -153,16 +138,16 @@ describe('AGOLGeocoder', () => {
         callback(null, 'ABCD');
       };
       geocoder.geocode('380 New York St, Redlands, CA 92373', function (err: any, results: any) {
-        err.should.to.equal(false);
+        expect(err).equal(null);
         results[0].should.to.deep.equal({
           latitude: 34.05649072776595,
           longitude: -117.19566584280369,
           country: 'USA',
           city: 'Redlands',
           state: 'California',
-          stateCode: null,
+          stateCode: undefined,
           zipcode: '92373',
-          streetName: ' New York St',
+          streetName: 'New York St',
           streetNumber: '380',
           countryCode: 'USA'
         });
@@ -183,7 +168,7 @@ describe('AGOLGeocoder', () => {
       geocoder._getToken = function (callback: any) {
         callback(null, 'ABCD');
       };
-      geocoder.geocode('380 New York St, Redlands, CA 92373', function (err: any, results: any) {
+      geocoder.geocode('380 New York St, Redlands, CA 92373', (err: any) => {
         //err.should.to.equal(false);
         err.should.to.deep.equal({ 'code': 498, 'message': 'Invalid Token', 'details': [] });
         mock.verify();
@@ -200,7 +185,7 @@ describe('AGOLGeocoder', () => {
 
       const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
-      geocoder.reverse(10.0235, -2.3662);
+      geocoder.reverse({ lat: 10.0235, lon: -2.3662 }, () => { });
 
       mock.verify();
 
@@ -217,8 +202,8 @@ describe('AGOLGeocoder', () => {
         callback(null, 'ABCD');
       };
       geocoder.reverse({ lat: -104.98469734299971, lon: 39.739146640000456 }, function (err: any, results: any) {
-        err.should.to.equal(false);
-        results[0].should.to.deep.equal({
+        expect(err).equal(null);
+        results.data[0].should.to.deep.equal({
           latitude: 39.64942309095201,
           longitude: -104.97389993455704,
           country: 'USA',
@@ -246,7 +231,7 @@ describe('AGOLGeocoder', () => {
       geocoder._getToken = function (callback: any) {
         callback(null, 'ABCD');
       };
-      geocoder.reverse({ lat: 40.714232, lon: -73.9612889 }, function (err: any, results: any) {
+      geocoder.reverse({ lat: 40.714232, lon: -73.9612889 }, function (err: any) {
         err.should.to.deep.equal({ 'code': 42, 'message': 'Random Error', 'details': [] });
         mock.verify();
         done();

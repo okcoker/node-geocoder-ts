@@ -6,7 +6,8 @@ import type {
   ResultCallback,
   BaseOptions,
   NodeCallback,
-  ResultData
+  ResultData,
+  GeocodeValue
 } from 'types';
 
 export interface Options extends BaseOptions {
@@ -31,6 +32,10 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
       throw new Error(
         'ArcGis Online Geocoder requires a httpAdapter to be defined'
       );
+    }
+
+    if (!options.client_secret || !options.client_id) {
+      throw new Error('You must specify the client_id and the client_secret');
     }
 
     this.cache = {};
@@ -90,13 +95,8 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
     );
   }
 
-  /**
-   * Geocode
-   * @param {String}   value    Value to geocode (Address)
-   * @param {Function} callback Callback method
-   */
-  geocode(value: any, callback: ResultCallback) {
-    if (net.isIP(value)) {
+  geocode(value: GeocodeValue, callback: ResultCallback) {
+    if (typeof value === 'string' && net.isIP(value)) {
       throw new Error('The AGOL geocoder does not support IP addresses');
     }
 
@@ -212,16 +212,12 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
       state: state,
       stateCode: stateCode,
       zipcode: zipcode,
-      streetName: streetPreDir + ' ' + streetName + ' ' + streetType,
+      streetName: [streetPreDir, streetName, streetType].filter(Boolean).join(' '),
       streetNumber: streetNumber,
       countryCode: countryCode
     };
   }
 
-  /**
-   * Reverse geocoding
-   * @param {function} callback Callback method
-   */
   reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const long = query.lon;
