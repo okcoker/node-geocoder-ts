@@ -9,14 +9,15 @@ const expect = chai.expect;
 describe('StringFormatter', () => {
   describe('#constructor', () => {
     test('a string pattern must be set', () => {
-      // @ts-expect-error - ts(2554)
-      expect(function () { new StringFormatter(); }).to.throw(Error, 'StringFormatter need a pattern');
+      expect(function () { new StringFormatter({ pattern: '' }); }).to.throw(Error, 'StringFormatter need a pattern');
     });
   });
 
   describe('#format', () => {
     test('should replace pattern with correct values', () => {
-      const formatter = new StringFormatter('%P %p %n %S %z %T %t %c');
+      const formatter = new StringFormatter({
+        pattern: '%P %p %n %S %z %T %t %c'
+      });
 
       const results = formatter.format([{
         country: 'France',

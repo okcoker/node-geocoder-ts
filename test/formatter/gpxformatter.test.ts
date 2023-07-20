@@ -1,14 +1,14 @@
 import chai from 'chai';
 import GpxFormatter from '../../lib/formatter/gpxformatter';
 
-const should = chai.should();
+chai.should();
 
 describe('GpxFormatter', () => {
   describe('#format', () => {
     test('should format using gpx format', () => {
-      var formatter = new GpxFormatter();
+      const formatter = new GpxFormatter();
 
-      var results = formatter.format([{
+      const results = formatter.format([{
         latitude: 40.714232,
         longitude: -73.9612889
       }]);

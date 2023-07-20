@@ -133,7 +133,7 @@ export interface FormatterOptions {
 }
 
 export interface Formatter<T extends FormatterOptions> {
-    options: T;
+    options: Omit<T, 'name'>;
     format: (data: ResultData[]) => string | string[];
 }
 
