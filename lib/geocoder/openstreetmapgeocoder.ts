@@ -20,8 +20,8 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint: string;
   _endpoint_reverse: string;
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'openstreetmap' });
 
     const osmServer = options.osmServer || 'http://nominatim.openstreetmap.org';
     this._endpoint = osmServer + '/search';

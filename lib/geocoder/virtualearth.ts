@@ -16,8 +16,8 @@ export interface Options extends BaseOptions {
 class VirtualEarthGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://dev.virtualearth.net/REST/v1/Locations';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'virtualearth' });
 
     if (!options.apiKey) {
       throw new Error('You must specify an apiKey');

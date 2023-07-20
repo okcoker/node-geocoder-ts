@@ -31,8 +31,8 @@ const OPTIONS_MAP = {
 class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
   _geocodeEndpoint = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'mapbox' });
 
     if (!this.options.apiKey) {
       throw new Error('You must specify apiKey to use MapBox Geocoder');

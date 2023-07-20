@@ -17,8 +17,8 @@ export interface Options extends BaseOptions {
 class MapzenGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://search.mapzen.com/v1';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'mapzen' });
 
     if (!options.apiKey) {
       throw new Error(this.constructor.name + ' needs an apiKey');

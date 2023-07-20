@@ -14,8 +14,8 @@ class FreegeoipGeocoder extends BaseAbstractGeocoder<Options> {
   // WS endpoint
   _endpoint = 'https://freegeoip.net/json/';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'freegeoip' });
     this.supportIPv4 = true;
     this.supportIPv6 = true;
     this.supportAddress = false;

@@ -17,8 +17,8 @@ export interface Options extends BaseOptions {
 class MapQuestGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://www.mapquestapi.com/geocoding/v1';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'mapquest' });
 
     if (!options.apiKey) {
       throw new Error('MapQuestGeocoder needs an apiKey');
@@ -58,9 +58,9 @@ class MapQuestGeocoder extends BaseAbstractGeocoder<Options> {
             return callback(
               new Error(
                 'Status is ' +
-                  result.info.statuscode +
-                  ' ' +
-                  result.info.messages[0]
+                result.info.statuscode +
+                ' ' +
+                result.info.messages[0]
               ),
               null
             );

@@ -23,8 +23,8 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
   // Google geocoding API endpoint
   _endpoint = 'https://maps.googleapis.com/maps/api/geocode/json';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'google' });
 
     if (this.options.clientId && !this.options.apiKey) {
       throw new Error('You must specify a apiKey (privateKey)');
@@ -89,9 +89,9 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
           return callback(
             new Error(
               'Status is ' +
-                result.status +
-                '.' +
-                (result.error_message ? ' ' + result.error_message : '')
+              result.status +
+              '.' +
+              (result.error_message ? ' ' + result.error_message : '')
             ),
             null
           );
@@ -336,9 +336,9 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
           return callback(
             new Error(
               'Status is ' +
-                result.status +
-                '.' +
-                (result.error_message ? ' ' + result.error_message : '')
+              result.status +
+              '.' +
+              (result.error_message ? ' ' + result.error_message : '')
             ),
             null
           );

@@ -19,8 +19,8 @@ export interface Options extends BaseOptions {
 class GeocodioGeocoder extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://api.geocod.io/v1';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'geocodio' });
   }
 
   _geocode(value: any, callback: ResultCallback) {

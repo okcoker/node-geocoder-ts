@@ -11,10 +11,9 @@ class PickPointGeocoder extends OpenStreetMapGeocoder {
   _endpoint = 'https://api.pickpoint.io/v1/forward';
   _endpoint_reverse = 'https://api.pickpoint.io/v1/reverse';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    // OpenStreetMapGeocoder expects its own provider
-    // @ts-expect-error ts(2345)
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    const overrideOptions: Options = { ...options, provider: 'pickpoint' };
+    super(httpAdapter, overrideOptions);
 
     if (!httpAdapter.supportsHttps()) {
       throw new Error('You must use https http adapter');

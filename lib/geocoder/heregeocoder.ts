@@ -35,8 +35,8 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
   // Here batch geocoding API endpoint
   _batchGeocodeEndpoint = 'https://batch.geocoder.ls.hereapi.com/6.2/jobs';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'here' });
 
     if (!this.options.apiKey && !(this.options.appId && this.options.appCode)) {
       throw new Error('You must specify apiKey to use Here Geocoder');

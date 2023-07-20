@@ -7,7 +7,7 @@ import type {
   BaseOptions,
   NodeCallback,
   ResultData
-} from '../../types';
+} from 'types';
 
 export interface Options extends BaseOptions {
   provider: 'agol';
@@ -24,10 +24,10 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
   _reverseEndpoint =
     'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'agol' });
 
-    if (!httpAdapter || typeof httpAdapter == 'undefined') {
+    if (!httpAdapter) {
       throw new Error(
         'ArcGis Online Geocoder requires a httpAdapter to be defined'
       );

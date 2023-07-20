@@ -16,8 +16,8 @@ export interface Options extends BaseOptions {
 class SmartyStreets extends BaseAbstractGeocoder<Options> {
   _endpoint = 'https://api.smartystreets.com/street-address';
 
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'smartystreets' });
 
     if (!options.auth_id && !options.auth_token) {
       throw new Error('You must specify an auth-id and auth-token!');

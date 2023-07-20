@@ -23,8 +23,8 @@ class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
    * Geocoder for LocationIQ
    * http://locationiq.org/#docs
    */
-  constructor(httpAdapter: HTTPAdapter, options: Options) {
-    super(httpAdapter, options);
+  constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
+    super(httpAdapter, { ...options, provider: 'locationiq' });
 
     this.options.apiKey = querystring.unescape(this.options.apiKey);
   }
