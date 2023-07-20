@@ -21,6 +21,10 @@ class GeocodioGeocoder extends BaseAbstractGeocoder<Options> {
 
   constructor(httpAdapter: HTTPAdapter, options: Omit<Options, 'provider'>) {
     super(httpAdapter, { ...options, provider: 'geocodio' });
+
+    if (!options.apiKey) {
+      throw new Error(this.constructor.name + ' needs an apiKey');
+    }
   }
 
   _geocode(value: any, callback: ResultCallback) {
