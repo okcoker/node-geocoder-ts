@@ -3,12 +3,12 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BatchResult,
-  BaseOptions,
+  BaseAdapterOptions,
   BatchResultCallback,
   ResultData
 } from '../../types';
 
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'tomtom';
   apiKey: string;
   language?: string;
@@ -211,7 +211,7 @@ class TomTomGeocoder extends BaseAbstractGeocoder<Options> {
     throw new Error(`Unexpected status: ${response.status}`);
   }
 
-  private __parseBatchResults(rawResults: any): BatchResult[] {
+  private __parseBatchResults(rawResults: any): BatchResult {
     return rawResults.batchItems.map((result: any) => {
       if (result.statusCode !== 200) {
         return {

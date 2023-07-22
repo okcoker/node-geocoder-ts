@@ -1,3 +1,4 @@
+import { AllAdapterOptions } from 'lib/geocoderfactory';
 import {
   HTTPAdapter,
   AbstractGeocoder,
@@ -11,6 +12,8 @@ import {
 
 export function buildHttpAdapter(overrides = {}): HTTPAdapter {
   return {
+    options: {},
+
     supportsHttps() {
       return true;
     },
@@ -34,8 +37,16 @@ export function buildResult(overrides = {}): Result {
   };
 }
 
-export function buildGeocoderAdapter(overrides = {}): AbstractGeocoderAdapter {
+export function buildGeocoderAdapter<T extends AllAdapterOptions>(
+  overrides = {}
+): AbstractGeocoderAdapter<T> {
   return {
+    name: 'google',
+
+    httpAdapter: buildHttpAdapter(),
+
+    options: {} as T,
+
     reverse(query: Location, callback: ResultCallback) {
       callback(null, buildResult());
     },
@@ -52,7 +63,7 @@ export function buildGeocoderAdapter(overrides = {}): AbstractGeocoderAdapter {
   };
 }
 
-export function buildGeocoder(overrides = {}): AbstractGeocoder {
+export function buildGeocoder(overrides = {}): AbstractGeocoder<any> {
   return {
     _adapter: buildGeocoderAdapter(overrides),
     ...buildGeocoderAdapter(overrides),

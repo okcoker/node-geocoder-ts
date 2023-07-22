@@ -2,7 +2,7 @@ import BaseAbstractGeocoder from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
-  BaseOptions,
+  BaseAdapterOptions,
   Location,
   GeocodeValue
 } from '../../types';
@@ -11,7 +11,7 @@ import type {
  * available options
  * @see https://docs.mapbox.com/api/search/geocoding/
  */
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'mapbox';
   apiKey: string;
   language?: string;

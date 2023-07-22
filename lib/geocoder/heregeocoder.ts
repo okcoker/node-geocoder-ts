@@ -6,18 +6,18 @@ import type {
   ResultCallback,
   BatchResult,
   BatchResultCallback,
-  BaseOptions,
+  BaseAdapterOptions,
   Location,
   GeocodeValue,
   ResultData
 } from '../../types';
 
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'here';
   apiKey: string;
-  // @deprecated
+  /** @deprecated use `apiKey` instead */
   appId?: string;
-  // @deprecated
+  /** @deprecated use `apiKey` instead */
   appCode?: string;
   limit?: number;
   language?: string;
@@ -42,9 +42,9 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
     httpAdapter: HTTPAdapter,
     options: Omit<Options, 'provider'> = { apiKey: '' }
   ) {
-    super(httpAdapter, { ...options, provider: 'here' });
+    super(httpAdapter, { ...options, provider: 'here' } as Options);
 
-    if (!this.options.apiKey && !(this.options.appId && this.options.appCode)) {
+    if (!options.apiKey && !(options.apiKey && options.appCode)) {
       throw new Error('You must specify apiKey to use Here Geocoder');
     }
   }
@@ -228,6 +228,7 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
     if (this.options.apiKey) {
       params.apiKey = this.options.apiKey;
     }
+
     if (this.options.language) {
       params.language = this.options.language;
     }
@@ -422,7 +423,7 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
     return res;
   }
 
-  private __parseBatchResults(results: any): BatchResult[] {
+  private __parseBatchResults(results: any): BatchResult {
     return results.map((result: any) => {
       const { values, error } = result;
       return {

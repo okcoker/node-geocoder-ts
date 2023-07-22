@@ -1,18 +1,13 @@
 import HttpError from '../error/httperror';
 import nodeFetch from 'node-fetch';
 import BPromise from 'bluebird';
-import type { HTTPAdapter, NodeCallback } from '../../types';
-
-export type FetchAdapterOptions = {
-  fetch?: (url: RequestInfo, init?: RequestInit) => Promise<Response>;
-  userAgent?: string;
-};
+import type { HTTPAdapter, NodeCallback, HTTPAdapterBaseOptions } from 'types';
 
 class FetchAdapter implements HTTPAdapter {
   fetch: any;
-  options: FetchAdapterOptions;
+  options: HTTPAdapterBaseOptions;
 
-  constructor({ fetch, ...options }: FetchAdapterOptions | undefined = {}) {
+  constructor({ fetch, ...options }: HTTPAdapterBaseOptions | undefined = {}) {
     this.fetch = fetch || nodeFetch;
     this.options = options;
   }

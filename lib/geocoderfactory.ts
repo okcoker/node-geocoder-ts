@@ -1,6 +1,6 @@
 import Geocoder from './geocoder';
 
-import FetchAdapter, { FetchAdapterOptions } from './httpadapter/fetchadapter';
+import FetchAdapter from './httpadapter/fetchadapter';
 
 import GpxFormatter, {
   Options as GpxFormatterOptions
@@ -69,121 +69,141 @@ import MapBoxGeocoder, {
   Options as MapBoxOptions
 } from './geocoder/mapboxgeocoder';
 
-import type { Adapter, AbstractGeocoder, Formatter, HTTPAdapter } from 'types';
+import type {
+  HttpAdapterType,
+  AbstractGeocoder,
+  AbstractGeocoderAdapter,
+  Formatter,
+  HTTPAdapter,
+  HTTPAdapterBaseOptions,
+  FormatterName
+} from 'types';
 import type { Provider } from 'lib/providers';
 
 /**
  * Return an http adapter by name
- * @param  <string> adapterName adapter name
- * @return <object>
  */
 function _getHttpAdapter(
-  adapterName: Adapter,
-  options?: FetchAdapterOptions
+  adapterName: HttpAdapterType,
+  options?: HTTPAdapterBaseOptions
 ): HTTPAdapter {
   return new FetchAdapter(options);
 }
+
+// @todo fix these to not need `as any`
 /**
  * Return a geocoder adapter by name
- * @param  adapter - Name of fetch adapter
- * @param  options - Adapter options
  */
-function _getGeocoder(
+function _getGeocoderAdapter<T extends AllAdapterOptions>(
   adapter: HTTPAdapter,
-  options: AllAdapterOptions
-): AbstractGeocoder {
+  options: T
+): AbstractGeocoderAdapter<Extract<T, { provider: T['provider'] }>> {
   switch (options.provider) {
     case 'google':
-      return new GoogleGeocoder(adapter, options);
+      return new GoogleGeocoder(adapter, options) as any;
     case 'here':
-      return new HereGeocoder(adapter, options);
+      return new HereGeocoder(adapter, options as any) as any;
     case 'agol':
-      return new AGOLGeocoder(adapter, options);
+      return new AGOLGeocoder(adapter, options) as any;
     case 'freegeoip':
-      return new FreegeoipGeocoder(adapter, options);
+      return new FreegeoipGeocoder(adapter, options) as any;
     case 'datasciencetoolkit':
-      return new DataScienceToolkitGeocoder(adapter, options);
+      return new DataScienceToolkitGeocoder(adapter, options) as any;
     case 'openstreetmap':
-      return new OpenStreetMapGeocoder(adapter, options);
+      return new OpenStreetMapGeocoder(adapter, options) as any;
     case 'pickpoint':
-      return new PickPointGeocoder(adapter, options);
+      return new PickPointGeocoder(adapter, options) as any;
     case 'locationiq':
-      return new LocationIQGeocoder(adapter, options);
+      return new LocationIQGeocoder(adapter, options) as any;
     case 'mapquest':
-      return new MapQuestGeocoder(adapter, options);
+      return new MapQuestGeocoder(adapter, options) as any;
     case 'mapzen':
-      return new MapzenGeocoder(adapter, options);
+      return new MapzenGeocoder(adapter, options) as any;
     case 'openmapquest':
-      return new OpenMapQuestGeocoder(adapter, options);
+      return new OpenMapQuestGeocoder(adapter, options) as any;
     case 'yandex':
-      return new YandexGeocoder(adapter, options);
+      return new YandexGeocoder(adapter, options) as any;
     case 'geocodio':
-      return new GeocodioGeocoder(adapter, options);
+      return new GeocodioGeocoder(adapter, options) as any;
     case 'opencage':
-      return new OpenCageGeocoder(adapter, options);
+      return new OpenCageGeocoder(adapter, options) as any;
     case 'nominatimmapquest':
-      return new NominatimMapquestGeocoder(adapter, options);
+      return new NominatimMapquestGeocoder(adapter, options) as any;
     case 'tomtom':
-      return new TomTomGeocoder(adapter, options);
+      return new TomTomGeocoder(adapter, options) as any;
     case 'virtualearth':
-      return new VirtualEarthGeocoder(adapter, options);
+      return new VirtualEarthGeocoder(adapter, options) as any;
     case 'smartystreets':
-      return new SmartyStreets(adapter, options);
+      return new SmartyStreets(adapter, options) as any;
     case 'teleport':
-      return new TeleportGeocoder(adapter, options);
+      return new TeleportGeocoder(adapter, options) as any;
     case 'opendatafrance':
-      return new OpendataFranceGeocoder(adapter, options);
+      return new OpendataFranceGeocoder(adapter, options) as any;
     case 'mapbox':
-      return new MapBoxGeocoder(adapter, options);
+      return new MapBoxGeocoder(adapter, options) as any;
   }
 }
 
 /**
+ * @todo fix types
  * Return an formatter adapter by name
  * @param  <string> adapterName adapter name
  * @return <object>
  */
-function _getFormatter(
-  options: AllFormatterOptions['formatter']
-): Formatter<any> | undefined {
-  if (options?.name === 'gpx') {
-    return new GpxFormatter(options);
-  }
-
-  if (options?.name === 'string') {
-    return new StringFormatter(options);
+function _getFormatter<T extends FormatterOptions>(
+  options: T
+):
+  | Formatter<Extract<AllSubFormatterOptions, { name: T['formatter'] }>>
+  | undefined {
+  switch (options?.formatter) {
+    case 'gpx':
+      // eslint-disable-next-line
+      // @ts-expect-error
+      return new GpxFormatter(options.formatterOptions);
+    case 'string':
+      // eslint-disable-next-line
+      // @ts-expect-error
+      return new StringFormatter(options.formatterOptions);
+    default:
+      return;
   }
 }
 
 // @todo type this better so we can get the actual geocoder type
 // based on the `Provider`
-function getGeocoder<T>(geocoderAdapter: Provider): T;
-function getGeocoder<T extends AbstractGeocoder>(
-  geocoderAdapter: Provider,
-  options: Omit<FactoryOptions, 'provider'>
-): T;
-function getGeocoder<T extends AbstractGeocoder>(
-  geocoderAdapter: FactoryOptions
-): T;
-function getGeocoder(
-  geocoderAdapter: Provider | FactoryOptions,
-  options?: FactoryOptions | Omit<FactoryOptions, 'provider'>
-): AbstractGeocoder {
+/**
+ * Geocoder factory which creates geocoder with the specified provider and/or options
+ * @param providerOrOptions
+ */
+function getGeocoder<T extends Provider>(
+  providerOrOptions: T
+): AbstractGeocoder<T>;
+function getGeocoder<T extends Provider>(
+  providerOrOptions: T,
+  options: Omit<Extract<FactoryOptions, { provider: T }>, 'provider'>
+): AbstractGeocoder<T>;
+function getGeocoder<T extends FactoryOptions>(
+  providerOrOptions: T
+): AbstractGeocoder<T['provider']>;
+function getGeocoder<T extends Provider | FactoryOptions>(
+  providerOrOptions: T,
+  options?: Omit<FactoryOptions, 'provider'>
+): AbstractGeocoder<
+  T extends Provider ? T : T extends FactoryOptions ? T['provider'] : never
+> {
   const defaultProvider: Provider = 'google';
-  const geocoderOptions: FactoryOptions = (typeof geocoderAdapter === 'object'
-    ? geocoderAdapter
-    : { provider: defaultProvider, formatter: undefined, ...options }) || {
-    provider: defaultProvider,
-    fetch: undefined,
-    formatter: undefined
+  const geocoderOptions: FactoryOptions = (typeof providerOrOptions === 'object'
+    ? providerOrOptions
+    : {
+        provider: defaultProvider,
+        formatterOptions: undefined,
+        ...options
+      }) || {
+    provider: defaultProvider
   };
   const httpAdapter = _getHttpAdapter('fetch', geocoderOptions);
-  const adapter = _getGeocoder(httpAdapter, geocoderOptions);
-  let formatter: Formatter<any> | undefined;
-
-  if (geocoderOptions.formatter) {
-    formatter = _getFormatter(geocoderOptions.formatter);
-  }
+  const adapter = _getGeocoderAdapter(httpAdapter, geocoderOptions);
+  const formatter = _getFormatter(geocoderOptions);
 
   return new Geocoder(adapter, formatter);
 }
@@ -211,18 +231,29 @@ type AllAdapterOptions =
   | OpendataFranceOptions
   | MapBoxOptions;
 
-interface AllFormatterOptions {
-  formatter: GpxFormatterOptions | StringFormatterOptions;
-}
+type AllSubFormatterOptions = GpxFormatterOptions | StringFormatterOptions;
 
-type FactoryOptions = FetchAdapterOptions &
+type FormatterOptions = {
+  formatter?: FormatterName;
+  formatterOptions?: FormatterOptions['formatter'] extends undefined
+    ? undefined
+    : Omit<
+        Extract<
+          AllSubFormatterOptions,
+          { name: FormatterOptions['formatter'] }
+        >,
+        'name'
+      >;
+};
+
+type FactoryOptions = HTTPAdapterBaseOptions &
   AllAdapterOptions &
-  AllFormatterOptions;
+  FormatterOptions;
 
 export default getGeocoder;
 export {
   AllAdapterOptions,
-  AllFormatterOptions,
+  AllSubFormatterOptions,
   FactoryOptions,
   GpxFormatterOptions,
   StringFormatterOptions,

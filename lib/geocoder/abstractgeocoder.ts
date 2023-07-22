@@ -1,5 +1,5 @@
 import net from 'net';
-import ValueError from '../error/valueerror';
+import ValueError from 'lib/error/valueerror';
 import type {
   HTTPAdapter,
   Location,
@@ -8,13 +8,13 @@ import type {
   BatchResultCallback,
   GeocodeValue,
   MaybeResultMaybeError,
-  BaseOptions
-} from '../../types';
+  BaseAdapterOptions
+} from 'types';
 
-abstract class BaseAbstractGeocoder<T extends BaseOptions>
-  implements AbstractGeocoderAdapter
+abstract class BaseAbstractGeocoder<T extends BaseAdapterOptions>
+  implements AbstractGeocoderAdapter<T>
 {
-  name: string;
+  name: T['provider'];
   httpAdapter: HTTPAdapter;
   supportIPv6: boolean;
   supportIPv4: boolean;
@@ -88,11 +88,6 @@ abstract class BaseAbstractGeocoder<T extends BaseOptions>
     return this._geocode(value, callback);
   }
 
-  /**
-   * Batch Geocode
-   * @param <string[]>   values    Valueas to geocode
-   * @param <function> callback Callback method
-   */
   batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
     if (typeof this._batchGeocode === 'function') {
       this._batchGeocode(values, callback);
@@ -101,9 +96,9 @@ abstract class BaseAbstractGeocoder<T extends BaseOptions>
         return new Promise<MaybeResultMaybeError>(resolve => {
           this.geocode(value, (error, result) => {
             resolve({
-              error,
-              ...result
-            } as MaybeResultMaybeError);
+              error: error,
+              data: result
+            });
           });
         });
       });

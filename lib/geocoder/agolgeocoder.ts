@@ -4,13 +4,13 @@ import type {
   HTTPAdapter,
   Location,
   ResultCallback,
-  BaseOptions,
+  BaseAdapterOptions,
   NodeCallback,
   ResultData,
   GeocodeValue
 } from 'types';
 
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'agol';
   client_id: string;
   client_secret: string;

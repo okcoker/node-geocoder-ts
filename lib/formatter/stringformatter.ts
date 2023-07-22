@@ -1,6 +1,6 @@
-import type { ResultData, Formatter, FormatterOptions } from '../../types';
+import type { ResultData, Formatter, BaseFormatterOptions } from '../../types';
 
-export interface Options extends FormatterOptions {
+export interface Options extends BaseFormatterOptions {
   name: 'string';
   pattern: string;
 }

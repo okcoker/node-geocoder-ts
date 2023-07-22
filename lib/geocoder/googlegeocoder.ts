@@ -4,12 +4,12 @@ import BaseAbstractGeocoder from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
-  BaseOptions,
+  BaseAdapterOptions,
   ResultData,
   Location
-} from '../../types';
+} from 'types';
 
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'google';
   clientId?: string;
   apiKey?: string;

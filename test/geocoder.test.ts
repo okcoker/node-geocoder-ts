@@ -1,10 +1,10 @@
 import Geocoder from 'lib/geocoder';
-import { buildGeocoder } from 'test/helpers/mocks';
+import { buildGeocoderAdapter } from 'test/helpers/mocks';
 
-const stupidGeocoder = buildGeocoder();
+const mockAdapter = buildGeocoderAdapter();
 
 const stupidBatchGeocoder = {
-  ...stupidGeocoder,
+  ...mockAdapter,
   _batchGeocode: function (data: any, cb: any) {
     cb(null, data);
   }
@@ -17,16 +17,16 @@ describe('Geocoder', () => {
 
   describe('#constructor', () => {
     test('Should set _adapter', () => {
-      const geocoder = new Geocoder(stupidGeocoder);
+      const geocoder = new Geocoder(mockAdapter);
 
-      geocoder._adapter.should.be.equal(stupidGeocoder);
+      geocoder._adapter.should.be.equal(mockAdapter);
     });
   });
 
   describe('#geocode', () => {
     test('Should call geocoder geocode method', async () => {
-      const spy = jest.spyOn(stupidGeocoder, 'geocode');
-      const geocoder = new Geocoder(stupidGeocoder);
+      const spy = jest.spyOn(mockAdapter, 'geocode');
+      const geocoder = new Geocoder(mockAdapter);
 
       await geocoder.geocode('127.0.0.1');
 
@@ -34,7 +34,7 @@ describe('Geocoder', () => {
     });
 
     test('Should return a promise', async () => {
-      const geocoder = new Geocoder(stupidGeocoder);
+      const geocoder = new Geocoder(mockAdapter);
 
       const promise = geocoder.geocode('127.0.0.1');
 
@@ -45,15 +45,15 @@ describe('Geocoder', () => {
   });
 
   describe('#batchGeocode', () => {
-    test('Should call stupidGeocoder geocoder method x times', async () => {
-      const spy = jest.spyOn(stupidGeocoder, 'geocode');
-      const geocoder = new Geocoder(stupidGeocoder);
+    test('Should call mockAdapter geocoder method x times', async () => {
+      const spy = jest.spyOn(mockAdapter, 'geocode');
+      const geocoder = new Geocoder(mockAdapter);
       await geocoder.batchGeocode(['127.0.0.1', '127.0.0.1']);
       expect(spy).toHaveBeenCalledTimes(2);
     });
 
     test('Should return a promise', async () => {
-      const geocoder = new Geocoder(stupidGeocoder);
+      const geocoder = new Geocoder(mockAdapter);
 
       const promise = geocoder.batchGeocode(['127.0.0.1']);
       expect(promise).toBeInstanceOf('Promise');
@@ -62,7 +62,7 @@ describe('Geocoder', () => {
     });
 
     test('Should call stupidBatchGeocoder.batchGeocoder method only once when implemented', async () => {
-      const spy = jest.spyOn(stupidGeocoder, 'batchGeocode');
+      const spy = jest.spyOn(mockAdapter, 'batchGeocode');
       const geocoder = new Geocoder(stupidBatchGeocoder);
       await geocoder.batchGeocode(['127.0.0.1', '127.0.0.1']);
       expect(spy).toHaveBeenCalledTimes(1);
@@ -70,16 +70,16 @@ describe('Geocoder', () => {
   });
 
   describe('#reverse', () => {
-    test('Should call stupidGeocoder reverse method', async () => {
-      const spy = jest.spyOn(stupidGeocoder, 'geocode');
-      const geocoder = new Geocoder(stupidGeocoder);
+    test('Should call mockAdapter reverse method', async () => {
+      const spy = jest.spyOn(mockAdapter, 'geocode');
+      const geocoder = new Geocoder(mockAdapter);
 
       await geocoder.reverse({ lat: 1, lon: 2 });
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
     test('Should return a promise', async () => {
-      const geocoder = new Geocoder(stupidGeocoder);
+      const geocoder = new Geocoder(mockAdapter);
 
       const promise = geocoder.reverse({ lat: 1, lon: 2 });
 

@@ -13,17 +13,20 @@ import type {
   AbstractGeocoderAdapter
 } from 'types';
 import { Provider, providers } from 'lib/providers';
+import { AllAdapterOptions } from './geocoderfactory';
 
-class Geocoder implements AbstractGeocoder {
-  _adapter: AbstractGeocoderAdapter;
+class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
+  _adapter: AbstractGeocoderAdapter<
+    Extract<AllAdapterOptions, { provider: T }>
+  >;
   _formatter?: Formatter<any>;
 
-  /**
-   * Constructor
-   * @param <object> geocoder  Geocoder Adapter
-   * @param <object> formatter Formatter adapter or null
-   */
-  constructor(adapter: AbstractGeocoderAdapter, formatter?: Formatter<any>) {
+  constructor(
+    adapter: AbstractGeocoderAdapter<
+      Extract<AllAdapterOptions, { provider: T }>
+    >,
+    formatter?: Formatter<any>
+  ) {
     this._adapter = adapter;
     this._formatter = formatter;
   }
@@ -80,10 +83,6 @@ class Geocoder implements AbstractGeocoder {
 
   /**
    * Batch geocode
-   * @param <array>    values    array of Values to geocode (address or IP)
-   * @param <function> callback
-   *
-   * @return promise
    */
   batchGeocode(
     values: GeocodeValue[]

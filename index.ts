@@ -1,7 +1,7 @@
 import getGeocoder from 'lib/geocoderfactory';
 import type {
   AllAdapterOptions,
-  AllFormatterOptions,
+  AllSubFormatterOptions,
   FactoryOptions,
   GpxFormatterOptions,
   StringFormatterOptions,
@@ -32,7 +32,7 @@ export default getGeocoder;
 export * from 'types';
 export type {
   AllAdapterOptions,
-  AllFormatterOptions,
+  AllSubFormatterOptions,
   FactoryOptions,
   GpxFormatterOptions,
   StringFormatterOptions,

@@ -8,10 +8,10 @@
   },
   "scripts": {
     "test": "jest --maxWorkers=2 ./test",
-    "lint": "eslint lib test integration_test && prettier --check '{lib,test,integration_test}/**/*.{ts,js}'",
+    "lint": "tsc --project ./tsconfig.json && eslint lib test integration_test && prettier --check '{lib,test,integration_test}/**/*.{ts,js}' && tsc",
     "pretty": "prettier --write '{lib,test,integration_test}/**/*.{ts,js}'",
-    "ts-migrate": "ts-migrate",
     "ci": "npm run lint && npm run test",
+    "build": "tsc --sourceMap false --declaration --project tsconfig.build.json && tsc-alias",
     "test:integration": "jest --maxWorkers=2 ./integration_test"
   },
   "repository": {
@@ -59,6 +59,8 @@
     "prettier": "^3.0.0",
     "sinon": "^1.17.3",
     "ts-jest": "^29.1.1",
+    "tsc-alias": "^1.8.7",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.6"
   }
 }

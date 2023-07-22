@@ -1,5 +1,4 @@
 {
-
   "compilerOptions": {
       "baseUrl": ".",
       "outDir": "./dist",
@@ -13,6 +12,7 @@
       "noFallthroughCasesInSwitch": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
+      "noErrorTruncation": true,
       "paths": {
           "lib": ["lib"],
           "test": ["test"],

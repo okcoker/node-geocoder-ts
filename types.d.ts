@@ -1,13 +1,9 @@
 import type { Provider } from 'lib/providers';
-export type Adapter =
+export type HttpAdapterType =
   | 'fetch'
 
-export interface BaseOptions {
+export interface BaseAdapterOptions {
   provider: Provider;
-  fetch?: (url: RequestInfo, init?: RequestInit) => Promise<Response> | undefined;
-  timeout?: number;
-  formatterPattern?: string;
-  formatter?: Formatter;
 }
 
 export interface Location {
@@ -124,20 +120,27 @@ export type FormatterName =
   | 'gpx'
   | 'string';
 
-export interface FormatterOptions {
+export interface BaseFormatterOptions {
   name: FormatterName
 }
 
-export interface Formatter<T extends FormatterOptions> {
+export interface Formatter<T extends BaseFormatterOptions> {
   options: Omit<T, 'name'>;
   format: (data: ResultData[]) => string | string[];
 }
 
 export interface HTTPAdapter {
+  options: HTTPAdapterBaseOptions;
   supportsHttps(): boolean;
   get<T>(url: string, params: Record<string, any>, callback: NodeCallback<T>, fullResponse?: boolean): void
   post<T>(url: string, params: Record<string, any>, options: any, callback: NodeCallback<T>, fullResponse?: boolean): void
 }
+
+export type HTTPAdapterBaseOptions = {
+  fetch?: (url: RequestInfo, init?: RequestInit) => Promise<Response>;
+  userAgent?: string;
+  timeout?: number;
+};
 
 
 export type GeocodeObject = Record<string, string | number | string[] | number[]>
@@ -151,14 +154,30 @@ export interface AbstractGeocoderMethods {
   batchGeocode(values: GeocodeValue[], callback: BatchResultCallback): void;
 }
 
-export interface AbstractGeocoderAdapter extends AbstractGeocoderMethods {
-  name: Provider;
+export interface AbstractGeocoderAdapter<T extends BaseAdapterOptions> extends AbstractGeocoderMethods {
+  name: T['provider'];
+  options: T;
+  httpAdapter: HTTPAdapter;
 }
 
-export interface AbstractGeocoder extends AbstractGeocoderMethods {
-  _adapter: AbstractGeocoderAdapter
+export interface AbstractGeocoder<T extends Provider> extends AbstractGeocoderMethods {
+  _adapter: AbstractGeocoderAdapter<Extract<AllAdapterOptions, { provider: T }>>;
+  _formatter?: Formatter<any>;
 }
-
 
 export type Nullable<T> = T | null
 
+// https://stackoverflow.com/a/69288824/1048847
+export type Expand<T> = T extends (...args: infer A) => infer R
+  ? (...args: Expand<A>) => Expand<R>
+  : T extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never;
+
+export type ExpandRecursively<T> = T extends (...args: infer A) => infer R
+  ? (...args: ExpandRecursively<A>) => ExpandRecursively<R>
+  : T extends object
+  ? T extends infer O
+  ? { [K in keyof O]: ExpandRecursively<O[K]> }
+  : never
+  : T;

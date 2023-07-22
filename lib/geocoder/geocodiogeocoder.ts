@@ -5,10 +5,10 @@ import type {
   ResultCallback,
   Location,
   ResultData,
-  BaseOptions
+  BaseAdapterOptions
 } from '../../types';
 
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'geocodio';
   apiKey: string;
 }

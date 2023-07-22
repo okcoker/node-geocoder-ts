@@ -16,6 +16,8 @@ const expect = chai.expect;
 import GpxFormatter from 'lib/formatter/gpxformatter';
 import StringFormatter from 'lib/formatter/stringformatter';
 
+import { Provider } from 'lib/providers';
+
 describe('GeocoderFactory', () => {
   describe('getGeocoder', () => {
     test('called with "google", and extra business key must return google geocoder with business key', () => {
@@ -99,7 +101,7 @@ describe('GeocoderFactory', () => {
       });
 
       const geocoderAdapter = geocoder._adapter;
-      const formatter = geocoder._formatter;
+      const formatter = geocoder._formatter!;
 
       geocoderAdapter.should.be.instanceof(GoogleGeocoder);
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
@@ -109,15 +111,17 @@ describe('GeocoderFactory', () => {
     test('called with "google" and "http" and "string" must return google geocoder with string formatter', () => {
       const geocoder = getGeocoder('google', {
         formatter: 'string',
-        formatterPattern: 'PATTERN'
+        formatterOptions: {
+          pattern: 'PATTERN'
+        }
       });
 
       const geocoderAdapter = geocoder._adapter;
-      const formatter = geocoder._formatter;
+      const formatter = geocoder._formatter!;
 
       geocoderAdapter.should.be.instanceof(GoogleGeocoder);
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
-      formatter.should.be.instanceof(StringFormatter);
+      formatter!.should.be.instanceof(StringFormatter);
     });
 
     test('called with "google" must return google geocoder with fetch adapter', () => {
@@ -132,6 +136,7 @@ describe('GeocoderFactory', () => {
     test('called with "here", "http" and extra business key must return here geocoder with business key', () => {
       const geocoder = getGeocoder({
         provider: 'here',
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -146,6 +151,7 @@ describe('GeocoderFactory', () => {
 
     test('called with "here", "https" and extra business key must return here geocoder with business key', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -160,6 +166,7 @@ describe('GeocoderFactory', () => {
 
     test('called with "here" and "http" and language must return here geocoder with language', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         language: 'en'
@@ -174,6 +181,7 @@ describe('GeocoderFactory', () => {
 
     test('called with "here" and "http" and politicalView must return here geocoder with politicalView', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         politicalView: 'GRE'
@@ -188,6 +196,7 @@ describe('GeocoderFactory', () => {
 
     test('called with "here" and "http" and country must return here geocoder with  country', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         country: 'FR'
@@ -202,6 +211,7 @@ describe('GeocoderFactory', () => {
 
     test('called with "here" and "http" and state must return here geocoder with state', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         state: 'Île-de-France'
@@ -216,13 +226,14 @@ describe('GeocoderFactory', () => {
 
     test('called with "here" and "http" and "gpx" must return here geocoder with gpx formatter', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         formatter: 'gpx'
       });
 
       const geocoderAdapter = geocoder._adapter;
-      const formatter = geocoder._formatter;
+      const formatter = geocoder._formatter!;
 
       geocoderAdapter.should.be.instanceof(HereGeocoder);
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
@@ -231,14 +242,17 @@ describe('GeocoderFactory', () => {
 
     test('called with "here" and "http" and "string" must return here geocoder with string formatter', () => {
       const geocoder = getGeocoder('here', {
+        apiKey: '',
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         formatter: 'string',
-        formatterPattern: 'PATTERN'
+        formatterOptions: {
+          pattern: 'PATTERN'
+        }
       });
 
       const geocoderAdapter = geocoder._adapter;
-      const formatter = geocoder._formatter;
+      const formatter = geocoder._formatter!;
 
       geocoderAdapter.should.be.instanceof(HereGeocoder);
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
@@ -288,7 +302,7 @@ describe('GeocoderFactory', () => {
 
     test('called with "zaertyazeaze" must throw an error', () => {
       expect(function () {
-        getGeocoder('zaertyazeaze');
+        getGeocoder('zaertyazeaze' as unknown as Provider);
       }).to.throw(Error, 'No geocoder provider find for : zaertyazeaze');
     });
 
@@ -303,7 +317,7 @@ describe('GeocoderFactory', () => {
       const geocoderAdapter = geocoder._adapter;
 
       geocoderAdapter.should.be.instanceof(GoogleGeocoder);
-      geocoderAdapter.httpAdapter.options.timeout.should.be.equal(timeout);
+      geocoderAdapter.httpAdapter.options.timeout!.should.be.equal(timeout);
       geocoderAdapter.httpAdapter.should.be.instanceof(FetchAdapter);
     });
 

@@ -2,13 +2,13 @@ import BaseAbstractGeocoder from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
-  BaseOptions,
+  BaseAdapterOptions,
   Location,
   GeocodeValue,
   ResultData
 } from '../../types';
 
-export interface Options extends BaseOptions {
+export interface Options extends BaseAdapterOptions {
   provider: 'virtualearth';
   apiKey: string;
 }

@@ -8,26 +8,32 @@ chai.should();
 const expect = chai.expect;
 const mockedHttpAdapter = buildHttpAdapter();
 
-const emptyOptions = { appId: '', apiKey: '' };
-
 describe('HereGeocoder', () => {
   describe('#constructor', () => {
     test('an http adapter must be set', () => {
       expect(function () {
-        new HereGeocoder('' as unknown as HTTPAdapter, emptyOptions);
+        new HereGeocoder('' as unknown as HTTPAdapter, { apiKey: '' });
       }).to.throw(Error, 'HereGeocoder need an httpAdapter');
     });
 
     test('requires appId and appCode to be specified', () => {
-      expect(function () {
+      expect(() => {
         new HereGeocoder(mockedHttpAdapter, { apiKey: '' });
       }).to.throw(Error, 'You must specify apiKey to use Here Geocoder');
-      expect(function () {
-        new HereGeocoder(mockedHttpAdapter, { apiKey: '', appId: 'APP_ID' });
-      }).to.throw(Error, 'You must specify apiKey to use Here Geocoder');
-      expect(function () {
+      expect(() => {
         new HereGeocoder(mockedHttpAdapter, {
           apiKey: '',
+          appId: 'APP_ID',
+          appCode: ''
+        });
+      }).to.throw(
+        Error,
+        'You are using a deprecated option scheme and must provide `appId` and `appCode`. Consider using `apiKey` instead to use  Here Geocoder'
+      );
+      expect(() => {
+        new HereGeocoder(mockedHttpAdapter, {
+          apiKey: '',
+          appId: '',
           appCode: 'APP_CODE'
         });
       }).to.throw(Error, 'You must specify apiKey to use Here Geocoder');
