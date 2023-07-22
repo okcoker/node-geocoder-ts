@@ -8,10 +8,12 @@ import type {
   BatchResultCallback,
   GeocodeValue,
   MaybeResultMaybeError,
-  BaseAdapterOptions
+  BaseAdapterOptions,
+  Result,
+  BatchResult
 } from 'types';
 
-abstract class BaseAbstractGeocoder<T extends BaseAdapterOptions>
+abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
   implements AbstractGeocoderAdapter<T>
 {
   name: T['provider'];
@@ -44,20 +46,33 @@ abstract class BaseAbstractGeocoder<T extends BaseAdapterOptions>
     this.options = options;
   }
 
-  reverse(query: Location, callback: ResultCallback) {
-    if (typeof this._reverse !== 'function') {
+  reverse(query: Location): Promise<Result> {
+    const customReverse = this._reverse?.bind(this);
+    if (typeof customReverse !== 'function') {
       throw new ValueError(
         this.constructor.name + ' does not support reverse geocoding'
       );
     }
 
-    this._reverse(query, callback);
+    return new Promise((resolve, reject) => {
+      customReverse(query, (err, result) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        // Have to cast here because the ResultCallback interface
+        // isnt perfect
+        resolve(result as Result);
+      });
+    });
   }
 
-  geocode(value: GeocodeValue, callback: ResultCallback) {
+  geocode(value: GeocodeValue): Promise<Result> {
     const address = typeof value === 'string' ? value : `${value.address}`;
+    const customGeocode = this._geocode?.bind(this);
 
-    if (typeof this._geocode !== 'function') {
+    if (typeof customGeocode !== 'function') {
       throw new ValueError(
         this.constructor.name + ' does not support geocoding'
       );
@@ -85,27 +100,60 @@ abstract class BaseAbstractGeocoder<T extends BaseAdapterOptions>
       );
     }
 
-    return this._geocode(value, callback);
+    return new Promise((resolve, reject) => {
+      customGeocode(value, (err, result) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        // Have to cast here because the ResultCallback interface
+        // isnt perfect
+        resolve(result as Result);
+      });
+    });
   }
 
-  batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
-    if (typeof this._batchGeocode === 'function') {
-      this._batchGeocode(values, callback);
-    } else {
-      const promises = values.map((value: any) => {
-        return new Promise<MaybeResultMaybeError>(resolve => {
-          this.geocode(value, (error, result) => {
-            resolve({
-              error: error,
-              data: result
-            });
-          });
-        });
-      });
+  batchGeocode(values: GeocodeValue[]): Promise<BatchResult> {
+    const customBatch = this._batchGeocode?.bind(this);
 
-      Promise.all(promises).then(data => callback(null, { data }));
+    if (typeof customBatch === 'function') {
+      return new Promise((resolve, reject) => {
+        customBatch(values, (error, result) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          // Have to cast here because the BatchResultCallback interface
+          // isnt perfect
+          resolve(result as BatchResult);
+        });
+      })
     }
+
+    const promises = values.map((value: any) => {
+      return new Promise<MaybeResultMaybeError>(resolve => {
+        this.geocode(value).then((result) => {
+          resolve({
+            error: null,
+            data: result
+          });
+        }).catch((error) => {
+          resolve({
+            error,
+            data: null
+          })
+        })
+      });
+    });
+
+    return Promise.all(promises).then((data) => {
+      return {
+        data
+      };
+    });
   }
 }
 
-export default BaseAbstractGeocoder;
+export default BaseAbstractGeocoderAdapter;

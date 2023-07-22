@@ -1,5 +1,5 @@
 import querystring from 'querystring';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -14,7 +14,7 @@ export interface Options extends BaseAdapterOptions {
   apiKey: string;
 }
 
-class MapQuestGeocoder extends BaseAbstractGeocoder<Options> {
+class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://www.mapquestapi.com/geocoding/v1';
 
   constructor(
@@ -28,7 +28,7 @@ class MapQuestGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params: Record<string, any> = {
       key: querystring.unescape(this.options.apiKey)
     };
@@ -61,9 +61,9 @@ class MapQuestGeocoder extends BaseAbstractGeocoder<Options> {
             return callback(
               new Error(
                 'Status is ' +
-                  result.info.statuscode +
-                  ' ' +
-                  result.info.messages[0]
+                result.info.statuscode +
+                ' ' +
+                result.info.messages[0]
               ),
               null
             );
@@ -110,7 +110,7 @@ class MapQuestGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 

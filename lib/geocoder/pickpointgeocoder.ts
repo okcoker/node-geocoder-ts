@@ -8,8 +8,8 @@ export interface Options extends Omit<OpenStreetMapOptions, 'provider'> {
 }
 
 class PickPointGeocoder extends OpenStreetMapGeocoder {
-  _endpoint = 'https://api.pickpoint.io/v1/forward';
-  _endpoint_reverse = 'https://api.pickpoint.io/v1/reverse';
+  override _endpoint = 'https://api.pickpoint.io/v1/forward';
+  override _endpoint_reverse = 'https://api.pickpoint.io/v1/reverse';
 
   constructor(
     httpAdapter: HTTPAdapter,

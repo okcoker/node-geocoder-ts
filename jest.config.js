@@ -10,7 +10,7 @@ const config = {
     modulePathIgnorePatterns: ['<rootDir>/dist/'],
     modulePaths: ['<rootDir>'],
     transform: {
-        '^.+\\.ts$': 'ts-jest',
+        '^.+\\.[ts|d.ts]$': 'ts-jest',
     },
     // setupFiles: ['<rootDir>/test/helpers/setup.js'],
     // globalSetup: '<rootDir>/test/helpers/setup.js',

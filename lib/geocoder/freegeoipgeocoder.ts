@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -10,7 +10,7 @@ export interface Options extends BaseAdapterOptions {
   provider: 'freegeoip';
 }
 
-class FreegeoipGeocoder extends BaseAbstractGeocoder<Options> {
+class FreegeoipGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   // WS endpoint
   _endpoint = 'https://freegeoip.net/json/';
 
@@ -24,7 +24,7 @@ class FreegeoipGeocoder extends BaseAbstractGeocoder<Options> {
     this.supportAddress = false;
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     this.httpAdapter.get(
       this._endpoint + value,
       {},

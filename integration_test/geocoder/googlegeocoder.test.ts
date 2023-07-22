@@ -1,27 +1,28 @@
-import NodeGeocoder from '../../index';
+import getGecoder, { AbstractGeocoder } from '../../index';
 
-describe('Google geocoder', () => {
-  let geocoder: any;
+const apiKey = process.env.GOOGLE_API_KEY;
+const options = {
+  provider: 'google',
+  apiKey
+} as const;
+
+const maybeDescribe = !apiKey ? describe.skip : describe;
+if (!apiKey) {
+  console.log('GOOGLE_API_KEY not configured. Skipping test suite.');
+}
+
+maybeDescribe('Google geocoder', () => {
+  let geocoder: AbstractGeocoder<'google'>;
 
   beforeAll(() => {
-    const apiKey = process.env.GOOGLE_API_KEY;
-    const options = {
-      provider: 'google',
-      apiKey
-    };
-
-    if (!apiKey || apiKey === '') {
-      throw new Error('GOOGLE_API_KEY not configured');
-    }
-
-    geocoder = NodeGeocoder(options);
+    geocoder = getGecoder(options);
   });
 
   describe('geocode', () => {
     it('works', async () => {
       const res = await geocoder.geocode('1231 Avenue Lajoie, Montreal');
-      expect(res[0]).toBeDefined();
-      expect(res[0]).toMatchObject({
+
+      expect(res.data[0]).toMatchObject({
         latitude: 45.5210619,
         longitude: -73.61070029999999,
         formattedAddress: '1231 Av. Lajoie, Outremont, QC H2V 1P2, Canada',
@@ -36,8 +37,7 @@ describe('Google geocoder', () => {
   describe('reverse', () => {
     it('works', async () => {
       const res = await geocoder.reverse({ lat: 45.521056, lon: -73.610734 });
-      expect(res[0]).toBeDefined();
-      expect(res[0]).toMatchObject({
+      expect(res.data[0]).toMatchObject({
         latitude: 45.5210619,
         longitude: -73.61070029999999,
         formattedAddress: '1231 Av. Lajoie, Outremont, QC H2V 1P2, Canada',

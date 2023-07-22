@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -12,7 +12,7 @@ export interface Options extends BaseAdapterOptions {
   provider: 'teleport';
 }
 
-class TeleportGeocoder extends BaseAbstractGeocoder<Options> {
+class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _cities_endpoint: string;
   _locations_endpoint: string;
 
@@ -27,7 +27,7 @@ class TeleportGeocoder extends BaseAbstractGeocoder<Options> {
     this._locations_endpoint = base + '/locations/';
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params: Record<string, any> = {};
     params.search = value;
     params.embed =
@@ -99,7 +99,7 @@ class TeleportGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
     const suffix = lat + ',' + lng;

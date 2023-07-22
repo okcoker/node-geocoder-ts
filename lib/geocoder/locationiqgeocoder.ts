@@ -1,5 +1,5 @@
 import querystring from 'querystring';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -14,7 +14,7 @@ export interface Options extends BaseAdapterOptions {
   apiKey: string;
 }
 
-class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
+class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'http://us1.locationiq.com/v1';
 
   /**
@@ -36,7 +36,7 @@ class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
     this.options.apiKey = querystring.unescape(this.options.apiKey);
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params = this._getCommonParams();
 
     if (typeof value === 'string') {
@@ -88,7 +88,7 @@ class LocationIQGeocoder extends BaseAbstractGeocoder<Options> {
     );
   }
 
-  _reverse(query: Location & { zoom?: number }, callback: ResultCallback) {
+  override _reverse(query: Location & { zoom?: number }, callback: ResultCallback) {
     const params = this._getCommonParams();
     const record = query as Record<string, any>;
 

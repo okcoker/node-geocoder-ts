@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -29,7 +29,7 @@ const ConfidenceInKM = {
   0: Number.NaN
 };
 
-class OpenCageGeocoder extends BaseAbstractGeocoder<Options> {
+class OpenCageGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'http://api.opencagedata.com/geocode/v1/json';
   // In case we need to support v1/v2 and this changes
   _ConfidenceInKM = ConfidenceInKM;
@@ -50,7 +50,7 @@ class OpenCageGeocoder extends BaseAbstractGeocoder<Options> {
    * @param <string>   value    Value to geocode (Address)
    * @param <function> callback Callback method
    */
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params = this._getCommonParams();
     if (typeof value === 'string') {
       params.q = value;
@@ -120,7 +120,7 @@ class OpenCageGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
     const params = this._getCommonParams();

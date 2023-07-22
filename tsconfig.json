@@ -13,15 +13,18 @@
       "resolveJsonModule": true,
       "esModuleInterop": true,
       "noErrorTruncation": true,
+      "noImplicitOverride": true,
       "paths": {
-          "lib": ["lib"],
-          "test": ["test"],
-          "types": ["types.d.ts"],
+        "lib": ["lib"],
+        "test": ["test"],
+        "integration_test": ["integration_test"],
+        "types": ["types.d.ts"]
       }
   },
   "include": [
       "lib",
       "test",
+      "integration_test",
       "index.ts",
       "types.d.ts"
   ]

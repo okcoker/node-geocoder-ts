@@ -92,9 +92,12 @@ export interface BatchResultFormatted {
   data: MaybeResultFormattedMaybeError[];
 }
 
+export type AllResultTypes = ResultWithProvider | Result | ResultFormatted;
+export type AllBatchResultTypes = BatchResult | BatchResultWithProvider | BatchResultFormatted;
+
 export interface NodeCallback<T> {
-  (err: any, result?: undefined | null): void;
-  (err: undefined | null, result: T): void;
+  (err: any, result: null): void;
+  (err: any, result: T): void;
 }
 
 export interface ResultCallback {
@@ -147,14 +150,28 @@ export type GeocodeObject = Record<string, string | number | string[] | number[]
 export type GeocodeValue = string | GeocodeObject
 
 export interface AbstractGeocoderMethods {
-  reverse(query: Location, callback: ResultCallback): void;
+  reverse(query: Location): Promise<AllResultTypes>;
 
-  geocode(value: GeocodeValue, callback: ResultCallback): void;
+  geocode(value: GeocodeValue): Promise<AllResultTypes>;
 
-  batchGeocode(values: GeocodeValue[], callback: BatchResultCallback): void;
+  batchGeocode(values: GeocodeValue[]): Promise<AllBatchResultTypes>;
 }
 
-export interface AbstractGeocoderAdapter<T extends BaseAdapterOptions> extends AbstractGeocoderMethods {
+export interface AbstractGeocoderAdapterMethods {
+  _reverse?(query: Location, callback: ResultCallback): void;
+
+  _geocode?(value: GeocodeValue, callback: ResultCallback): void;
+
+  _batchGeocode?(values: GeocodeValue[], callback: BatchResultCallback): void;
+
+  reverse(query: Location): Promise<Result>;
+
+  geocode(value: GeocodeValue): Promise<Result>;
+
+  batchGeocode(values: GeocodeValue[]): Promise<BatchResult>;
+}
+
+export interface AbstractGeocoderAdapter<T extends BaseAdapterOptions> extends AbstractGeocoderAdapterMethods {
   name: T['provider'];
   options: T;
   httpAdapter: HTTPAdapter;

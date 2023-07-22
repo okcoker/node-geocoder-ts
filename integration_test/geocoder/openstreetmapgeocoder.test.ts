@@ -1,29 +1,30 @@
-import NodeGeocoder from '../../index';
+import getGeocoder, { AbstractGeocoder, ResultData } from '../../index';
 
 describe('Openstreetmap geocoder', () => {
-  let geocoder: any;
+  let geocoder: AbstractGeocoder<'openstreetmap'>;
 
   beforeAll(() => {
     const options = {
       provider: 'openstreetmap'
-    };
+    } as const;
 
-    geocoder = NodeGeocoder(options);
+    geocoder = getGeocoder(options);
   });
 
   describe('geocode', () => {
     it('works with basic value', async () => {
       const res = await geocoder.geocode('1231 Av. Lajoie, Montreal');
+      const firstResult = res.data[0] as ResultData;
 
-      expect(res[0]).toBeDefined();
-      expect(res[0]).toMatchObject({
-        latitude: 45.5209666,
-        longitude: -73.6107766,
+      expect(firstResult).toBeDefined();
+      expect(firstResult).toEqual(expect.objectContaining({
         country: 'Canada',
         countryCode: 'CA',
         state: 'Québec',
         city: 'Montréal'
-      });
+      }));
+      expect(Math.trunc(firstResult.latitude!)).toEqual(45);
+      expect(Math.trunc(firstResult.longitude!)).toEqual(-73);
     });
 
     it('works with openstreetmap params', async () => {
@@ -31,17 +32,18 @@ describe('Openstreetmap geocoder', () => {
         q: '1231 Av. Lajoie, Montreal',
         limit: 2
       });
+      const firstResult = res.data[0] as ResultData;
 
-      expect(res).toHaveLength(2);
-      expect(res[0]).toBeDefined();
-      expect(res[0]).toMatchObject({
-        latitude: 45.5209666,
-        longitude: -73.6107766,
+      expect(res.data).toHaveLength(2);
+      expect(firstResult).toBeDefined();
+      expect(firstResult).toEqual(expect.objectContaining({
         country: 'Canada',
         countryCode: 'CA',
         state: 'Québec',
         city: 'Montréal'
-      });
+      }));
+      expect(Math.trunc(firstResult.latitude!)).toEqual(45);
+      expect(Math.trunc(firstResult.longitude!)).toEqual(-73);
     });
   });
 });

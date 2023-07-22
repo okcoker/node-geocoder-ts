@@ -1,5 +1,5 @@
 import querystring from 'querystring';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -16,7 +16,7 @@ export interface Options extends BaseAdapterOptions {
 /**
  * Constructor
  */
-class GeocodioGeocoder extends BaseAbstractGeocoder<Options> {
+class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://api.geocod.io/v1';
 
   constructor(
@@ -30,7 +30,7 @@ class GeocodioGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: any, callback: ResultCallback) {
+  override _geocode(value: any, callback: ResultCallback) {
     this.httpAdapter.get(
       this._endpoint + '/geocode',
       {
@@ -76,7 +76,7 @@ class GeocodioGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override  _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 

@@ -1,14 +1,15 @@
 import crypto from 'crypto';
 import url from 'url';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
   ResultData,
-  Location
+  Location,
+  GeocodeObject,
+  Nullable
 } from 'types';
-
 export interface Options extends BaseAdapterOptions {
   provider: 'google';
   clientId?: string;
@@ -19,7 +20,9 @@ export interface Options extends BaseAdapterOptions {
   channel?: string;
 }
 
-class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
+type GeocoderResponse = google.maps.GeocoderResponse & { status: google.maps.GeocoderStatus };
+
+class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   // Google geocoding API endpoint
   _endpoint = 'https://maps.googleapis.com/maps/api/geocode/json';
 
@@ -38,7 +41,7 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: any, callback: ResultCallback) {
+  override _geocode(value: GeocodeObject, callback: ResultCallback) {
     const params = this._prepareQueryString();
 
     if (value.address) {
@@ -75,51 +78,46 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
     delete params.excludePartialMatches;
 
     this._signedRequest(this._endpoint, params);
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
+    this.httpAdapter.get(this._endpoint, params, (err: any, result: Nullable<GeocoderResponse>) => {
+      if (err || !result) {
         return callback(err, null);
-      } else {
-        // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
-        // error_message may or may not be present
-        if (result.status === 'ZERO_RESULTS') {
-          return callback(null, {
-            raw: result,
-            data: []
-          });
-        }
-
-        if (result.status !== 'OK') {
-          return callback(
-            new Error(
-              'Status is ' +
-                result.status +
-                '.' +
-                (result.error_message ? ' ' + result.error_message : '')
-            ),
-            null
-          );
-        }
-
-        const results = result.results
-          .map((currentResult: any) => {
-            if (
-              excludePartialMatches &&
-              excludePartialMatches === true &&
-              typeof currentResult.partial_match !== 'undefined' &&
-              currentResult.partial_match === true
-            ) {
-              return null;
-            }
-
-            return this._formatResult(currentResult);
-          })
-          .filter(Boolean);
-
-        callback(null, {
-          data: results,
-          raw: result
+      }
+      // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
+      // error_message may or may not be present
+      if (result.status === 'ZERO_RESULTS') {
+        return callback(null, {
+          raw: result,
+          data: []
         });
       }
+
+      if (result.status !== 'OK') {
+        return callback(
+          new Error(
+            `Status is ${result.status}. ${result}`
+          ),
+          null
+        );
+      }
+
+      const results = result.results
+        .flatMap((currentResult: any) => {
+          if (
+            excludePartialMatches &&
+            excludePartialMatches === true &&
+            typeof currentResult.partial_match !== 'undefined' &&
+            currentResult.partial_match === true
+          ) {
+            return [];
+          }
+
+          return this._formatResult(currentResult);
+        });
+
+      callback(null, {
+        data: results,
+        raw: result
+      });
     });
   }
 
@@ -302,7 +300,7 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
     return extractedObj;
   }
 
-  _reverse(
+  override _reverse(
     query: Location & {
       language?: string;
       result_type?: string;
@@ -339,9 +337,9 @@ class GoogleGeocoder extends BaseAbstractGeocoder<Options> {
           return callback(
             new Error(
               'Status is ' +
-                result.status +
-                '.' +
-                (result.error_message ? ' ' + result.error_message : '')
+              result.status +
+              '.' +
+              (result.error_message ? ' ' + result.error_message : '')
             ),
             null
           );

@@ -2,4 +2,6 @@ node_modules/
 .idea
 test.js
 playground.js
+playground.ts
 dist
+env.sh

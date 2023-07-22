@@ -1,5 +1,5 @@
 import querystring from 'querystring';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -28,7 +28,7 @@ const MQConfidenceLookup = {
   COUNTRY: 0.1
 };
 
-class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
+class OpenMapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://open.mapquestapi.com/geocoding/v1';
 
   constructor(
@@ -41,7 +41,7 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     this.httpAdapter.get(
       this._endpoint + '/address',
       {
@@ -56,9 +56,9 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
             return callback(
               new Error(
                 'Status is ' +
-                  result.info.statuscode +
-                  ' ' +
-                  result.info.messages[0]
+                result.info.statuscode +
+                ' ' +
+                result.info.messages[0]
               ),
               null
             );
@@ -91,13 +91,13 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoder<Options> {
       extra: {
         confidence:
           MQConfidenceLookup[
-            result.geocodeQuality as keyof typeof MQConfidenceLookup
+          result.geocodeQuality as keyof typeof MQConfidenceLookup
           ] || 0
       }
     };
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 

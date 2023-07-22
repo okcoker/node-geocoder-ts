@@ -1,12 +1,13 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
   Location,
   GeocodeValue,
-  ResultData
-} from '../../types';
+  ResultData,
+  Nullable
+} from 'types';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'openstreetmap';
@@ -17,7 +18,74 @@ export interface Options extends BaseAdapterOptions {
   zoom?: number;
 }
 
-class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
+type OSMSearchResult = {
+  /**
+   example: {
+    "place_id": 6448281,
+  "place_id": 6448281,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
+  "osm_type": "node",
+  "osm_id": 821375156,
+  "boundingbox": [
+    "45.5209835",
+    "45.5210835",
+    "-73.6107149",
+    "-73.6106149"
+  ],
+  "lat": "45.5210335",
+  "lon": "-73.6106649",
+  "display_name": "Galanga Bistro Thaï, 1231, Avenue Lajoie, Outremont, Montréal, Agglomération de Montréal, Montréal (région administrative), Québec, H2V 1P2, Canada",
+  "class": "amenity",
+  "type": "restaurant",
+  "importance": 0.31001,
+  "icon": "https://nominatim.openstreetmap.org/ui/mapicons/food_restaurant.p.20.png",
+  "address": {
+    "amenity": "Galanga Bistro Thaï",
+    "house_number": "1231",
+    "road": "Avenue Lajoie",
+    "suburb": "Outremont",
+    "city": "Montréal",
+    "county": "Agglomération de Montréal",
+    "region": "Montréal (région administrative)",
+    "state": "Québec",
+    "ISO3166-2-lvl4": "CA-QC",
+    "postcode": "H2V 1P2",
+    "country": "Canada",
+    "country_code": "ca"
+  }
+  */
+
+  'place_id': number;
+  'licence': string;
+  'osm_type': string;
+  'osm_id': number;
+  'boundingbox': [
+    south: `${number}`, north: `${number}`, west: `${number}`, east: `${number}`
+  ];
+  'lat': `${number}`;
+  'lon': `${number}`;
+  'display_name': string;
+  'class': string;
+  'type': string;
+  'importance': number;
+  'icon': string;
+  'address': {
+    'amenity': string;
+    'house_number': string;
+    'road': string;
+    'suburb': string;
+    'city': string;
+    'county': string;
+    'region': string;
+    'state': string;
+    'ISO3166-2-lvl4': string;
+    'postcode': string;
+    'country': string;
+    'country_code': string;
+  }
+}
+
+class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint: string;
   _endpoint_reverse: string;
 
@@ -32,8 +100,8 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
     this._endpoint_reverse = osmServer + '/reverse';
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
-    const params = this._getCommonParams();
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+    let params = this._getCommonParams();
     params.addressdetails = 1;
     if (typeof value == 'string') {
       params.q = value;
@@ -44,30 +112,31 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
         params[k] = v;
       }
     }
-    this._forceParams(params);
 
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
+    params = this._forceParams(params);
+
+    this.httpAdapter.get<OSMSearchResult[]>(this._endpoint, params, (err: any, result: Nullable<OSMSearchResult[]>) => {
+      if (err || !result) {
         return callback(err, null);
-      } else {
-        if (result.error) {
-          return callback(new Error(result.error), null);
-        }
-        let results: ResultData[] = [];
-
-        if (result instanceof Array) {
-          results = result.map((data: any) => {
-            return this._formatResult(data);
-          });
-        } else {
-          results = [this._formatResult(result)];
-        }
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
       }
+      // Do we need this check??
+      if ((result as any).error) {
+        return callback(new Error((result as any).error), null);
+      }
+      let results: ResultData[] = [];
+
+      if (result instanceof Array) {
+        results = result.map((data: any) => {
+          return this._formatResult(data);
+        });
+      } else {
+        results = [this._formatResult(result)];
+      }
+
+      callback(null, {
+        raw: result,
+        data: results
+      });
     });
   }
 
@@ -108,7 +177,7 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _reverse(
+  override _reverse(
     query: Location & {
       format?: 'xml' | 'json';
       addressdetails?: number;
@@ -116,14 +185,14 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoder<Options> {
     },
     callback: ResultCallback
   ) {
-    const params = this._getCommonParams();
+    let params = this._getCommonParams();
     const record = query as Record<string, any>;
 
     for (const k in query) {
       const v = record[k];
       params[k] = v;
     }
-    this._forceParams(params);
+    params = this._forceParams(params);
 
     this.httpAdapter.get(
       this._endpoint_reverse,

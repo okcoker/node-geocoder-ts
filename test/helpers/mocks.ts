@@ -1,5 +1,6 @@
-import { AllAdapterOptions } from 'lib/geocoderfactory';
-import {
+import type { AllAdapterOptions } from 'lib/geocoderfactory';
+import type { Provider } from 'lib/providers';
+import type {
   HTTPAdapter,
   AbstractGeocoder,
   AbstractGeocoderAdapter,
@@ -7,7 +8,8 @@ import {
   Result,
   ResultCallback,
   GeocodeValue,
-  BatchResultCallback
+  BatchResultCallback,
+  BatchResult
 } from 'types';
 
 export function buildHttpAdapter(overrides = {}): HTTPAdapter {
@@ -47,26 +49,69 @@ export function buildGeocoderAdapter<T extends AllAdapterOptions>(
 
     options: {} as T,
 
-    reverse(query: Location, callback: ResultCallback) {
+    _reverse(_query: Location, callback: ResultCallback) {
       callback(null, buildResult());
     },
 
-    geocode(value: GeocodeValue, callback: ResultCallback) {
+    _geocode(_value: GeocodeValue, callback: ResultCallback) {
       callback(null, buildResult());
     },
 
-    batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
+    _batchGeocode(_values: GeocodeValue[], callback: BatchResultCallback) {
       callback(null, { data: [] });
+    },
+
+    reverse(_query: Location): Promise<Result> {
+      return Promise.resolve({
+        raw: '',
+        data: []
+      })
+    },
+
+    geocode(_value: GeocodeValue): Promise<Result> {
+      return Promise.resolve({
+        raw: '',
+        data: []
+      })
+    },
+
+    batchGeocode(_values: GeocodeValue[]): Promise<BatchResult> {
+      return Promise.resolve({
+        raw: '',
+        data: []
+      })
     },
 
     ...overrides
   };
 }
 
-export function buildGeocoder(overrides = {}): AbstractGeocoder<any> {
+
+export function buildGeocoder<T extends Provider>(overrides = {}): AbstractGeocoder<T> {
   return {
-    _adapter: buildGeocoderAdapter(overrides),
-    ...buildGeocoderAdapter(overrides),
+    _adapter: buildGeocoderAdapter<Extract<AllAdapterOptions, { provider: T }>>(overrides),
+
+    reverse(_query: Location): Promise<Result> {
+      return Promise.resolve({
+        raw: '',
+        data: []
+      })
+    },
+
+    geocode(_value: GeocodeValue): Promise<Result> {
+      return Promise.resolve({
+        raw: '',
+        data: []
+      })
+    },
+
+    batchGeocode(_values: GeocodeValue[]): Promise<BatchResult> {
+      return Promise.resolve({
+        raw: '',
+        data: []
+      })
+    },
+
     ...overrides
   };
 }

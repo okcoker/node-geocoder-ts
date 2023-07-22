@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -13,7 +13,7 @@ export interface Options extends BaseAdapterOptions {
   auth_token: string;
 }
 
-class SmartyStreets extends BaseAbstractGeocoder<Options> {
+class SmartyStreets extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://api.smartystreets.com/street-address';
 
   constructor(
@@ -51,7 +51,7 @@ class SmartyStreets extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params = {
       street: value,
       'auth-id': this.options.auth_id,

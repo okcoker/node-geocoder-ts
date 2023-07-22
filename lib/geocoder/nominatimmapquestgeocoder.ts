@@ -9,8 +9,8 @@ export interface Options extends Omit<OpenStreetMapOptions, 'provider'> {
 }
 
 class NominatimMapquestGeocoder extends OpenStreetMapGeocoder {
-  _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search';
-  _endpoint_reverse = 'http://open.mapquestapi.com/nominatim/v1/reverse';
+  override _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search';
+  override _endpoint_reverse = 'http://open.mapquestapi.com/nominatim/v1/reverse';
 
   constructor(
     httpAdapter: HTTPAdapter,

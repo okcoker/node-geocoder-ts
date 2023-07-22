@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -13,7 +13,7 @@ export interface Options extends BaseAdapterOptions {
   apiKey: string;
 }
 
-class VirtualEarthGeocoder extends BaseAbstractGeocoder<Options> {
+class VirtualEarthGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://dev.virtualearth.net/REST/v1/Locations';
 
   constructor(
@@ -27,7 +27,7 @@ class VirtualEarthGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params = {
       q: value,
       key: this.options.apiKey
@@ -49,7 +49,7 @@ class VirtualEarthGeocoder extends BaseAbstractGeocoder<Options> {
     });
   }
 
-  _reverse(value: Location, callback: ResultCallback) {
+  override _reverse(value: Location, callback: ResultCallback) {
     const params = {
       key: this.options.apiKey
     };

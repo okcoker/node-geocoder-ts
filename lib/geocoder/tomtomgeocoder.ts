@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -16,7 +16,7 @@ export interface Options extends BaseAdapterOptions {
   limit?: number;
 }
 
-class TomTomGeocoder extends BaseAbstractGeocoder<Options> {
+class TomTomGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://api.tomtom.com/search/2/geocode';
   _batchGeocodingEndpoint = 'https://api.tomtom.com/search/2/batch.json';
 
@@ -30,7 +30,7 @@ class TomTomGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: string, callback: ResultCallback) {
+  override _geocode(value: string, callback: ResultCallback) {
     const params: Record<string, string | number> = {
       key: this.options.apiKey
     };
@@ -79,7 +79,7 @@ class TomTomGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  async _batchGeocode(values: string[], callback: BatchResultCallback) {
+  override async _batchGeocode(values: string[], callback: BatchResultCallback) {
     try {
       const jobLocation = await this.__createJob(values);
       const rawResults = await this.__pollJobStatusAndFetchResults(

@@ -1,6 +1,6 @@
 import readline from 'readline';
 import ValueError from './../error/valueerror';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -14,7 +14,10 @@ import type {
 
 export interface Options extends BaseAdapterOptions {
   provider: 'here';
-  apiKey: string;
+  /**
+   * If apiKey is not specified, this assumes you're using the `appId` & `appCode` combo
+   */
+  apiKey?: string;
   /** @deprecated use `apiKey` instead */
   appId?: string;
   /** @deprecated use `apiKey` instead */
@@ -27,7 +30,7 @@ export interface Options extends BaseAdapterOptions {
   production?: boolean;
 }
 
-class HereGeocoder extends BaseAbstractGeocoder<Options> {
+class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   // Here geocoding API endpoint
   _geocodeEndpoint = 'https://geocoder.ls.hereapi.com/6.2/geocode.json';
 
@@ -40,16 +43,16 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
 
   constructor(
     httpAdapter: HTTPAdapter,
-    options: Omit<Options, 'provider'> = { apiKey: '' }
+    options: Omit<Options, 'provider'> = {}
   ) {
     super(httpAdapter, { ...options, provider: 'here' } as Options);
 
-    if (!options.apiKey && !(options.apiKey && options.appCode)) {
+    if (!options.apiKey && !(options.appId && options.appCode)) {
       throw new Error('You must specify apiKey to use Here Geocoder');
     }
   }
 
-  _geocode(
+  override _geocode(
     value: GeocodeValue & {
       address?: string;
       language?: string;
@@ -120,7 +123,7 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
     );
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
     const params = this._prepareQueryString();
@@ -248,7 +251,7 @@ class HereGeocoder extends BaseAbstractGeocoder<Options> {
     return params;
   }
 
-  async _batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
+  override async _batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
     try {
       const jobId = await this.__createJob(values);
       await this.__pollJobStatus(jobId);

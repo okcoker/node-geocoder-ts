@@ -10,7 +10,9 @@ import type {
   BatchResult,
   BatchResultWithProvider,
   BatchResultFormatted,
-  AbstractGeocoderAdapter
+  AbstractGeocoderAdapter,
+  AllResultTypes,
+  AllBatchResultTypes
 } from 'types';
 import { Provider, providers } from 'lib/providers';
 import { AllAdapterOptions } from './geocoderfactory';
@@ -34,81 +36,56 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   /**
    * Geocode a value (address or ip)
    */
-  geocode(
+  async geocode(
     value: GeocodeValue
-  ): Promise<ResultWithProvider | Result | ResultFormatted> {
-    return new Promise((resolve, reject) => {
-      this._adapter.geocode(value, (err: any, result: Result | null) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  ): Promise<AllResultTypes> {
+    const result = await this._adapter.geocode(value);
 
-        // This shouldnt happen but the ResultCallback interface type isn't perfect
-        if (!result) {
-          reject(new Error('Unexpected error with the result'));
-          return;
-        }
+    // This shouldnt happen but the ResultCallback interface type isn't perfect
+    if (!result) {
+      throw new Error('Unexpected error with the result');
+    }
 
-        const filtered = this._filter(value, result);
-        const formatted = this._format(filtered);
+    const filtered = this._filter(value, result);
+    const formatted = this._format(filtered);
 
-        resolve(formatted);
-      });
-    });
+    return formatted;
   }
 
-  reverse(
+  async reverse(
     query: Location
-  ): Promise<ResultWithProvider | Result | ResultFormatted> {
-    return new Promise((resolve, reject) => {
-      this._adapter.reverse(query, (err: any, result: Result | null) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  ): Promise<AllResultTypes> {
+    const result = await this._adapter.reverse(query);
 
-        // This shouldnt happen but the ResultCallback interface type isn't perfect
-        if (!result) {
-          reject(new Error('Unexpected error with the result'));
-          return;
-        }
+    // This shouldnt happen but the ResultCallback interface type isn't perfect
+    if (!result) {
+      throw new Error('Unexpected error with the result');
+    }
 
-        const formatted = this._format(result);
+    const formatted = this._format(result);
 
-        resolve(formatted);
-      });
-    });
+    return formatted;
   }
 
   /**
    * Batch geocode
    */
-  batchGeocode(
+  async batchGeocode(
     values: GeocodeValue[]
-  ): Promise<BatchResultWithProvider | BatchResult | BatchResultFormatted> {
-    return new Promise((resolve, reject) => {
-      this._adapter.batchGeocode(
-        values,
-        (err: any, result: BatchResult | null) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+  ): Promise<AllBatchResultTypes> {
+    const result = await this._adapter.batchGeocode(
+      values
+    );
 
-          // This shouldnt happen but the BatchResultCallback interface type isn't perfect
-          if (!result) {
-            reject(new Error('Unexpected error with the result'));
-            return;
-          }
+    // This shouldnt happen but the BatchResultCallback interface type isn't perfect
+    if (!result) {
+      throw new Error('Unexpected error with the result');
+    }
 
-          const filtered = this._batchFilter(values, result);
-          const formatted = this._batchFormat(filtered);
+    const filtered = this._batchFilter(values, result);
+    const formatted = this._batchFormat(filtered);
 
-          resolve(formatted);
-        }
-      );
-    });
+    return formatted;
   }
 
   private _filter(value: GeocodeValue, result: Result): Result {
@@ -228,7 +205,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   }
 }
 
-function isBatchResultFormatted(obj: any): obj is BatchResultFormatted {
+export function isBatchResultFormatted(obj: any): obj is BatchResultFormatted {
   return (
     obj.data &&
     Array.isArray(obj.data) &&
@@ -238,7 +215,7 @@ function isBatchResultFormatted(obj: any): obj is BatchResultFormatted {
   );
 }
 
-function isBatchResultWithProvider(obj: any): obj is BatchResultWithProvider {
+export function isBatchResultWithProvider(obj: any): obj is BatchResultWithProvider {
   return (
     obj.data &&
     Array.isArray(obj.data) &&
@@ -248,7 +225,7 @@ function isBatchResultWithProvider(obj: any): obj is BatchResultWithProvider {
   );
 }
 
-function isResultFormatted(
+export function isResultFormatted(
   obj: Result | ResultWithProvider | ResultFormatted
 ): obj is ResultFormatted {
   return (
@@ -258,11 +235,7 @@ function isResultFormatted(
   );
 }
 
-function isProvider(obj: any): obj is Provider {
-  return providers.includes(obj);
-}
-
-function isResultWithProvider(
+export function isResultWithProvider(
   obj: Result | ResultWithProvider | ResultFormatted
 ): obj is ResultWithProvider {
   return (
@@ -270,6 +243,10 @@ function isResultWithProvider(
     typeof obj.data[0] !== 'string' &&
     isProvider(obj.data[0]?.provider)
   );
+}
+
+export function isProvider(obj: any): obj is Provider {
+  return providers.includes(obj);
 }
 
 // function isResultFormattedArray(

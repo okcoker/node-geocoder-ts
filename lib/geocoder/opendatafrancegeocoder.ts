@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -15,7 +15,7 @@ export interface Options extends BaseAdapterOptions {
   apiKey?: string;
 }
 
-class OpendataFranceGeocoder extends BaseAbstractGeocoder<Options> {
+class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _endpoint = 'https://api-adresse.data.gouv.fr/search';
   _endpoint_reverse = 'https://api-adresse.data.gouv.fr/reverse';
 
@@ -26,7 +26,7 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoder<Options> {
     super(httpAdapter, { ...options, provider: 'opendatafrance' });
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     const params = this._getCommonParams();
 
     if (typeof value === 'string') {
@@ -115,7 +115,7 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoder<Options> {
     return formatedResult;
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const params = this._getCommonParams();
     const record = query as Record<string, any>;
 

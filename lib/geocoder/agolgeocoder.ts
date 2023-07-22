@@ -1,5 +1,5 @@
 import net from 'net';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   Location,
@@ -16,7 +16,7 @@ export interface Options extends BaseAdapterOptions {
   client_secret: string;
 }
 
-class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
+class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   cache: any;
 
   _authEndpoint = 'https://www.arcgis.com/sharing/oauth2/token';
@@ -70,7 +70,7 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
 
   _getToken(callback: NodeCallback<string>) {
     if (this._cachedToken.get(this.cache) !== null) {
-      callback(this._cachedToken.get());
+      callback(null, this._cachedToken.get());
       return;
     }
 
@@ -85,20 +85,20 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
       params,
       (err: any, result: any) => {
         if (err) {
-          return callback(err);
-        } else {
-          result = JSON.parse(result);
-          const tokenExpiration = new Date().getTime() + result.expires_in;
-          const token = `${result.access_token}`;
-          this._cachedToken.put(token, tokenExpiration, this.cache);
-
-          callback(null, token);
+          return callback(err, null);
         }
+
+        result = JSON.parse(result);
+        const tokenExpiration = new Date().getTime() + result.expires_in;
+        const token = `${result.access_token}`;
+        this._cachedToken.put(token, tokenExpiration, this.cache);
+
+        callback(null, token);
       }
     );
   }
 
-  geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     if (typeof value === 'string' && net.isIP(value)) {
       throw new Error('The AGOL geocoder does not support IP addresses');
     }
@@ -223,7 +223,7 @@ class AGOLGeocoder extends BaseAbstractGeocoder<Options> {
     };
   }
 
-  reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const lat = query.lat;
     const long = query.lon;
 

@@ -40,6 +40,9 @@ module.exports = {
         'eqeqeq': 0,
         'key-spacing': 0,
         'comma-spacing': 0,
-        'no-unreachable': 1
+        'no-unreachable': 1,
+
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_'}]
     }
 };

@@ -1,4 +1,4 @@
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -13,7 +13,7 @@ import type {
  */
 export interface Options extends BaseAdapterOptions {
   provider: 'mapbox';
-  apiKey: string;
+  apiKey?: string;
   language?: string;
   country?: string;
   autocomplete?: string;
@@ -28,7 +28,7 @@ const OPTIONS_MAP = {
   apiKey: 'access_token'
 };
 
-class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
+class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   _geocodeEndpoint = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
   constructor(
@@ -42,7 +42,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
     }
   }
 
-  _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeValue, callback: ResultCallback) {
     let params = this._prepareQueryString({});
     let searchtext = value;
 
@@ -76,7 +76,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoder<Options> {
     });
   }
 
-  _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: Location, callback: ResultCallback) {
     const { lat, lon, ...other } = query;
 
     const params = this._prepareQueryString(other);

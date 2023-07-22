@@ -1,5 +1,5 @@
 import net from 'net';
-import BaseAbstractGeocoder from './abstractgeocoder';
+import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
@@ -14,7 +14,7 @@ export interface Options extends BaseAdapterOptions {
 /**
  * Constructor
  */
-class DataScienceToolkitGeocoder extends BaseAbstractGeocoder<Options> {
+class DataScienceToolkitGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   constructor(
     httpAdapter: HTTPAdapter,
     options: Omit<Options, 'provider'> = {}
@@ -50,7 +50,7 @@ class DataScienceToolkitGeocoder extends BaseAbstractGeocoder<Options> {
    * @param <string>   value    Value to geocode (Address or IPv4)
    * @param <function> callback Callback method
    */
-  _geocode(value: any, callback: ResultCallback) {
+  override _geocode(value: any, callback: ResultCallback) {
     const ep = this._endpoint(value);
     this.httpAdapter.get(ep + value, {}, (err: any, result: any) => {
       if (err) {

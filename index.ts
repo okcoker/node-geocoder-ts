@@ -29,7 +29,7 @@ import type {
 } from 'lib/geocoderfactory';
 
 export default getGeocoder;
-export * from 'types';
+export type * from 'types';
 export type {
   AllAdapterOptions,
   AllSubFormatterOptions,
@@ -58,4 +58,13 @@ export type {
   OpendataFranceOptions,
   MapBoxOptions
 }
-export type { Provider } from 'lib/providers'
+export type { Provider } from 'lib/providers';
+
+// type guards for the lack of specificity on the geocoder methods
+export {
+  isBatchResultFormatted,
+  isBatchResultWithProvider,
+  isResultFormatted,
+  isResultWithProvider,
+  isProvider
+} from 'lib/geocoder';

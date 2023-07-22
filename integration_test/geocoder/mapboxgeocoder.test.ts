@@ -1,20 +1,21 @@
-import NodeGeocoder from '../../index';
+import getGeocoder, { AbstractGeocoder } from '../../index';
 
-describe('Mapbox geocoder', () => {
-  let geocoder: any;
+const apiKey = process.env.MAPBOX_API_KEY;
+const options = {
+  provider: 'mapbox',
+  apiKey: apiKey!
+} as const;
+const maybeDescribe = !apiKey ? describe.skip : describe;
+
+if (!apiKey) {
+  console.log('MAPBOX_API_KEY not configured. Skipping test suite.');
+}
+
+maybeDescribe('Mapbox geocoder', () => {
+  let geocoder: AbstractGeocoder<'mapbox'>;
 
   beforeAll(() => {
-    const apiKey = process.env.MAPBOX_API_KEY;
-    const options = {
-      provider: 'mapbox',
-      apiKey
-    };
-
-    if (!apiKey || apiKey === '') {
-      throw new Error('MAPBOX_API_KEY not configured');
-    }
-
-    geocoder = NodeGeocoder(options);
+    geocoder = getGeocoder(options);
   });
 
   describe('geocode', () => {
