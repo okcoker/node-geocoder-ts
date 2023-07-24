@@ -3,8 +3,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -50,7 +50,7 @@ class OpenCageGeocoder extends BaseAbstractGeocoderAdapter<Options> {
    * @param <string>   value    Value to geocode (Address)
    * @param <function> callback Callback method
    */
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     const params = this._getCommonParams();
     if (typeof value === 'string') {
       params.q = value;
@@ -120,7 +120,7 @@ class OpenCageGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
     const params = this._getCommonParams();

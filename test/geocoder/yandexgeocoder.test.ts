@@ -1,53 +1,53 @@
-import chai from 'chai';
-import sinon from 'sinon';
+import ValueError from 'lib/error/valueerror';
 import YandexGeocoder from 'lib/geocoder/yandexgeocoder';
 import { buildHttpAdapter } from 'test/helpers/mocks';
+import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
-chai.should();
-const expect = chai.expect;
 const mockedHttpAdapter = buildHttpAdapter();
 
 describe('YandexGeocoder', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   describe('#constructor', () => {
     test('an http adapter must be set', () => {
       expect(() => {
         new YandexGeocoder('' as unknown as HTTPAdapter);
-      }).to.throw(Error, 'YandexGeocoder need an httpAdapter');
+      }).toThrow('YandexGeocoder need an httpAdapter');
     });
   });
 
   describe('#geocode', () => {
-    test('Should not accept IPv4', () => {
-      const geocoder = new YandexGeocoder(mockedHttpAdapter);
-      expect(function () {
-        geocoder.geocode('127.0.0.1', () => {});
-      }).to.throw(Error, 'YandexGeocoder does not support geocoding IPv4');
+    test('Should not accept IPv4', async () => {
+      const adapter = new YandexGeocoder(mockedHttpAdapter);
+      await expect(
+        adapter.geocode('127.0.0.1')
+      ).rejects.toEqual(new ValueError('YandexGeocoder does not support geocoding IPv4'));
     });
 
-    test('Should not accept IPv6', () => {
-      const geocoder = new YandexGeocoder(mockedHttpAdapter);
-      expect(function () {
-        geocoder.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001', () => {});
-      }).to.throw(Error, 'YandexGeocoder does not support geocoding IPv6');
+    test('Should not accept IPv6', async () => {
+      const adapter = new YandexGeocoder(mockedHttpAdapter);
+      await expect(
+        adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toEqual(new ValueError('YandexGeocoder does not support geocoding IPv6'));
     });
 
-    test('Should call httpAdapter get method', () => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .returns({ then: function () {} });
+    test('Should call httpAdapter get method', async () => {
+      const adapter = new YandexGeocoder(mockedHttpAdapter);
 
-      const geocoder = new YandexGeocoder(mockedHttpAdapter);
-      geocoder.geocode('1 champs élysée Paris', () => {});
-
-      mock.verify();
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          adapter.geocode('1 champs élysée Paris');
+        },
+        callCount: 1
+      });
     });
 
-    test('Should return geocoded address', (done: any) => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      const jsonResult = {
+    test('Should return geocoded address', async () => {
+      const response = {
         response: {
           GeoObjectCollection: {
             metaDataProperty: {
@@ -101,131 +101,120 @@ describe('YandexGeocoder', () => {
           }
         }
       };
-      mock.expects('get').once().callsArgWith(2, false, jsonResult);
 
-      const geocoder = new YandexGeocoder(mockedHttpAdapter);
+      const adapter = new YandexGeocoder(mockedHttpAdapter);
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return adapter.geocode(
+            'Kabasakal Caddesi, Istanbul, Turkey'
+          )
+        },
+        mockResponse: response
+      });
 
-      geocoder.geocode(
-        'Kabasakal Caddesi, Istanbul, Turkey',
-        function (err: any, results: any) {
-          expect(err).equal(null);
-
-          results.data[0].should.to.deep.equal({
-            latitude: 40.653388,
-            longitude: -73.94405,
-            country: 'United States',
-            city: 'New York',
-            state: 'New York',
-            streetName: 'Brooklyn Ave',
-            countryCode: 'US',
-            streetNumber: null,
-            formattedAddress: 'New York, Kings, Brooklyn Ave'
-          });
-
-          mock.verify();
-          done();
-        }
-      );
+      expect(results.data[0]).toEqual({
+        latitude: 40.653388,
+        longitude: -73.94405,
+        country: 'United States',
+        city: 'New York',
+        state: 'New York',
+        streetName: 'Brooklyn Ave',
+        countryCode: 'US',
+        formattedAddress: 'New York, Kings, Brooklyn Ave'
+      });
     });
   });
 
   describe('#reverse', () => {
-    test('Should call httpAdapter get method', () => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .returns({ then: function () {} });
-
-      const googleAdapter = new YandexGeocoder(mockedHttpAdapter);
-
-      googleAdapter.reverse({ lat: 55.985074, lon: 40.018587 }, () => {});
-
-      mock.verify();
+    test('Should call httpAdapter get method', async () => {
+      const adapter = new YandexGeocoder(mockedHttpAdapter);
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return adapter.reverse({ lat: 55.985074, lon: 40.018587 })
+        },
+        callCount: 1
+      });
     });
 
-    test('Should return geocoded address', (done: any) => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(2, false, {
-          response: {
-            GeoObjectCollection: {
-              metaDataProperty: {
-                GeocoderResponseMetaData: {
-                  request: '40.018587,55.985074',
-                  found: '8',
-                  results: '1',
-                  Point: {
-                    pos: '40.018587 55.985074'
-                  }
+    test('Should return geocoded address', async () => {
+      const response = {
+        response: {
+          GeoObjectCollection: {
+            metaDataProperty: {
+              GeocoderResponseMetaData: {
+                request: '40.018587,55.985074',
+                found: '8',
+                results: '1',
+                Point: {
+                  pos: '40.018587 55.985074'
                 }
-              },
-              featureMember: [
-                {
-                  GeoObject: {
-                    metaDataProperty: {
-                      GeocoderMetaData: {
-                        kind: 'house',
-                        text: 'Россия, Владимирская область, Собинка, Центральная улица, 15',
-                        precision: 'exact',
-                        Address: {
-                          country_code: 'RU',
-                          formatted:
+              }
+            },
+            featureMember: [
+              {
+                GeoObject: {
+                  metaDataProperty: {
+                    GeocoderMetaData: {
+                      kind: 'house',
+                      text: 'Россия, Владимирская область, Собинка, Центральная улица, 15',
+                      precision: 'exact',
+                      Address: {
+                        country_code: 'RU',
+                        formatted:
+                          'Владимирская область, Собинка, Центральная улица, 15',
+                        Components: [
+                          {
+                            kind: 'country',
+                            name: 'Россия'
+                          },
+                          {
+                            kind: 'province',
+                            name: 'Центральный федеральный округ'
+                          },
+                          {
+                            kind: 'province',
+                            name: 'Владимирская область'
+                          },
+                          {
+                            kind: 'area',
+                            name: 'Собинский район'
+                          },
+                          {
+                            kind: 'area',
+                            name: 'муниципальное образование город Собинка'
+                          },
+                          {
+                            kind: 'locality',
+                            name: 'Собинка'
+                          },
+                          {
+                            kind: 'street',
+                            name: 'Центральная улица'
+                          },
+                          {
+                            kind: 'house',
+                            name: '15'
+                          }
+                        ]
+                      },
+                      AddressDetails: {
+                        Country: {
+                          AddressLine:
                             'Владимирская область, Собинка, Центральная улица, 15',
-                          Components: [
-                            {
-                              kind: 'country',
-                              name: 'Россия'
-                            },
-                            {
-                              kind: 'province',
-                              name: 'Центральный федеральный округ'
-                            },
-                            {
-                              kind: 'province',
-                              name: 'Владимирская область'
-                            },
-                            {
-                              kind: 'area',
-                              name: 'Собинский район'
-                            },
-                            {
-                              kind: 'area',
-                              name: 'муниципальное образование город Собинка'
-                            },
-                            {
-                              kind: 'locality',
-                              name: 'Собинка'
-                            },
-                            {
-                              kind: 'street',
-                              name: 'Центральная улица'
-                            },
-                            {
-                              kind: 'house',
-                              name: '15'
-                            }
-                          ]
-                        },
-                        AddressDetails: {
-                          Country: {
-                            AddressLine:
-                              'Владимирская область, Собинка, Центральная улица, 15',
-                            CountryNameCode: 'RU',
-                            CountryName: 'Россия',
-                            AdministrativeArea: {
-                              AdministrativeAreaName: 'Владимирская область',
-                              SubAdministrativeArea: {
-                                SubAdministrativeAreaName: 'Собинский район',
-                                Locality: {
-                                  LocalityName: 'Собинка',
-                                  Thoroughfare: {
-                                    ThoroughfareName: 'Центральная улица',
-                                    Premise: {
-                                      PremiseNumber: '15'
-                                    }
+                          CountryNameCode: 'RU',
+                          CountryName: 'Россия',
+                          AdministrativeArea: {
+                            AdministrativeAreaName: 'Владимирская область',
+                            SubAdministrativeArea: {
+                              SubAdministrativeAreaName: 'Собинский район',
+                              Locality: {
+                                LocalityName: 'Собинка',
+                                Thoroughfare: {
+                                  ThoroughfareName: 'Центральная улица',
+                                  Premise: {
+                                    PremiseNumber: '15'
                                   }
                                 }
                               }
@@ -233,46 +222,48 @@ describe('YandexGeocoder', () => {
                           }
                         }
                       }
-                    },
-                    description: 'Собинка, Владимирская область, Россия',
-                    name: 'Центральная улица, 15',
-                    boundedBy: {
-                      Envelope: {
-                        lowerCorner: '40.014466 55.982769',
-                        upperCorner: '40.022677 55.987372'
-                      }
-                    },
-                    Point: {
-                      pos: '40.018571 55.98507'
                     }
+                  },
+                  description: 'Собинка, Владимирская область, Россия',
+                  name: 'Центральная улица, 15',
+                  boundedBy: {
+                    Envelope: {
+                      lowerCorner: '40.014466 55.982769',
+                      upperCorner: '40.022677 55.987372'
+                    }
+                  },
+                  Point: {
+                    pos: '40.018571 55.98507'
                   }
                 }
-              ]
-            }
+              }
+            ]
           }
-        });
-      const yandexAdapter = new YandexGeocoder(mockedHttpAdapter);
-      yandexAdapter.reverse(
-        { lat: 40.714232, lon: -73.9612889 },
-        function (err: any, results: any) {
-          expect(err).equal(null);
-          results.data[0].should.to.deep.equal({
-            city: 'Собинка',
-            country: 'Россия',
-            countryCode: 'RU',
-            latitude: 55.98507,
-            longitude: 40.018571,
-            state: 'Владимирская область',
-            streetName: 'Центральная улица',
-            streetNumber: '15',
-            formattedAddress:
-              'Владимирская область, Собинка, Центральная улица, 15'
-          });
-
-          mock.verify();
-          done();
         }
-      );
+      };
+      const adapter = new YandexGeocoder(mockedHttpAdapter);
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return adapter.reverse(
+            { lat: 40.714232, lon: -73.9612889 }
+          )
+        },
+        mockResponse: response
+      });
+
+      expect(results.data[0]).toEqual({
+        city: 'Собинка',
+        country: 'Россия',
+        countryCode: 'RU',
+        latitude: 55.98507,
+        longitude: 40.018571,
+        state: 'Владимирская область',
+        streetName: 'Центральная улица',
+        streetNumber: '15',
+        formattedAddress:
+          'Владимирская область, Собинка, Центральная улица, 15'
+      });
     });
   });
 });

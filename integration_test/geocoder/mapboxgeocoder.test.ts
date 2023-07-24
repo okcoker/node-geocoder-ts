@@ -22,8 +22,8 @@ maybeDescribe('Mapbox geocoder', () => {
     it('works', async () => {
       const res = await geocoder.geocode('1231 Av. Lajoie, Montreal');
 
-      expect(res[0]).toBeDefined();
-      expect(res[0]).toMatchObject({
+      expect(res.data[0]).toBeDefined();
+      expect(res.data[0]).toMatchObject({
         latitude: 45.521056,
         longitude: -73.610734,
         formattedAddress:
@@ -41,8 +41,8 @@ maybeDescribe('Mapbox geocoder', () => {
   describe('reverse', () => {
     it('works', async () => {
       const res = await geocoder.reverse({ lat: 45.521056, lon: -73.610734 });
-      expect(res[0]).toBeDefined();
-      expect(res[0]).toMatchObject({
+      expect(res.data[0]).toBeDefined();
+      expect(res.data[0]).toMatchObject({
         latitude: 45.52105585,
         longitude: -73.61073425,
         formattedAddress:

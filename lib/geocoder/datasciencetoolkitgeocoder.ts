@@ -4,7 +4,7 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions
-} from '../../types';
+} from 'types';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'datasciencetoolkit';
@@ -26,9 +26,9 @@ class DataScienceToolkitGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
   /**
    * Build DSTK endpoint, allows for local DSTK installs
-   * @param <string>   value    Value to geocode (Address or IPv4)
+   * @param query Value to geocode (Address or IPv4)
    */
-  _endpoint(value: any) {
+  _endpoint(query: string) {
     const ep = {};
     let host = 'www.datasciencetoolkit.org';
 
@@ -42,45 +42,46 @@ class DataScienceToolkitGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     ep.street2coordinatesEndpoint = 'http://' + host + '/street2coordinates/';
 
     // @ts-expect-error TS(2339): Property 'ipv4Endpoint' does not exist on type '{}... Remove this comment to see the full error message
-    return net.isIPv4(value) ? ep.ipv4Endpoint : ep.street2coordinatesEndpoint;
+    return net.isIPv4(query) ? ep.ipv4Endpoint : ep.street2coordinatesEndpoint;
   }
 
   /**
    * Geocode
-   * @param <string>   value    Value to geocode (Address or IPv4)
-   * @param <function> callback Callback method
+   * @param query Value to geocode (Address or IPv4)
+   * @param callback callback method
    */
-  override _geocode(value: any, callback: ResultCallback) {
-    const ep = this._endpoint(value);
-    this.httpAdapter.get(ep + value, {}, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        result = result[value];
-        if (!result) {
-          return callback(
-            new Error('Could not geocode "' + value + '".'),
-            null
-          );
-        }
+  override _geocode(query: string, callback: ResultCallback) {
+    const ep = this._endpoint(query);
 
-        callback(null, {
-          raw: result,
-          data: [
-            {
-              latitude: result.latitude,
-              longitude: result.longitude,
-              country: result.country_name,
-              city: result.city || result.locality,
-              state: result.state || result.region,
-              zipcode: result.postal_code,
-              streetName: result.street_name,
-              streetNumber: result.street_number,
-              countryCode: result.country_code
-            }
-          ]
-        });
+    this.httpAdapter.get(ep + query, {}, (err: any, result: any) => {
+      if (err || !result) {
+        return callback(err, null);
       }
+
+      result = result[query];
+      if (!result) {
+        return callback(
+          new Error('Could not geocode "' + query + '".'),
+          null
+        );
+      }
+
+      callback(null, {
+        raw: result,
+        data: [
+          {
+            latitude: result.latitude,
+            longitude: result.longitude,
+            country: result.country_name,
+            city: result.city || result.locality,
+            state: result.state || result.region,
+            zipcode: result.postal_code,
+            streetName: result.street_name,
+            streetNumber: result.street_number,
+            countryCode: result.country_code
+          }
+        ]
+      });
     });
   }
 }

@@ -3,7 +3,7 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
+  ReverseQuery,
   ResultData
 } from '../../types';
 
@@ -56,24 +56,22 @@ class YandexGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
 
     this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
+      if (err || !result) {
         return callback(err, null);
-      } else {
-        const results: any = [];
-
-        result.response.GeoObjectCollection.featureMember.forEach(function (
-          geopoint: any
-        ) {
-          results.push(_formatResult(geopoint));
-        });
-
-        results.raw = result;
-        callback(null, results);
       }
+
+      const results = result.response.GeoObjectCollection.featureMember.map((geopoint: any) => {
+        return _formatResult(geopoint);
+      });
+
+      callback(null, {
+        raw: result,
+        data: results
+      });
     });
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 

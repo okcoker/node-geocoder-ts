@@ -4,8 +4,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -28,11 +28,11 @@ class MapzenGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(query: GeocodeQuery, callback: ResultCallback) {
     this.httpAdapter.get(
       this._endpoint + '/search',
       {
-        text: value as string,
+        text: query as string,
         api_key: querystring.unescape(this.options.apiKey)
       },
       (err: any, result: any) => {
@@ -76,7 +76,7 @@ class MapzenGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 

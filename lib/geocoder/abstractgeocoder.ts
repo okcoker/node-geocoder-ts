@@ -2,11 +2,11 @@ import net from 'net';
 import ValueError from 'lib/error/valueerror';
 import type {
   HTTPAdapter,
-  Location,
+  ReverseQuery,
   AbstractGeocoderAdapter,
   ResultCallback,
   BatchResultCallback,
-  GeocodeValue,
+  GeocodeQuery,
   MaybeResultMaybeError,
   BaseAdapterOptions,
   Result,
@@ -23,9 +23,9 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
   supportAddress: boolean;
   options: T;
 
-  _geocode?(value: GeocodeValue, callback: ResultCallback): void;
-  _reverse?(value: Location, callback: ResultCallback): void;
-  _batchGeocode?(values: GeocodeValue[], callback: BatchResultCallback): void;
+  _geocode?(value: GeocodeQuery, callback: ResultCallback): void;
+  _reverse?(value: ReverseQuery, callback: ResultCallback): void;
+  _batchGeocode?(values: GeocodeQuery[], callback: BatchResultCallback): void;
 
   constructor(httpAdapter: HTTPAdapter, options: T) {
     if (!this.constructor.name) {
@@ -46,10 +46,11 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
     this.options = options;
   }
 
-  reverse(query: Location): Promise<Result> {
+  async reverse(query: ReverseQuery): Promise<Result> {
     const customReverse = this._reverse?.bind(this);
+
     if (typeof customReverse !== 'function') {
-      throw new ValueError(
+      throw new Error(
         this.constructor.name + ' does not support reverse geocoding'
       );
     }
@@ -68,12 +69,12 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
     });
   }
 
-  geocode(value: GeocodeValue): Promise<Result> {
-    const address = typeof value === 'string' ? value : `${value.address}`;
+  async geocode(query: GeocodeQuery): Promise<Result> {
+    const address = typeof query === 'string' ? query : `${query.address}`;
     const customGeocode = this._geocode?.bind(this);
 
     if (typeof customGeocode !== 'function') {
-      throw new ValueError(
+      throw new Error(
         this.constructor.name + ' does not support geocoding'
       );
     }
@@ -101,7 +102,7 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
     }
 
     return new Promise((resolve, reject) => {
-      customGeocode(value, (err, result) => {
+      customGeocode(query, (err, result) => {
         if (err) {
           reject(err);
           return;
@@ -114,12 +115,12 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
     });
   }
 
-  batchGeocode(values: GeocodeValue[]): Promise<BatchResult> {
+  async batchGeocode(queries: GeocodeQuery[]): Promise<BatchResult> {
     const customBatch = this._batchGeocode?.bind(this);
 
     if (typeof customBatch === 'function') {
       return new Promise((resolve, reject) => {
-        customBatch(values, (error, result) => {
+        customBatch(queries, (error, result) => {
           if (error) {
             reject(error);
             return;
@@ -132,7 +133,7 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
       })
     }
 
-    const promises = values.map((value: any) => {
+    const promises = queries.map((value: any) => {
       return new Promise<MaybeResultMaybeError>(resolve => {
         this.geocode(value).then((result) => {
           resolve({
@@ -148,11 +149,11 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
       });
     });
 
-    return Promise.all(promises).then((data) => {
-      return {
-        data
-      };
-    });
+    const allResults = await Promise.all(promises);
+
+    return {
+      data: allResults
+    };
   }
 }
 

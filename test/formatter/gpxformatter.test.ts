@@ -1,7 +1,4 @@
-import chai from 'chai';
 import GpxFormatter from '../../lib/formatter/gpxformatter';
-
-chai.should();
 
 describe('GpxFormatter', () => {
   describe('#format', () => {
@@ -15,8 +12,7 @@ describe('GpxFormatter', () => {
         }
       ]);
 
-      results.should.be.a('string');
-      results.should.include(
+      expect(results).toContain(
         '<wpt lat="40.714232" lon="-73.9612889"><name></name></wpt>'
       );
     });

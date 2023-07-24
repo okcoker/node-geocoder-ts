@@ -3,8 +3,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -27,7 +27,7 @@ class VirtualEarthGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     const params = {
       q: value,
       key: this.options.apiKey
@@ -49,7 +49,7 @@ class VirtualEarthGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     });
   }
 
-  override _reverse(value: Location, callback: ResultCallback) {
+  override _reverse(value: ReverseQuery, callback: ResultCallback) {
     const params = {
       key: this.options.apiKey
     };

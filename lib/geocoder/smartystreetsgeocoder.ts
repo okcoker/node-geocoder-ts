@@ -3,7 +3,7 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  GeocodeValue,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -51,7 +51,7 @@ class SmartyStreets extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     const params = {
       street: value,
       'auth-id': this.options.auth_id,

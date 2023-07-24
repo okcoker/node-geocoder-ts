@@ -4,10 +4,10 @@ import type {
   HTTPAdapter,
   AbstractGeocoder,
   AbstractGeocoderAdapter,
-  Location,
+  ReverseQuery,
   Result,
   ResultCallback,
-  GeocodeValue,
+  GeocodeQuery,
   BatchResultCallback,
   BatchResult
 } from 'types';
@@ -49,33 +49,21 @@ export function buildGeocoderAdapter<T extends AllAdapterOptions>(
 
     options: {} as T,
 
-    _reverse(_query: Location, callback: ResultCallback) {
-      callback(null, buildResult());
-    },
-
-    _geocode(_value: GeocodeValue, callback: ResultCallback) {
-      callback(null, buildResult());
-    },
-
-    _batchGeocode(_values: GeocodeValue[], callback: BatchResultCallback) {
-      callback(null, { data: [] });
-    },
-
-    reverse(_query: Location): Promise<Result> {
+    reverse(_query: ReverseQuery): Promise<Result> {
       return Promise.resolve({
         raw: '',
         data: []
       })
     },
 
-    geocode(_value: GeocodeValue): Promise<Result> {
+    geocode(_query: GeocodeQuery): Promise<Result> {
       return Promise.resolve({
         raw: '',
         data: []
       })
     },
 
-    batchGeocode(_values: GeocodeValue[]): Promise<BatchResult> {
+    batchGeocode(_queries: GeocodeQuery[]): Promise<BatchResult> {
       return Promise.resolve({
         raw: '',
         data: []
@@ -91,25 +79,16 @@ export function buildGeocoder<T extends Provider>(overrides = {}): AbstractGeoco
   return {
     _adapter: buildGeocoderAdapter<Extract<AllAdapterOptions, { provider: T }>>(overrides),
 
-    reverse(_query: Location): Promise<Result> {
-      return Promise.resolve({
-        raw: '',
-        data: []
-      })
+    reverse(_query: ReverseQuery): Promise<Result> {
+      return this._adapter.reverse(_query)
     },
 
-    geocode(_value: GeocodeValue): Promise<Result> {
-      return Promise.resolve({
-        raw: '',
-        data: []
-      })
+    geocode(_query: GeocodeQuery): Promise<Result> {
+      return this._adapter.geocode(_query)
     },
 
-    batchGeocode(_values: GeocodeValue[]): Promise<BatchResult> {
-      return Promise.resolve({
-        raw: '',
-        data: []
-      })
+    batchGeocode(_queries: GeocodeQuery[]): Promise<BatchResult> {
+      return this._adapter.batchGeocode(_queries)
     },
 
     ...overrides

@@ -2,12 +2,12 @@ import net from 'net';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  Location,
+  ReverseQuery,
   ResultCallback,
   BaseAdapterOptions,
   NodeCallback,
   ResultData,
-  GeocodeValue
+  GeocodeQuery
 } from 'types';
 
 export interface Options extends BaseAdapterOptions {
@@ -47,24 +47,24 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   //Cached vars
 
   _cachedToken = {
-    now: function () {
+    now() {
       return new Date().getTime();
     },
-    put: function (token: any, experation: any, cache: any) {
+    put(token: any, experation: any, cache: any) {
       cache.token = token;
       //Shave 30 secs off experation to ensure that we expire slightly before the actual expiration
       cache.tokenExp = this.now() + (experation - 30);
     },
-    get: function (cache?: any) {
+    get(cache?: any) {
       if (!cache) {
         return null;
       }
 
       if (this.now() <= cache.tokenExp) {
         return cache.token;
-      } else {
-        return null;
       }
+
+      return null;
     }
   };
 
@@ -84,7 +84,7 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._authEndpoint,
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
         }
 
@@ -98,7 +98,7 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     );
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     if (typeof value === 'string' && net.isIP(value)) {
       throw new Error('The AGOL geocoder does not support IP addresses');
     }
@@ -119,33 +119,32 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       };
 
       this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-        result = JSON.parse(result);
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
-          if (result.error) {
-            callback(result.error, null);
-
-            return null;
-          }
-
-          const results = result.locations.map((location: any) => {
-            return this._formatResult(location);
-          });
-
-          results.raw = result;
-          callback(null, results);
         }
+        const json = JSON.parse(result);
+        //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
+        if (json.error) {
+          return callback(json.error, null);
+        }
+
+        const results = json.locations.map((location: any) => {
+          return this._formatResult(location);
+        });
+
+        callback(null, {
+          data: results,
+          raw: json
+        });
       });
     };
 
     this._getToken(function (err: any, token: any) {
       if (err) {
         return callback(err, null);
-      } else {
-        execute(value, token, callback);
       }
+
+      execute(value, token, callback);
     });
   }
 
@@ -223,7 +222,7 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const long = query.lon;
 
@@ -244,35 +243,34 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         this._reverseEndpoint,
         params,
         (err: any, result: any) => {
-          result = JSON.parse(result);
-          if (err) {
+          if (err || !result) {
             return callback(err, null);
-          } else {
-            //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
-            if (result.error) {
-              callback(result.error, null);
-              return null;
-            }
-
-            const data = [this._formatResult(result)];
-
-            callback(null, {
-              data,
-              raw: result
-            });
           }
+
+          const json = JSON.parse(result);
+          //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
+          if (json.error) {
+            return callback(json.error, null);
+          }
+
+
+          const data = [this._formatResult(json)];
+
+          callback(null, {
+            data,
+            raw: json
+          });
         }
       );
-    };
+    }
 
     this._getToken((err, token) => {
       if (err) {
         return callback(err, null);
-      } else {
-        // probably need to check for empty token here?
-        // leaving as is for backwards compatibility
-        execute(lat, long, token || '', callback);
       }
+      // probably need to check for empty token here?
+      // leaving as is for backwards compatibility
+      execute(lat, long, token || '', callback);
     });
   }
 }

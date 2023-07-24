@@ -3,9 +3,9 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue
-} from '../../types';
+  ReverseQuery,
+  GeocodeQuery
+} from 'types';
 
 /**
  * available options
@@ -42,7 +42,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     let params = this._prepareQueryString({});
     let searchtext = value;
 
@@ -56,27 +56,26 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     )}.json`;
 
     this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      if (err) {
+      if (err || !result) {
         return callback(err, null);
-      } else {
-        const view = result.features;
-        if (!view) {
-          return callback(null, {
-            raw: result,
-            data: []
-          });
-        }
-        const results = view.map(this._formatResult);
-
-        callback(null, {
+      }
+      const view = result.features;
+      if (!view) {
+        return callback(null, {
           raw: result,
-          data: results
+          data: []
         });
       }
+      const results = view.map(this._formatResult);
+
+      callback(null, {
+        raw: result,
+        data: results
+      });
     });
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const { lat, lon, ...other } = query;
 
     const params = this._prepareQueryString(other);
@@ -85,23 +84,22 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     )}.json`;
 
     this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      if (err) {
+      if (err || !result) {
         return callback(err, null);
-      } else {
-        const view = result.features;
-        if (!view) {
-          return callback(null, {
-            raw: result,
-            data: []
-          });
-        }
-        const results = view.map(this._formatResult);
-
-        callback(null, {
+      }
+      const view = result.features;
+      if (!view) {
+        return callback(null, {
           raw: result,
-          data: results
+          data: []
         });
       }
+      const results = view.map(this._formatResult);
+
+      callback(null, {
+        raw: result,
+        data: results
+      });
     });
   }
 
@@ -135,7 +133,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       district: context.district,
       city: context.place,
       zipcode: context.postcode,
-      neighbourhood: context.neighborhood || context.locality,
+      neighborhood: context.neighborhood || context.locality,
       extra: {
         id: result.id,
         address: properties.address || context.address,

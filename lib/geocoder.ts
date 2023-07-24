@@ -1,7 +1,7 @@
 import type {
   Formatter,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   AbstractGeocoder,
   ResultFormatted,
   Result,
@@ -37,7 +37,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
    * Geocode a value (address or ip)
    */
   async geocode(
-    value: GeocodeValue
+    value: GeocodeQuery
   ): Promise<AllResultTypes> {
     const result = await this._adapter.geocode(value);
 
@@ -53,7 +53,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   }
 
   async reverse(
-    query: Location
+    query: ReverseQuery
   ): Promise<AllResultTypes> {
     const result = await this._adapter.reverse(query);
 
@@ -71,7 +71,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
    * Batch geocode
    */
   async batchGeocode(
-    values: GeocodeValue[]
+    values: GeocodeQuery[]
   ): Promise<AllBatchResultTypes> {
     const result = await this._adapter.batchGeocode(
       values
@@ -88,7 +88,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
     return formatted;
   }
 
-  private _filter(value: GeocodeValue, result: Result): Result {
+  private _filter(value: GeocodeQuery, result: Result): Result {
     if (!result.data || !result.data.length) {
       return result;
     }
@@ -183,7 +183,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   }
 
   private _batchFilter(
-    values: GeocodeValue[],
+    values: GeocodeQuery[],
     batchResult: BatchResult
   ): BatchResult {
     if (batchResult.data === null) {

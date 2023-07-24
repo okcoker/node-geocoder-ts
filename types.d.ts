@@ -6,11 +6,6 @@ export interface BaseAdapterOptions {
   provider: Provider;
 }
 
-export interface Location {
-  lat: number;
-  lon: number;
-}
-
 export interface ResultData {
   formattedAddress?: string;
   latitude?: number;
@@ -147,28 +142,32 @@ export type HTTPAdapterBaseOptions = {
 
 
 export type GeocodeObject = Record<string, string | number | string[] | number[]>
-export type GeocodeValue = string | GeocodeObject
+export type GeocodeQuery = string | GeocodeObject
 
+export interface ReverseQuery {
+  lat: number;
+  lon: number;
+}
 export interface AbstractGeocoderMethods {
-  reverse(query: Location): Promise<AllResultTypes>;
+  reverse(query: ReverseQuery): Promise<AllResultTypes>;
 
-  geocode(value: GeocodeValue): Promise<AllResultTypes>;
+  geocode(query: GeocodeQuery): Promise<AllResultTypes>;
 
-  batchGeocode(values: GeocodeValue[]): Promise<AllBatchResultTypes>;
+  batchGeocode(queries: GeocodeQuery[]): Promise<AllBatchResultTypes>;
 }
 
 export interface AbstractGeocoderAdapterMethods {
-  _reverse?(query: Location, callback: ResultCallback): void;
+  _reverse?(query: ReverseQuery, callback: ResultCallback): void;
 
-  _geocode?(value: GeocodeValue, callback: ResultCallback): void;
+  _geocode?(query: GeocodeQuery, callback: ResultCallback): void;
 
-  _batchGeocode?(values: GeocodeValue[], callback: BatchResultCallback): void;
+  _batchGeocode?(values: GeocodeQuery[], callback: BatchResultCallback): void;
 
-  reverse(query: Location): Promise<Result>;
+  reverse(query: ReverseQuery): Promise<Result>;
 
-  geocode(value: GeocodeValue): Promise<Result>;
+  geocode(query: GeocodeQuery): Promise<Result>;
 
-  batchGeocode(values: GeocodeValue[]): Promise<BatchResult>;
+  batchGeocode(queries: GeocodeQuery[]): Promise<BatchResult>;
 }
 
 export interface AbstractGeocoderAdapter<T extends BaseAdapterOptions> extends AbstractGeocoderAdapterMethods {

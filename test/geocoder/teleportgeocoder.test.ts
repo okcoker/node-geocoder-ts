@@ -1,59 +1,58 @@
-import chai from 'chai';
-import sinon from 'sinon';
+import ValueError from 'lib/error/valueerror';
 import TeleportGeocoder from 'lib/geocoder/teleportgeocoder';
 import { buildHttpAdapter } from 'test/helpers/mocks';
+import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
-chai.should();
-const expect = chai.expect;
 const mockedHttpAdapter = buildHttpAdapter();
 
 describe('TeleportGeocoder', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
   describe('#constructor', () => {
     test('an http adapter must be set', () => {
       expect(() => {
         new TeleportGeocoder('' as unknown as HTTPAdapter);
-      }).to.Throw(Error, 'TeleportGeocoder need an httpAdapter');
+      }).toThrow('TeleportGeocoder need an httpAdapter');
     });
 
     test('Should be an instance of TeleportGeocoder', () => {
-      const tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
+      const adapter = new TeleportGeocoder(mockedHttpAdapter);
 
-      tpAdapter.should.be.instanceOf(TeleportGeocoder);
+      expect(adapter).toBeInstanceOf(TeleportGeocoder);
     });
   });
 
   describe('#geocode', () => {
-    test('Should not accept IPv4', () => {
-      const tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
+    test('Should not accept IPv4', async () => {
+      const adapter = new TeleportGeocoder(mockedHttpAdapter);
 
-      expect(function () {
-        tpAdapter.geocode('127.0.0.1', () => {});
-      }).to.Throw(Error, 'TeleportGeocoder does not support geocoding IPv4');
+      await expect(
+        adapter.geocode('127.0.0.1')
+      ).rejects.toEqual(new ValueError('TeleportGeocoder does not support geocoding IPv4'));
     });
 
-    test('Should not accept IPv6', () => {
-      const tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
+    test('Should not accept IPv6', async () => {
+      const adapter = new TeleportGeocoder(mockedHttpAdapter);
 
-      expect(function () {
-        tpAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001', () => {});
-      }).to.Throw(Error, 'TeleportGeocoder does not support geocoding IPv6');
+      await expect(
+        adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toThrow('TeleportGeocoder does not support geocoding IPv6');
     });
 
-    test('Should call mockedHttpAdapter get method', () => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .returns({ then: function () {} });
-
-      const tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
-      tpAdapter.geocode('New York, NY', () => {});
-
-      mock.verify();
+    test('Should call mockedHttpAdapter get method', async () => {
+      const adapter = new TeleportGeocoder(mockedHttpAdapter);
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return await adapter.geocode('New York, NY');
+        },
+        callCount: 1
+      });
     });
 
-    test('Should return geocoded address', (done: any) => {
+    test('Should return geocoded address', async () => {
       const response = {
         _embedded: {
           'city:search-results': [
@@ -109,43 +108,40 @@ describe('TeleportGeocoder', () => {
         }
       };
 
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock.expects('get').once().callsArgWith(2, false, response);
-
-      const tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
-
-      tpAdapter.geocode('Palo Alto, CA', function (err: any, results: any) {
-        expect(err).to.equal(false);
-
-        expect(results[0]).to.deep.equal({
-          latitude: 37.44188,
-          longitude: -122.14302,
-          city: 'Palo Alto',
-          country: 'United States',
-          countryCode: 'US',
-          state: 'California',
-          stateCode: 'CA',
-          extra: {
-            confidence: 10,
-            urban_area: 'San Francisco Bay Area',
-            urban_area_api_url:
-              'https://api.teleport.org/api/urban_areas/teleport:9q8yy/',
-            urban_area_web_url:
-              'https://my.teleport.org/public/cities/9q8yy/San_Francisco_Bay_Area/',
-            matching_full_name: 'Palo Alto, California, United States'
-          }
-        });
-
-        expect(results.raw).to.deep.equal(response);
-
-        mock.verify();
-        done();
+      const adapter = new TeleportGeocoder(mockedHttpAdapter);
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return adapter.geocode('Palo Alto, CA');
+        },
+        mockResponse: response
       });
+
+      expect(results.data[0]).toEqual({
+        latitude: 37.44188,
+        longitude: -122.14302,
+        city: 'Palo Alto',
+        country: 'United States',
+        countryCode: 'US',
+        state: 'California',
+        stateCode: 'CA',
+        extra: {
+          confidence: 10,
+          urban_area: 'San Francisco Bay Area',
+          urban_area_api_url:
+            'https://api.teleport.org/api/urban_areas/teleport:9q8yy/',
+          urban_area_web_url:
+            'https://my.teleport.org/public/cities/9q8yy/San_Francisco_Bay_Area/',
+          matching_full_name: 'Palo Alto, California, United States'
+        }
+      });
+
+      expect(results.raw).toEqual(response);
     });
   });
 
   describe('#reverse', () => {
-    test('Should return geocoded address', (done: any) => {
+    test('Should return geocoded address', async () => {
       const response = {
         _embedded: {
           'location:nearest-cities': [
@@ -330,42 +326,38 @@ describe('TeleportGeocoder', () => {
         }
       };
 
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock.expects('get').once().callsArgWith(2, false, response);
-
-      const tpAdapter = new TeleportGeocoder(mockedHttpAdapter);
-      tpAdapter.reverse(
-        {
-          lat: 37.455056,
-          lon: -122.158009
-        },
-        function (err: any, results: any) {
-          expect(err).to.equal(false);
-          expect(results[0]).to.deep.equal({
-            latitude: 37.44188,
-            longitude: -122.14302,
-            city: 'Palo Alto',
-            country: 'United States',
-            countryCode: 'US',
-            state: 'California',
-            stateCode: 'CA',
-            extra: {
-              confidence: 9.21030664,
-              urban_area: 'San Francisco Bay Area',
-              urban_area_api_url:
-                'https://api.teleport.org/api/urban_areas/teleport:9q8yy/',
-              urban_area_web_url:
-                'https://my.teleport.org/public/cities/9q8yy/San_Francisco_Bay_Area/',
-              distance_km: 1.9742334
-            }
+      const adapter = new TeleportGeocoder(mockedHttpAdapter);
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return await adapter.reverse({
+            lat: 37.455056,
+            lon: -122.158009
           });
+        },
+        mockResponse: response
+      });
 
-          expect(results.raw).to.deep.equal(response);
-
-          mock.verify();
-          done();
+      expect(results.data[0]).toEqual({
+        latitude: 37.44188,
+        longitude: -122.14302,
+        city: 'Palo Alto',
+        country: 'United States',
+        countryCode: 'US',
+        state: 'California',
+        stateCode: 'CA',
+        extra: {
+          confidence: 9.21030664,
+          urban_area: 'San Francisco Bay Area',
+          urban_area_api_url:
+            'https://api.teleport.org/api/urban_areas/teleport:9q8yy/',
+          urban_area_web_url:
+            'https://my.teleport.org/public/cities/9q8yy/San_Francisco_Bay_Area/',
+          distance_km: 1.9742334
         }
-      );
+      });
+
+      expect(results.raw).toEqual(response);
     });
   });
 });

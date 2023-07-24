@@ -15,11 +15,22 @@ class PickPointGeocoder extends OpenStreetMapGeocoder {
     httpAdapter: HTTPAdapter,
     options: Omit<Options, 'provider'> = {}
   ) {
-    const overrideOptions: Options = { ...options, provider: 'pickpoint' };
+    const overrideOptions: Options = {
+      ...options,
+      // @ts-expect-error @todo make a mapOptionsToParams method in the
+      // base class so each adapter can map their options to params
+      key: options.apiKey,
+      apiKey: undefined,
+      provider: 'pickpoint'
+    };
     super(httpAdapter, overrideOptions);
 
     if (!httpAdapter.supportsHttps()) {
       throw new Error('You must use https http adapter');
+    }
+
+    if (!options.apiKey) {
+      throw new Error(this.constructor.name + ' needs an apiKey');
     }
   }
 }

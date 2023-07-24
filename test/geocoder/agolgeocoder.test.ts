@@ -1,10 +1,7 @@
-import chai from 'chai';
-import sinon from 'sinon';
+import ValueError from 'lib/error/valueerror';
 import AGOLGeocoder from 'lib/geocoder/agolgeocoder';
 import { buildHttpAdapter } from 'test/helpers/mocks';
-
-chai.should();
-const expect = chai.expect;
+import { verifyHttpAdapter } from 'test/helpers/utils';
 
 const mockedRequestifyAdapter = buildHttpAdapter({
   requestify() {
@@ -33,6 +30,9 @@ const mockedOptions = {
 };
 
 describe('AGOLGeocoder', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
   describe('#constructor', () => {
     test('client_id should be set', () => {
       expect(() => {
@@ -40,8 +40,7 @@ describe('AGOLGeocoder', () => {
           client_id: '',
           client_secret: 'CLIENT_SECRET'
         });
-      }).to.throw(
-        Error,
+      }).toThrow(
         'You must specify the client_id and the client_secret'
       );
     });
@@ -52,230 +51,193 @@ describe('AGOLGeocoder', () => {
           client_id: 'CLIENT_ID',
           client_secret: ''
         });
-      }).to.throw(
-        Error,
+      }).toThrow(
         'You must specify the client_id and the client_secret'
       );
     });
 
     test('Should be an instance of AGOLGeocoder if an http adapter and proper options are supplied', () => {
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
+      const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
-      geocoder.should.be.instanceof(AGOLGeocoder);
+      expect(adapter).toBeInstanceOf(AGOLGeocoder);
     });
   });
 
   describe('#geocode', () => {
-    test('Should not accept IPv4', () => {
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
+    test('Should not accept IPv4', async () => {
+      const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
-      expect(function () {
-        geocoder.geocode('127.0.0.1', () => {});
-      }).to.throw(Error, 'The AGOL geocoder does not support IP addresses');
+      await expect(
+        adapter.geocode('127.0.0.1')
+      ).rejects.toEqual(new ValueError('AGOLGeocoder does not support geocoding IPv4'));
     });
 
-    test('Should not accept IPv6', () => {
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
+    test('Should not accept IPv6', async () => {
+      const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
-      expect(function () {
-        geocoder.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001', () => {});
-      }).to.throw(Error, 'The AGOL geocoder does not support IP addresses');
+      await expect(
+        adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toEqual(new ValueError('AGOLGeocoder does not support geocoding IPv6'));
     });
 
-    test('Should call out for authentication', () => {
-      const mock = sinon.mock(mockedAuthHttpAdapter);
-      mock
-        .expects('get')
-        .withArgs('https://www.arcgis.com/sharing/oauth2/token', {
+    test('Should call out for authentication', async () => {
+      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
+
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await adapter.geocode('1 champs élysée Paris')
+        },
+        expectedUrl: 'https://www.arcgis.com/sharing/oauth2/token',
+        expectedParams: {
           client_id: mockedOptions.client_id,
           grant_type: 'client_credentials',
           client_secret: mockedOptions.client_secret
-        })
-        .once()
-        .returns({ then: () => {} });
-
-      const geocoder = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
-
-      geocoder.geocode('1 champs élysée Paris', () => {});
-
-      mock.verify();
+        },
+        callCount: 2
+      });
     });
 
     test('Should return cached token', () => {
-      const geocoder = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
+      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
 
-      geocoder._getToken(function (err: any, token: any) {
-        token.should.equal('ABCD');
+      adapter._getToken(function (err: any, token: any) {
+        expect(token).toEqual('ABCD');
       });
-      geocoder._getToken(function (err: any, token: any) {
-        token.should.equal('ABCD');
+      adapter._getToken(function (err: any, token: any) {
+        expect(token).toEqual('ABCD');
       });
     });
 
     test('Should assume cached token is invalid', () => {
-      const geocoder = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
+      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
 
-      geocoder.cache.token = 'AAA';
-      geocoder.cache.tokenExp = new Date().getTime() - 2000;
+      adapter.cache.token = 'AAA';
+      adapter.cache.tokenExp = new Date().getTime() - 2000;
 
       //Verify token is old
-      geocoder.cache.token.should.equal('AAA');
+      expect(adapter.cache.token).toEqual('AAA');
 
       //Verify that expired token is replaced
-      geocoder._getToken(function (err: any, token: any) {
-        token.should.equal('ABCD');
+      adapter._getToken(function (err: any, token: any) {
+        expect(token).toEqual('ABCD');
       });
     });
 
-    test('Should return geocoded address', (done: any) => {
-      const mock = sinon.mock(mockedRequestifyAdapter);
-
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(
-          2,
-          false,
-          '{"spatialReference":{"wkid":4326,"latestWkid":4326},"locations":[{"name":"380 New York St, Redlands, California, 92373","extent":{"xmin":-117.196701,"ymin":34.055489999999999,"xmax":-117.19470099999999,"ymax":34.057490000000001},"feature":{"geometry":{"x":-117.19566584280369,"y":34.056490727765947},"attributes":{"AddNum":"380","StPreDir":"","StName":"New York","StType":"St","City":"Redlands","Postal":"92373","Region":"California","Country":"USA"}}}]}'
-        );
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
+    test('Should return geocoded address', async () => {
+      const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
       //Force valid tokens (this was tested separately)
-      geocoder._getToken = function (callback: any) {
+      adapter._getToken = function (callback: any) {
         callback(null, 'ABCD');
       };
-      geocoder.geocode(
-        '380 New York St, Redlands, CA 92373',
-        function (err: any, results: any) {
-          expect(err).equal(null);
-          results.data[0].should.to.deep.equal({
-            latitude: 34.05649072776595,
-            longitude: -117.19566584280369,
-            country: 'USA',
-            city: 'Redlands',
-            state: 'California',
-            stateCode: undefined,
-            zipcode: '92373',
-            streetName: 'New York St',
-            streetNumber: '380',
-            countryCode: 'USA'
-          });
-          mock.verify();
-          done();
-        }
-      );
+
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return await adapter.geocode('380 New York St, Redlands, CA 92373')
+        },
+        mockResponse: '{"spatialReference":{"wkid":4326,"latestWkid":4326},"locations":[{"name":"380 New York St, Redlands, California, 92373","extent":{"xmin":-117.196701,"ymin":34.055489999999999,"xmax":-117.19470099999999,"ymax":34.057490000000001},"feature":{"geometry":{"x":-117.19566584280369,"y":34.056490727765947},"attributes":{"AddNum":"380","StPreDir":"","StName":"New York","StType":"St","City":"Redlands","Postal":"92373","Region":"California","Country":"USA"}}}]}'
+      });
+      expect(results.data[0]).toEqual({
+        latitude: 34.05649072776595,
+        longitude: -117.19566584280369,
+        country: 'USA',
+        city: 'Redlands',
+        state: 'California',
+        stateCode: undefined,
+        zipcode: '92373',
+        streetName: 'New York St',
+        streetNumber: '380',
+        countryCode: 'USA'
+      });
     });
 
-    test('Should handle a not "OK" status', (done: any) => {
-      const mock = sinon.mock(mockedRequestifyAdapter);
-
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(
-          2,
-          false,
-          '{"error":{"code":498,"message":"Invalid Token","details":[]}}'
-        );
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
-
+    test('Should handle a not "OK" status', async () => {
+      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
       //Force valid tokens (this was tested separately)
-      geocoder._getToken = function (callback: any) {
+      adapter._getToken = function (callback: any) {
         callback(null, 'ABCD');
       };
-      geocoder.geocode('380 New York St, Redlands, CA 92373', (err: any) => {
-        //expect(err).equal(null);
-        err.should.to.deep.equal({
-          code: 498,
-          message: 'Invalid Token',
-          details: []
-        });
-        mock.verify();
-        done();
+
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await expect(
+            adapter.geocode('380 New York St, Redlands, CA 92373')
+          ).rejects.toEqual({
+            code: 498,
+            message: 'Invalid Token',
+            details: []
+          })
+        },
+        mockResponse: '{"error":{"code":498,"message":"Invalid Token","details":[]}}'
       });
     });
   });
 
   describe('#reverse', () => {
-    test('Should call httpAdapter get method', () => {
-      const mock = sinon.mock(mockedRequestifyAdapter);
-      mock
-        .expects('get')
-        .once()
-        .returns({ then: function () {} });
+    test('Should call httpAdapter get method', async () => {
+      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
 
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
-
-      geocoder.reverse({ lat: 10.0235, lon: -2.3662 }, () => {});
-
-      mock.verify();
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await adapter.reverse({ lat: 10.0235, lon: -2.3662 })
+        },
+        callCount: 2
+      });
     });
 
-    test('Should return geocoded address', (done: any) => {
-      const mock = sinon.mock(mockedRequestifyAdapter);
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(
-          2,
-          false,
-          '{"address":{"Address":"1190 E Kenyon Ave","Neighborhood":null,"City":"Englewood","Subregion":null,"Region":"Colorado","Postal":"80113","PostalExt":null,"CountryCode":"USA","Loc_name":"USA.PointAddress"},"location":{"x":-104.97389993455704,"y":39.649423090952013,"spatialReference":{"wkid":4326,"latestWkid":4326}}}'
-        );
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
+    test('Should return a reverse geocoded address', async () => {
+      const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
       //Force valid tokens (this was tested separately)
-      geocoder._getToken = function (callback: any) {
+      adapter._getToken = function (callback: any) {
         callback(null, 'ABCD');
       };
-      geocoder.reverse(
-        { lat: -104.98469734299971, lon: 39.739146640000456 },
-        function (err: any, results: any) {
-          expect(err).equal(null);
-          results.data[0].should.to.deep.equal({
-            latitude: 39.64942309095201,
-            longitude: -104.97389993455704,
-            country: 'USA',
-            city: 'Englewood',
-            state: 'Colorado',
-            zipcode: '80113',
-            countryCode: 'USA',
-            address: '1190 E Kenyon Ave',
-            neighborhood: null,
-            loc_name: 'USA.PointAddress'
-          });
-          mock.verify();
-          done();
-        }
-      );
+
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return adapter.reverse({ lat: -104.98469734299971, lon: 39.739146640000456 });
+        },
+        mockResponse: '{"address":{"Address":"1190 E Kenyon Ave","Neighborhood":null,"City":"Englewood","Subregion":null,"Region":"Colorado","Postal":"80113","PostalExt":null,"CountryCode":"USA","Loc_name":"USA.PointAddress"},"location":{"x":-104.97389993455704,"y":39.649423090952013,"spatialReference":{"wkid":4326,"latestWkid":4326}}}'
+      });
+
+      expect(results.data[0]).toEqual({
+        latitude: 39.64942309095201,
+        longitude: -104.97389993455704,
+        country: 'USA',
+        city: 'Englewood',
+        state: 'Colorado',
+        zipcode: '80113',
+        countryCode: 'USA',
+        address: '1190 E Kenyon Ave',
+        neighborhood: null,
+        loc_name: 'USA.PointAddress'
+      });
     });
 
-    test('Should handle a not "OK" status', (done: any) => {
-      const mock = sinon.mock(mockedRequestifyAdapter);
-      mock
-        .expects('get')
-        .once()
-        .callsArgWith(
-          2,
-          false,
-          '{"error":{"code":42,"message":"Random Error","details":[]}}'
-        );
-
-      const geocoder = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
+    test('Should handle a not "OK" status', async () => {
+      const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
       //Force valid tokens (this was tested separately)
-      geocoder._getToken = function (callback: any) {
+      adapter._getToken = function (callback: any) {
         callback(null, 'ABCD');
       };
-      geocoder.reverse(
-        { lat: 40.714232, lon: -73.9612889 },
-        function (err: any) {
-          err.should.to.deep.equal({
+
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await expect(
+            adapter.reverse({ lat: 40.714232, lon: -73.9612889 })
+          ).rejects.toEqual({
             code: 42,
             message: 'Random Error',
             details: []
-          });
-          mock.verify();
-          done();
-        }
-      );
+          })
+        },
+        mockResponse: '{"error":{"code":42,"message":"Random Error","details":[]}}'
+      });
     });
   });
 });

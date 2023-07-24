@@ -3,8 +3,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  GeocodeValue
-} from '../../types';
+  GeocodeQuery
+} from 'types';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'freegeoip';
@@ -24,35 +24,34 @@ class FreegeoipGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this.supportAddress = false;
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     this.httpAdapter.get(
       this._endpoint + value,
       {},
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          const results = [];
-
-          results.push({
-            ip: result.ip,
-            countryCode: result.country_code,
-            country: result.country_name,
-            regionCode: result.region_code,
-            regionName: result.region_name,
-            city: result.city,
-            zipcode: result.zip_code,
-            timeZone: result.time_zone,
-            latitude: result.latitude,
-            longitude: result.longitude,
-            metroCode: result.metro_code
-          });
-
-          callback(null, {
-            raw: result,
-            data: results
-          });
         }
+        const results = [];
+
+        results.push({
+          ip: result.ip,
+          countryCode: result.country_code,
+          country: result.country_name,
+          regionCode: result.region_code,
+          regionName: result.region_name,
+          city: result.city,
+          zipcode: result.zip_code,
+          timeZone: result.time_zone,
+          latitude: result.latitude,
+          longitude: result.longitude,
+          metroCode: result.metro_code
+        });
+
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     );
   }

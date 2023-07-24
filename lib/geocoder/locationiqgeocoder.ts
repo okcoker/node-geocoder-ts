@@ -4,8 +4,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -36,8 +36,8 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this.options.apiKey = querystring.unescape(this.options.apiKey);
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
-    const params = this._getCommonParams();
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+    let params = this._getCommonParams();
 
     if (typeof value === 'string') {
       params.q = value;
@@ -59,13 +59,13 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         }
       }
     }
-    this._forceParams(params);
+    params = this._forceParams(params);
 
     this.httpAdapter.get(
       this._endpoint + '/search',
       params,
-      (err: any, responseData: any) => {
-        if (err) {
+      (err: any, result: any) => {
+        if (err || !result) {
           return callback(err, null);
         }
 
@@ -73,36 +73,33 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         // seemes to be defined but empty so no need to check for
         // responseData.error for now
         // add check if the array is not empty, as it returns an empty array from time to time
-        let results = [];
-        if (responseData.length && responseData.length > 0) {
-          results = responseData.map(this._formatResult).filter(function (
-            result: any
-          ) {
-            return result.longitude && result.latitude;
-          });
-          results.raw = responseData;
-        }
+        const results = result.map(this._formatResult).filter((result: any) => {
+          return result.longitude && result.latitude;
+        });
 
-        callback(null, results);
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     );
   }
 
-  override _reverse(query: Location & { zoom?: number }, callback: ResultCallback) {
-    const params = this._getCommonParams();
+  override _reverse(query: ReverseQuery & { zoom?: number }, callback: ResultCallback) {
+    let params = this._getCommonParams();
     const record = query as Record<string, any>;
 
     for (const k in record) {
       const v = record[k];
       params[k] = v;
     }
-    this._forceParams(params);
+    params = this._forceParams(params);
 
     this.httpAdapter.get(
       this._endpoint + '/reverse',
       params,
-      (err: any, responseData: any) => {
-        if (err) {
+      (err: any, result: any) => {
+        if (err || !result) {
           return callback(err, null);
         }
 
@@ -112,14 +109,14 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
         // locationiq always seemes to answer with a single object instead
         // of an array
-        const results = [responseData]
+        const results = [result]
           .map(this._formatResult)
           .filter((result: any) => {
             return result.longitude && result.latitude;
           });
 
         callback(null, {
-          raw: responseData,
+          raw: result,
           data: results
         });
       }

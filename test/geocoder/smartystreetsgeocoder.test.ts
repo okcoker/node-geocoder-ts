@@ -1,11 +1,7 @@
-import chai from 'chai';
-import sinon from 'sinon';
 import SmartyStreets from 'lib/geocoder/smartystreetsgeocoder';
 import { buildHttpAdapter } from 'test/helpers/mocks';
 import { HTTPAdapter } from 'types';
 
-chai.should();
-const expect = chai.expect;
 const mockedHttpAdapter = buildHttpAdapter();
 
 describe('SmartyStreets', () => {
@@ -13,13 +9,13 @@ describe('SmartyStreets', () => {
     test('an http adapter must be set', () => {
       expect(() => {
         new SmartyStreets('' as unknown as HTTPAdapter);
-      }).to.throw(Error, 'SmartyStreets need an httpAdapter');
+      }).toThrow('SmartyStreets need an httpAdapter');
     });
 
     test('an auth-id and auth-token must be set', () => {
       expect(() => {
         new SmartyStreets(mockedHttpAdapter);
-      }).to.throw(Error, 'You must specify an auth-id and auth-token!');
+      }).toThrow('You must specify an auth-id and auth-token!');
     });
 
     test('Should be an instance of SmartyStreets', () => {
@@ -28,44 +24,44 @@ describe('SmartyStreets', () => {
         auth_token: 'AUTH_TOKEN'
       });
 
-      smartyStreetsAdapter.should.be.instanceof(SmartyStreets);
+      expect(smartyStreetsAdapter).toBeInstanceOf(SmartyStreets);
     });
   });
 
   describe('#geocode', () => {
-    test('Should call httpAdapter get method', () => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .withArgs('https://api.smartystreets.com/street-address', {
-          street: '1 Infinite Loop, Cupertino, CA',
-          'auth-id': 'AUTH_ID',
-          'auth-token': 'AUTH_TOKEN',
-          format: 'json'
-        })
-        .once()
-        .returns({ then: function () {} });
-
+    test('Should call httpAdapter get method', async () => {
+      const adapterSpy = jest.spyOn(mockedHttpAdapter, 'get');
       const smartyStreetsAdapter = new SmartyStreets(mockedHttpAdapter, {
         auth_id: 'AUTH_ID',
         auth_token: 'AUTH_TOKEN'
       });
 
-      smartyStreetsAdapter.geocode('1 Infinite Loop, Cupertino, CA', () => {});
-      mock.verify();
+      const promise = smartyStreetsAdapter.geocode('1 Infinite Loop, Cupertino, CA');
+      expect(adapterSpy).toHaveBeenCalledTimes(1);
+      expect(adapterSpy.mock.calls[0][0]).toEqual('https://api.smartystreets.com/street-address')
+      expect(adapterSpy.mock.calls[0][1]).toEqual({
+        street: '1 Infinite Loop, Cupertino, CA',
+        'auth-id': 'AUTH_ID',
+        'auth-token': 'AUTH_TOKEN',
+        format: 'json'
+      });
+
+      // We dont care about the response, but the promise hangs
+      // since we're mocking out the http adapter
+      await Promise.reject(promise).catch(() => { });
     });
   });
 
   describe('#reverse', () => {
-    test('Should throw expection', () => {
+    test('Should throw expection', async () => {
       const smartyStreetsAdapter = new SmartyStreets(mockedHttpAdapter, {
         auth_id: 'AUTH_ID',
         auth_token: 'AUTH_TOKEN'
       });
 
-      expect(function () {
-        smartyStreetsAdapter.reverse({ lat: 10.0235, lon: -2.3662 }, () => {});
-      }).to.throw(Error, 'SmartyStreets doesnt support reverse geocoding!');
+      await expect(
+        smartyStreetsAdapter.reverse({ lat: 10.0235, lon: -2.3662 })
+      ).rejects.toThrow('SmartyStreets does not support reverse geocoding');
     });
   });
 });

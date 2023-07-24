@@ -7,8 +7,8 @@ import type {
   BatchResult,
   BatchResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -53,7 +53,7 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   }
 
   override _geocode(
-    value: GeocodeValue & {
+    value: GeocodeQuery & {
       address?: string;
       language?: string;
       politicalView?: string;
@@ -92,38 +92,37 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._geocodeEndpoint,
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          if (result.type === 'ApplicationError') {
-            return callback(new ValueError(result.Details), null);
-          }
-          if (result.error === 'Unauthorized') {
-            return callback(new ValueError(result.error_description), null);
-          }
-          const view = result.Response.View[0];
-          if (!view) {
-            return callback(null, {
-              raw: result,
-              data: []
-            });
-          }
-
-          // Format each geocoding result
-          const results = view.Result.map((data: any) => {
-            return this._formatResult(data);
-          });
-
-          callback(null, {
-            data: results,
-            raw: result
+        }
+        if (result.type === 'ApplicationError') {
+          return callback(new ValueError(result.Details), null);
+        }
+        if (result.error === 'Unauthorized') {
+          return callback(new ValueError(result.error_description), null);
+        }
+        const view = result.Response?.View?.[0];
+        if (!view) {
+          return callback(null, {
+            raw: result,
+            data: []
           });
         }
+
+        // Format each geocoding result
+        const results = view.Result.map((data: any) => {
+          return this._formatResult(data);
+        });
+
+        callback(null, {
+          data: results,
+          raw: result
+        });
       }
     );
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
     const params = this._prepareQueryString();
@@ -135,27 +134,28 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._reverseEndpoint,
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          const view = result.Response.View[0];
-          if (!view) {
-            return callback(null, {
-              raw: result,
-              data: []
-            });
-          }
+        }
 
-          // Format each geocoding result
-          const results = view.Result.map((data: any) => {
-            return this._formatResult(data);
-          });
+        const view = result.Response?.View?.[0];
 
-          callback(null, {
-            data: results,
-            raw: result
+        if (!view) {
+          return callback(null, {
+            raw: result,
+            data: []
           });
         }
+
+        // Format each geocoding result
+        const results = view.Result.map((data: any) => {
+          return this._formatResult(data);
+        });
+
+        callback(null, {
+          data: results,
+          raw: result
+        });
       }
     );
   }
@@ -251,7 +251,7 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return params;
   }
 
-  override async _batchGeocode(values: GeocodeValue[], callback: BatchResultCallback) {
+  override async _batchGeocode(values: GeocodeQuery[], callback: BatchResultCallback) {
     try {
       const jobId = await this.__createJob(values);
       await this.__pollJobStatus(jobId);

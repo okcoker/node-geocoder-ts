@@ -3,8 +3,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -26,7 +26,7 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     super(httpAdapter, { ...options, provider: 'opendatafrance' });
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     const params = this._getCommonParams();
 
     if (typeof value === 'string') {
@@ -115,7 +115,7 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return formatedResult;
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const params = this._getCommonParams();
     const record = query as Record<string, any>;
 

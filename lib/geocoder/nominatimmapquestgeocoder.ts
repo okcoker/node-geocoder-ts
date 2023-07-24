@@ -18,11 +18,15 @@ class NominatimMapquestGeocoder extends OpenStreetMapGeocoder {
   ) {
     const overrideOptions: Options = {
       ...options,
+      key: options.apiKey,
+      // @ts-expect-error @todo make a mapOptionsToParams method in the
+      // base class so each adapter can map their options to params
+      apiKey: undefined,
       provider: 'nominatimmapquest'
     };
     super(httpAdapter, overrideOptions);
 
-    if (!this.options.apiKey) {
+    if (!options.apiKey) {
       throw new Error(this.constructor.name + ' needs an apiKey');
     }
   }

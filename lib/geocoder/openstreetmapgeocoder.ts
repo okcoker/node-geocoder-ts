@@ -3,8 +3,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData,
   Nullable
 } from 'types';
@@ -100,13 +100,13 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this._endpoint_reverse = osmServer + '/reverse';
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(query: GeocodeQuery, callback: ResultCallback) {
     let params = this._getCommonParams();
     params.addressdetails = 1;
-    if (typeof value == 'string') {
-      params.q = value;
+    if (typeof query == 'string') {
+      params.q = query;
     } else {
-      const obj = value as Record<string, any>;
+      const obj = query as Record<string, any>;
       for (const k in obj) {
         const v = obj[k];
         params[k] = v;
@@ -123,15 +123,10 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       if ((result as any).error) {
         return callback(new Error((result as any).error), null);
       }
-      let results: ResultData[] = [];
-
-      if (result instanceof Array) {
-        results = result.map((data: any) => {
-          return this._formatResult(data);
-        });
-      } else {
-        results = [this._formatResult(result)];
-      }
+      const all = Array.isArray(result) ? result : [result];
+      const results: ResultData[] = all.map((data: any) => {
+        return this._formatResult(data);
+      });
 
       callback(null, {
         raw: result,
@@ -171,14 +166,12 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       streetName: result.address.road || result.address.cycleway,
       streetNumber: result.address.house_number,
       countryCode: countryCode,
-      // Does this even exist for osm?
-      // https://nominatim.org/release-docs/latest/api/Reverse/
-      neighborhood: result.address.neighborhood
+      neighborhood: result.address.neighbourhood
     };
   }
 
   override _reverse(
-    query: Location & {
+    query: ReverseQuery & {
       format?: 'xml' | 'json';
       addressdetails?: number;
       zoom?: number;
@@ -198,27 +191,23 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._endpoint_reverse,
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          if (result.error) {
-            return callback(new Error(result.error), null);
-          }
-
-          let results: ResultData[] = [];
-          if (result instanceof Array) {
-            results = result.map((data: any) => {
-              return this._formatResult(data);
-            });
-          } else {
-            result = [this._formatResult(result)];
-          }
-
-          callback(null, {
-            raw: result,
-            data: results
-          });
         }
+
+        if (result.error) {
+          return callback(new Error(result.error), null);
+        }
+
+        const all = Array.isArray(result) ? result : [result];
+        const results: ResultData[] = all.map((data: any) => {
+          return this._formatResult(data);
+        });
+
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     );
   }
@@ -234,7 +223,7 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
     for (let k in options) {
       const v = options[k];
-      if (!v) {
+      if (!v || k == 'provider') {
         continue;
       }
       if (k === 'language') {

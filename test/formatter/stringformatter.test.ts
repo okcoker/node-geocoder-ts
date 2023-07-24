@@ -1,16 +1,11 @@
-import chai from 'chai';
-import StringFormatter from '../../lib/formatter/stringformatter';
-
-chai.should();
-
-const expect = chai.expect;
+import StringFormatter from 'lib/formatter/stringformatter';
 
 describe('StringFormatter', () => {
   describe('#constructor', () => {
     test('a string pattern must be set', () => {
-      expect(function () {
+      expect(() => {
         new StringFormatter({ pattern: '' });
-      }).to.throw(Error, 'StringFormatter need a pattern');
+      }).toThrow('StringFormatter need a pattern');
     });
   });
 
@@ -33,11 +28,10 @@ describe('StringFormatter', () => {
         }
       ]);
 
-      results.should.have.length(1);
+      expect(results).toHaveLength(1);
       const str = results[0];
 
-      str.should.be.a('string');
-      str.should.equal('France FR 29 rue chevreul 69007 Rhone alpes RA Lyon');
+      expect(str).toEqual('France FR 29 rue chevreul 69007 Rhone alpes RA Lyon');
     });
   });
 });

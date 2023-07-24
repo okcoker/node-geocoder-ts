@@ -1,73 +1,68 @@
-import chai from 'chai';
-import sinon from 'sinon';
+import ValueError from 'lib/error/valueerror';
 import MapBoxGeocoder from 'lib/geocoder/mapboxgeocoder';
 import { buildHttpAdapter } from 'test/helpers/mocks';
+import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
-chai.should();
-const expect = chai.expect;
 const mockedHttpAdapter = buildHttpAdapter();
 
 describe('MapBoxGeocoder', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
   describe('#constructor', () => {
     test('an http adapter must be set', () => {
       expect(() => {
         new MapBoxGeocoder('' as unknown as HTTPAdapter, { apiKey: '' });
-      }).to.throw(Error, 'MapBoxGeocoder need an httpAdapter');
+      }).toThrow('MapBoxGeocoder need an httpAdapter');
     });
 
     test('Should be an instance of MapBoxGeocoder', () => {
-      const mapboxAdapter = new MapBoxGeocoder(mockedHttpAdapter, {
+      const adapter = new MapBoxGeocoder(mockedHttpAdapter, {
         apiKey: 'apiKey'
       });
 
-      mapboxAdapter.should.be.instanceof(MapBoxGeocoder);
+      expect(adapter).toBeInstanceOf(MapBoxGeocoder);
     });
   });
 
   describe('#geocode', () => {
-    test('Should not accept IPv4', () => {
-      const mapboxAdapter = new MapBoxGeocoder(mockedHttpAdapter, {
+    test('Should not accept IPv4', async () => {
+      const adapter = new MapBoxGeocoder(mockedHttpAdapter, {
         apiKey: 'apiKey'
       });
 
-      expect(function () {
-        mapboxAdapter.geocode('127.0.0.1', () => {});
-      }).to.throw(Error, 'MapBoxGeocoder does not support geocoding IPv4');
+      await expect(
+        adapter.geocode('127.0.0.1')
+      ).rejects.toEqual(new ValueError('MapBoxGeocoder does not support geocoding IPv4'));
     });
 
-    test('Should not accept IPv6', () => {
-      const mapboxAdapter = new MapBoxGeocoder(mockedHttpAdapter, {
+    test('Should not accept IPv6', async () => {
+      const adapter = new MapBoxGeocoder(mockedHttpAdapter, {
         apiKey: 'apiKey'
       });
 
-      expect(function () {
-        mapboxAdapter.geocode(
-          '2001:0db8:0000:85a3:0000:0000:ac1f:8001',
-          () => {}
-        );
-      }).to.throw(Error, 'MapBoxGeocoder does not support geocoding IPv6');
+      await expect(
+        adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toEqual(new ValueError('MapBoxGeocoder does not support geocoding IPv6'));
     });
 
-    test('Should call httpAdapter get method', () => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      mock
-        .expects('get')
-        .once()
-        .returns({ then: function () {} });
-
-      const mapboxAdapter = new MapBoxGeocoder(mockedHttpAdapter, {
+    test('Should call httpAdapter get method', async () => {
+      const adapter = new MapBoxGeocoder(mockedHttpAdapter, {
         apiKey: 'apiKey'
       });
 
-      mapboxAdapter.geocode('1 champs élysée Paris', () => {});
-
-      mock.verify();
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await adapter.geocode('1 champs élysée Paris');
+        },
+        callCount: 1
+      });
     });
 
-    test('Should return geocoded address', (done: any) => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      const resp = {
+    test('Should return geocoded address', async () => {
+      const response = {
         type: 'FeatureCollection',
         query: ['135', 'pilkington', 'avenue', 'birmingham'],
         features: [
@@ -135,52 +130,46 @@ describe('MapBoxGeocoder', () => {
           }
         ]
       };
-      mock.expects('get').once().callsArgWith(2, false, resp);
 
-      const mapboxAdapter = new MapBoxGeocoder(mockedHttpAdapter, {
+      const adapter = new MapBoxGeocoder(mockedHttpAdapter, {
         apiKey: 'apiKey'
       });
 
-      mapboxAdapter.geocode(
-        '135 pilkington avenue, birmingham',
-        function (err: any, results: any) {
-          mock.verify();
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return await adapter.geocode('135 pilkington avenue, birmingham');
+        },
+        mockResponse: response
+      });
 
-          expect(err).equal(null);
-
-          results.data[0].should.to.deep.equal({
-            latitude: 52.54859,
-            longitude: -1.816079,
-            formattedAddress:
-              '135 Pilkington Avenue, Sutton Coldfield, B72 1LH, Vereinigtes Königreich',
-            country: 'Vereinigtes Königreich',
-            countryCode: 'GB',
-            state: 'England',
-            district: 'West Midlands',
-            city: 'Sutton Coldfield',
-            zipcode: 'B72 1LH',
-            neighbourhood: undefined,
-            extra: {
-              id: 'address.5430873521632660',
-              address: 'Pilkington Avenue',
-              category: undefined,
-              bbox: undefined
-            }
-          });
-
-          results.raw.should.deep.equal(resp);
-
-          mock.verify();
-          done();
+      expect(results.data[0]).toEqual({
+        latitude: 52.54859,
+        longitude: -1.816079,
+        formattedAddress:
+          '135 Pilkington Avenue, Sutton Coldfield, B72 1LH, Vereinigtes Königreich',
+        country: 'Vereinigtes Königreich',
+        countryCode: 'GB',
+        state: 'England',
+        district: 'West Midlands',
+        city: 'Sutton Coldfield',
+        zipcode: 'B72 1LH',
+        neighbourhood: undefined,
+        extra: {
+          id: 'address.5430873521632660',
+          address: 'Pilkington Avenue',
+          category: undefined,
+          bbox: undefined
         }
-      );
+      });
+
+      expect(results.raw).toEqual(response);
     });
   });
 
   describe('#reverse', () => {
-    test('Should return geocoded address', (done: any) => {
-      const mock = sinon.mock(mockedHttpAdapter);
-      const resp = {
+    test('Should return geocoded address', async () => {
+      const response = {
         type: 'FeatureCollection',
         query: [-73.9612889, 40.714232],
         features: [
@@ -262,41 +251,40 @@ describe('MapBoxGeocoder', () => {
         ]
       };
 
-      mock.expects('get').once().callsArgWith(2, false, resp);
-
-      const mapboxAdapter = new MapBoxGeocoder(mockedHttpAdapter, {
+      const adapter = new MapBoxGeocoder(mockedHttpAdapter, {
         apiKey: 'api'
       });
 
-      mapboxAdapter.reverse(
-        { lat: 40.714232, lon: -73.9612889 },
-        function (err: any, results: any) {
-          expect(err).equal(null);
-          results.data[0].should.to.deep.equal({
-            latitude: 40.714259,
-            longitude: -73.961297,
-            formattedAddress:
-              '277 Bedford Avenue, Brooklyn, New York 11211, Vereinigte Staaten',
-            country: 'Vereinigte Staaten',
-            countryCode: 'US',
-            state: 'New York',
-            district: 'Kings County',
-            city: 'New York City',
-            zipcode: '11211',
-            neighbourhood: 'Williamsburg',
-            extra: {
-              id: 'address.3679793406555678',
-              address: 'Bedford Avenue',
-              category: undefined,
-              bbox: undefined
-            }
-          });
-          results.raw.should.deep.equal(resp);
+      const results = await verifyHttpAdapter({
+        adapter,
+        async work() {
+          return await adapter.reverse(
+            { lat: 40.714232, lon: -73.9612889 }
+          )
+        },
+        mockResponse: response
+      });
 
-          mock.verify();
-          done();
+      expect(results.data[0]).toEqual({
+        latitude: 40.714259,
+        longitude: -73.961297,
+        formattedAddress:
+          '277 Bedford Avenue, Brooklyn, New York 11211, Vereinigte Staaten',
+        country: 'Vereinigte Staaten',
+        countryCode: 'US',
+        state: 'New York',
+        district: 'Kings County',
+        city: 'New York City',
+        zipcode: '11211',
+        neighborhood: 'Williamsburg',
+        extra: {
+          id: 'address.3679793406555678',
+          address: 'Bedford Avenue',
+          category: undefined,
+          bbox: undefined
         }
-      );
+      });
+      expect(results.raw).toEqual(response);
     });
   });
 });

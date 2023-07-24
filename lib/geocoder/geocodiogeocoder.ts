@@ -3,10 +3,10 @@ import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ResultCallback,
-  Location,
+  ReverseQuery,
   ResultData,
   BaseAdapterOptions
-} from '../../types';
+} from 'types';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'geocodio';
@@ -38,9 +38,10 @@ class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         api_key: querystring.unescape(this.options.apiKey)
       },
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
         }
+
         if (result.error) {
           return callback(new Error('Status is ' + result.error), null);
         }
@@ -76,7 +77,7 @@ class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override  _reverse(query: Location, callback: ResultCallback) {
+  override  _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 
@@ -87,7 +88,7 @@ class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         api_key: querystring.unescape(this.options.apiKey)
       },
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
         }
 

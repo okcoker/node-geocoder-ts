@@ -6,7 +6,7 @@ import type {
   ResultCallback,
   BaseAdapterOptions,
   ResultData,
-  Location,
+  ReverseQuery,
   GeocodeObject,
   Nullable
 } from 'types';
@@ -41,37 +41,37 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeObject, callback: ResultCallback) {
+  override _geocode(query: GeocodeObject, callback: ResultCallback) {
     const params = this._prepareQueryString();
 
-    if (value.address) {
+    if (query.address) {
       let components = '';
 
-      if (value.country) {
-        components = 'country:' + value.country;
+      if (query.country) {
+        components = 'country:' + query.country;
       }
 
-      if (value.zipcode) {
+      if (query.zipcode) {
         if (components) {
           components += '|';
         }
-        components += 'postal_code:' + value.zipcode;
+        components += 'postal_code:' + query.zipcode;
       }
 
       params.components = this._encodeSpecialChars(components);
-      params.address = this._encodeSpecialChars(value.address);
-    } else if (value.googlePlaceId) {
-      params.place_id = value.googlePlaceId;
+      params.address = this._encodeSpecialChars(query.address);
+    } else if (query.googlePlaceId) {
+      params.place_id = query.googlePlaceId;
     } else {
-      params.address = this._encodeSpecialChars(value);
+      params.address = this._encodeSpecialChars(query);
     }
 
-    if (value.language) {
-      params.language = value.language;
+    if (query.language) {
+      params.language = query.language;
     }
 
-    if (value.region) {
-      params.region = value.region;
+    if (query.region) {
+      params.region = query.region;
     }
 
     const excludePartialMatches = params.excludePartialMatches;
@@ -94,7 +94,7 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       if (result.status !== 'OK') {
         return callback(
           new Error(
-            `Status is ${result.status}. ${result}`
+            `Status is ${result.status}.\n${JSON.stringify(result)}`
           ),
           null
         );
@@ -301,7 +301,7 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   }
 
   override _reverse(
-    query: Location & {
+    query: ReverseQuery & {
       language?: string;
       result_type?: string;
       location_type?: string;
@@ -328,32 +328,36 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
     this._signedRequest(this._endpoint, params);
     this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
+      if (err || !result) {
         return callback(err, null);
-      } else {
-        // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
-        // error_message may or may not be present
-        if (result.status !== 'OK') {
-          return callback(
-            new Error(
-              'Status is ' +
-              result.status +
-              '.' +
-              (result.error_message ? ' ' + result.error_message : '')
-            ),
-            null
-          );
-        }
-
-        const results = result.results.map((data: any) => {
-          return this._formatResult(data);
-        });
-
-        callback(null, {
+      }
+      // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
+      // error_message may or may not be present
+      if (result.status === 'ZERO_RESULTS') {
+        return callback(null, {
           raw: result,
-          data: results
+          data: []
         });
       }
+
+      if (result.status !== 'OK') {
+        return callback(
+          new Error(
+            `Status is ${result.status}.\n${JSON.stringify(result)}`
+          ),
+          null
+        );
+      }
+
+      const results = result.results.map((data: any) => {
+        return this._formatResult(data);
+      });
+
+      callback(null, {
+        raw: result,
+        data: results
+      });
+
     });
   }
 

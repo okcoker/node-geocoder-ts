@@ -4,10 +4,10 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
-} from '../../types';
+} from 'types';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'mapquest';
@@ -28,7 +28,7 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     const params: Record<string, any> = {
       key: querystring.unescape(this.options.apiKey)
     };
@@ -54,38 +54,36 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._endpoint + '/address',
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          if (result.info.statuscode !== 0) {
-            return callback(
-              new Error(
-                'Status is ' +
-                result.info.statuscode +
-                ' ' +
-                result.info.messages[0]
-              ),
-              null
-            );
-          }
-
-          const results = (result.results || []).reduce(
-            (acc: ResultData[], data: any) => {
-              data.locations.forEach((location: any) => {
-                acc.push(this._formatResult(location));
-              });
-              return acc;
-            },
-            [] as ResultData[]
-          );
-
-          results.raw = result;
-
-          callback(null, {
-            raw: result,
-            data: results
-          });
         }
+
+        if (result.info.statuscode !== 0) {
+          return callback(
+            new Error(
+              'Status is ' +
+              result.info.statuscode +
+              ' ' +
+              result.info.messages[0]
+            ),
+            null
+          );
+        }
+
+        const results = (result.results || []).reduce(
+          (acc: ResultData[], data: any) => {
+            data.locations.forEach((location: any) => {
+              acc.push(this._formatResult(location));
+            });
+            return acc;
+          },
+          [] as ResultData[]
+        );
+
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     );
   }
@@ -110,7 +108,7 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 
@@ -121,17 +119,17 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         key: querystring.unescape(this.options.apiKey)
       },
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          const locations = result.results[0].locations;
-          const results = locations.map(this._formatResult);
-
-          callback(null, {
-            raw: result,
-            data: results
-          });
         }
+
+        const locations = result.results[0].locations;
+        const results = locations.map(this._formatResult);
+
+        callback(null, {
+          raw: result,
+          data: results
+        });
       }
     );
   }

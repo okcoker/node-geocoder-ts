@@ -4,8 +4,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -41,7 +41,7 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     this.httpAdapter.get(
       this._endpoint + '/address',
       {
@@ -49,30 +49,30 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         key: querystring.unescape(this.options.apiKey)
       },
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          if (result.info.statuscode !== 0) {
-            return callback(
-              new Error(
-                'Status is ' +
-                result.info.statuscode +
-                ' ' +
-                result.info.messages[0]
-              ),
-              null
-            );
-          }
-
-          const results = result.results[0].locations.map((data: any) => {
-            return this._formatResult(data);
-          });
-
-          callback(null, {
-            data: results,
-            raw: result
-          });
         }
+
+        if (result.info.statuscode !== 0) {
+          return callback(
+            new Error(
+              'Status is ' +
+              result.info.statuscode +
+              ' ' +
+              result.info.messages[0]
+            ),
+            null
+          );
+        }
+
+        const results = result.results[0].locations.map((data: any) => {
+          return this._formatResult(data);
+        });
+
+        callback(null, {
+          data: results,
+          raw: result
+        });
       }
     );
   }
@@ -97,7 +97,7 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
 
@@ -108,21 +108,21 @@ class OpenMapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         key: querystring.unescape(this.options.apiKey)
       },
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          if (result.results === undefined || !result.results.length) {
-            return callback(new Error('Incorrect response'), null);
-          }
-
-          const results = result.results[0].locations.map((data: any) => {
-            return this._formatResult(data);
-          });
-          callback(null, {
-            data: results,
-            raw: result
-          });
         }
+
+        if (!result.results?.length) {
+          return callback(new Error('Incorrect response'), null);
+        }
+
+        const results = result.results[0].locations.map((data: any) => {
+          return this._formatResult(data);
+        });
+        callback(null, {
+          data: results,
+          raw: result
+        });
       }
     );
   }

@@ -3,8 +3,8 @@ import type {
   HTTPAdapter,
   ResultCallback,
   BaseAdapterOptions,
-  Location,
-  GeocodeValue,
+  ReverseQuery,
+  GeocodeQuery,
   ResultData
 } from '../../types';
 
@@ -27,7 +27,7 @@ class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this._locations_endpoint = base + '/locations/';
   }
 
-  override _geocode(value: GeocodeValue, callback: ResultCallback) {
+  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
     const params: Record<string, any> = {};
     params.search = value;
     params.embed =
@@ -37,31 +37,28 @@ class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._cities_endpoint,
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           return callback(err, null);
-        } else {
-          let results: ResultData[] = [];
-
-          if (result) {
-            const searchResults =
-              getEmbeddedPath(result, 'city:search-results') || [];
-            results = searchResults.map((data: number) => {
-              const confidence = ((25 - data) / 25.0) * 10;
-              return this._formatResult(
-                searchResults[data],
-                'city:item',
-                confidence
-              );
-            });
-          }
-
-          callback(null, {
-            data: results,
-            raw: result
-          });
         }
-      }
-    );
+        let results: ResultData[] = [];
+
+
+        const searchResults =
+          getEmbeddedPath(result, 'city:search-results') || [];
+        results = searchResults.map((data: any, index: number) => {
+          const confidence = ((25 - index) / 25.0) * 10;
+          return this._formatResult(
+            data,
+            'city:item',
+            confidence
+          );
+        });
+
+        callback(null, {
+          data: results,
+          raw: result
+        });
+      });
   }
 
   _formatResult(
@@ -99,7 +96,7 @@ class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: Location, callback: ResultCallback) {
+  override _reverse(query: ReverseQuery, callback: ResultCallback) {
     const lat = query.lat;
     const lng = query.lon;
     const suffix = lat + ',' + lng;
@@ -112,53 +109,49 @@ class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       this._locations_endpoint + suffix,
       params,
       (err: any, result: any) => {
-        if (err) {
+        if (err || !result) {
           throw err;
-        } else {
-          const results: ResultData[] = [];
-
-          if (result) {
-            const searchResults =
-              getEmbeddedPath(result, 'location:nearest-cities') || [];
-
-            searchResults.forEach((data: any) => {
-              const searchResult = searchResults[data];
-              const confidence =
-                (Math.max(0, 25 - searchResult.distance_km) / 25) * 10;
-              results.push(
-                this._formatResult(
-                  searchResult,
-                  'location:nearest-city',
-                  confidence
-                )
-              );
-            });
-          }
-
-          callback(null, {
-            raw: result,
-            data: results
-          });
         }
-      }
-    );
+        const results: ResultData[] = [];
+        const searchResults =
+          getEmbeddedPath(result, 'location:nearest-cities') || [];
+
+        searchResults.forEach((data: any) => {
+          const confidence =
+            (Math.max(0, 25 - data.distance_km) / 25) * 10;
+          results.push(
+            this._formatResult(
+              data,
+              'location:nearest-city',
+              confidence
+            )
+          );
+        });
+
+        callback(null, {
+          raw: result,
+          data: results
+        });
+      });
   }
 }
 
-function getEmbeddedPath(parent: any, path: any) {
+function getEmbeddedPath(parent: any, path: string) {
   const elements = path.split('/');
-  for (const i in elements) {
-    const element = elements[i];
+  for (const element of elements) {
     const embedded = parent._embedded;
     if (!embedded) {
-      return undefined;
+      return;
     }
+
     const child = embedded[element];
     if (!child) {
-      return undefined;
+      return;
     }
+
     parent = child;
   }
+
   return parent;
 }
 
