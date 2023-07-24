@@ -4,8 +4,6 @@ import type {
   HTTPAdapter,
   ReverseQuery,
   AbstractGeocoderAdapter,
-  ResultCallback,
-  BatchResultCallback,
   GeocodeQuery,
   MaybeResultMaybeError,
   BaseAdapterOptions,
@@ -23,9 +21,9 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
   supportAddress: boolean;
   options: T;
 
-  _geocode?(value: GeocodeQuery, callback: ResultCallback): void;
-  _reverse?(value: ReverseQuery, callback: ResultCallback): void;
-  _batchGeocode?(values: GeocodeQuery[], callback: BatchResultCallback): void;
+  _geocode?(query: GeocodeQuery): Promise<Result>;
+  _reverse?(query: ReverseQuery): Promise<Result>;
+  _batchGeocode?(queries: GeocodeQuery[]): Promise<BatchResult>;
 
   constructor(httpAdapter: HTTPAdapter, options: T) {
     if (!this.constructor.name) {
@@ -55,18 +53,7 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
       );
     }
 
-    return new Promise((resolve, reject) => {
-      customReverse(query, (err, result) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        // Have to cast here because the ResultCallback interface
-        // isnt perfect
-        resolve(result as Result);
-      });
-    });
+    return customReverse(query);
   }
 
   async geocode(query: GeocodeQuery): Promise<Result> {
@@ -101,36 +88,14 @@ abstract class BaseAbstractGeocoderAdapter<T extends BaseAdapterOptions>
       );
     }
 
-    return new Promise((resolve, reject) => {
-      customGeocode(query, (err, result) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        // Have to cast here because the ResultCallback interface
-        // isnt perfect
-        resolve(result as Result);
-      });
-    });
+    return customGeocode(query);
   }
 
   async batchGeocode(queries: GeocodeQuery[]): Promise<BatchResult> {
     const customBatch = this._batchGeocode?.bind(this);
 
     if (typeof customBatch === 'function') {
-      return new Promise((resolve, reject) => {
-        customBatch(queries, (error, result) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          // Have to cast here because the BatchResultCallback interface
-          // isnt perfect
-          resolve(result as BatchResult);
-        });
-      })
+      return customBatch(queries);
     }
 
     const promises = queries.map((value: any) => {

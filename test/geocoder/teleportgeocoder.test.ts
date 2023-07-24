@@ -5,6 +5,7 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {};
 
 describe('TeleportGeocoder', () => {
   afterEach(() => {
@@ -48,7 +49,8 @@ describe('TeleportGeocoder', () => {
         async work() {
           return await adapter.geocode('New York, NY');
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 

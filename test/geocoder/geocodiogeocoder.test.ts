@@ -5,6 +5,9 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  results: []
+};
 
 describe('GeocodioGeocoder', () => {
   afterEach(() => {
@@ -65,7 +68,8 @@ describe('GeocodioGeocoder', () => {
         async work() {
           await adapter.reverse({ lat: 10.0235, lon: -2.3662 })
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
   });

@@ -3,14 +3,14 @@ import ValueError from './../error/valueerror';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BatchResult,
-  BatchResultCallback,
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
+import ResultError from 'lib/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'here';
@@ -52,7 +52,7 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(
+  override async _geocode(
     value: GeocodeQuery & {
       address?: string;
       language?: string;
@@ -60,9 +60,8 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       country?: string;
       state?: string;
       zipcode?: string;
-    },
-    callback: ResultCallback
-  ) {
+    }
+  ): Promise<Result> {
     const params = this._prepareQueryString();
 
     if (value.address) {
@@ -88,41 +87,39 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       params.searchtext = value;
     }
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._geocodeEndpoint,
       params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-        if (result.type === 'ApplicationError') {
-          return callback(new ValueError(result.Details), null);
-        }
-        if (result.error === 'Unauthorized') {
-          return callback(new ValueError(result.error_description), null);
-        }
-        const view = result.Response?.View?.[0];
-        if (!view) {
-          return callback(null, {
-            raw: result,
-            data: []
-          });
-        }
-
-        // Format each geocoding result
-        const results = view.Result.map((data: any) => {
-          return this._formatResult(data);
-        });
-
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
     );
+    if (!result) {
+      throw new ResultError(this);
+    }
+    if (result.type === 'ApplicationError') {
+      throw new ValueError(result.Details);
+    }
+    if (result.error === 'Unauthorized') {
+      throw new ValueError(result.error_description);
+    }
+    const view = result.Response?.View?.[0];
+    if (!view) {
+      return {
+        raw: result,
+        data: []
+      };
+    }
+
+    // Format each geocoding result
+    const results = view.Result.map((data: any) => {
+      return this._formatResult(data);
+    });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
     const lat = query.lat;
     const lng = query.lon;
     const params = this._prepareQueryString();
@@ -130,34 +127,33 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     params.pos = lat + ',' + lng;
     params.mode = 'trackPosition';
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._reverseEndpoint,
       params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        const view = result.Response?.View?.[0];
-
-        if (!view) {
-          return callback(null, {
-            raw: result,
-            data: []
-          });
-        }
-
-        // Format each geocoding result
-        const results = view.Result.map((data: any) => {
-          return this._formatResult(data);
-        });
-
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
     );
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    const view = result.Response?.View?.[0];
+
+    if (!view) {
+      return {
+        raw: result,
+        data: []
+      };
+    }
+
+    // Format each geocoding result
+    const results = view.Result.map((data: any) => {
+      return this._formatResult(data);
+    });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
   _formatResult(result: any): ResultData {
@@ -251,16 +247,12 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return params;
   }
 
-  override async _batchGeocode(values: GeocodeQuery[], callback: BatchResultCallback) {
-    try {
-      const jobId = await this.__createJob(values);
-      await this.__pollJobStatus(jobId);
-      const rawResults = await this._getJobResults(jobId);
-      const results = this.__parseBatchResults(rawResults);
-      callback(null, results);
-    } catch (error) {
-      callback(error, null);
-    }
+  override async _batchGeocode(values: GeocodeQuery[]): Promise<BatchResult> {
+    const jobId = await this.__createJob(values);
+    await this.__pollJobStatus(jobId);
+    const rawResults = await this._getJobResults(jobId);
+    const results = this.__parseBatchResults(rawResults);
+    return results;
   }
 
   async __createJob(values: any) {
@@ -292,17 +284,11 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         accept: 'application/json'
       }
     };
-    const creteJobReq = await new Promise<Response>((resolve, reject) => {
-      this.httpAdapter.post(
-        this._batchGeocodeEndpoint,
-        params,
-        options,
-        (err: any, result: any) => {
-          if (err) return reject(err);
-          resolve(result);
-        }
-      );
-    });
+    const creteJobReq = await this.httpAdapter.post(
+      this._batchGeocodeEndpoint,
+      params,
+      options
+    );
     const jobRes = await creteJobReq.json();
     if (jobRes.type === 'ApplicationError') {
       throw new Error(jobRes.Details);
@@ -318,13 +304,9 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       ...this._prepareQueryString(),
       action: 'status'
     };
+    // @todo fix this similar to tom tom
     for (; !completed && stalledResultsCount > 0; stalledResultsCount--) {
-      const jobStatus = await new Promise<any>((resolve, reject) => {
-        this.httpAdapter.get(url, params, (err: any, result: any) => {
-          if (err) return reject(err);
-          resolve(result);
-        });
-      });
+      const jobStatus = await this.httpAdapter.get(url, params);
       if (jobStatus.Response.Status === 'completed') {
         completed = true;
         break;
@@ -341,19 +323,13 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       ...this._prepareQueryString(),
       outputcompressed: false
     };
-    const jobResult = await new Promise<any>((resolve, reject) => {
-      this.httpAdapter.get(
-        `${this._batchGeocodeEndpoint}/${jobId}/result`,
-        params,
-        (err: any, result: any) => {
-          if (err) return reject(err);
-          resolve(result);
-        },
-        true
-      );
-    });
+    const jobResult = await this.httpAdapter.get<Response>(
+      `${this._batchGeocodeEndpoint}/${jobId}/result`,
+      params,
+      true
+    );
     const jobResultLineReadeer = readline.createInterface({
-      input: jobResult.body,
+      input: jobResult.body as any,
       crlfDelay: Infinity
     });
     const res: any = [];
@@ -398,19 +374,13 @@ class HereGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
 
     // fetch job erros sepparately
-    const jobErrors = await new Promise<any>((resolve, reject) => {
-      this.httpAdapter.get(
-        `${this._batchGeocodeEndpoint}/${jobId}/errors`,
-        params,
-        (err: any, result: any) => {
-          if (err) return reject(err);
-          resolve(result);
-        },
-        true
-      );
-    });
+    const jobErrors = await this.httpAdapter.get<Response>(
+      `${this._batchGeocodeEndpoint}/${jobId}/errors`,
+      params,
+      true
+    );
     const jobErrorsLineReader = readline.createInterface({
-      input: jobErrors.body,
+      input: jobErrors.body as any,
       crlfDelay: Infinity
     });
     for await (const line of jobErrorsLineReader) {

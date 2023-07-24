@@ -1,11 +1,11 @@
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BatchResult,
   BaseAdapterOptions,
-  BatchResultCallback,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
 
 export interface Options extends BaseAdapterOptions {
@@ -30,7 +30,7 @@ class TomTomGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: string, callback: ResultCallback) {
+  override async _geocode(query: string): Promise<Result> {
     const params: Record<string, string | number> = {
       key: this.options.apiKey
     };
@@ -47,22 +47,18 @@ class TomTomGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       params.limit = this.options.limit;
     }
 
-    const url = this._endpoint + '/' + encodeURIComponent(value) + '.json';
+    const url = this._endpoint + '/' + encodeURIComponent(query) + '.json';
 
-    this.httpAdapter.get(url, params, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        const results = result.results.map((data: any) => {
-          return this._formatResult(data);
-        });
+    const result = await this.httpAdapter.get(url, params);
 
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
+    const results = result.results.map((data: any) => {
+      return this._formatResult(data);
     });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
   _formatResult(result: any): ResultData {
@@ -79,21 +75,17 @@ class TomTomGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override async _batchGeocode(values: string[], callback: BatchResultCallback) {
-    try {
-      const jobLocation = await this.__createJob(values);
-      const rawResults = await this.__pollJobStatusAndFetchResults(
-        jobLocation,
-        values
-      );
-      const parsedResults = this.__parseBatchResults(rawResults);
-      callback(null, parsedResults);
-    } catch (e) {
-      callback(e, null);
-    }
+  override async _batchGeocode(queries: string[]): Promise<BatchResult> {
+    const jobLocation = await this.__createJob(queries);
+    const rawResults = await this.__pollJobStatusAndFetchResults(
+      jobLocation,
+      queries
+    );
+    const parsedResults = this.__parseBatchResults(rawResults);
+    return parsedResults;
   }
 
-  private async __createJob(addresses: string[]) {
+  private async __createJob(addresses: string[]): Promise<string> {
     const body = {
       batchItems: addresses.map(address => {
         let query = `/geocode/${encodeURIComponent(address)}.json`;
@@ -114,27 +106,20 @@ class TomTomGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       key: this.options.apiKey,
       waitTimeSeconds: 10
     };
-    const options = {
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json'
+    const response = await this.httpAdapter.post<Response>(
+      this._batchGeocodingEndpoint,
+      params,
+      {
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json'
+        },
+        redirect: 'manual',
+        body: JSON.stringify(body)
       },
-      redirect: 'manual',
-      body: JSON.stringify(body)
-    };
-    const response = await new Promise<Response>((resolve, reject) => {
-      this.httpAdapter.post(
-        this._batchGeocodingEndpoint,
-        params,
-        options,
-        (err: any, result: any) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(result);
-        }
-      );
-    });
+      true
+    );
+
     if (response.status !== 303) {
       const responseContentType = response.headers.get('Content-Type');
       if (
@@ -164,19 +149,11 @@ class TomTomGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       throw new Error('Long poll ended without results after 14 minutes');
     }
 
-    const response = await new Promise<Response>((resolve, reject) => {
-      this.httpAdapter.get(
-        location,
-        {},
-        (err: any, res: any) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(res);
-        },
-        true
-      );
-    });
+    const response = await this.httpAdapter.get<Response>(
+      location,
+      {},
+      true
+    );
 
     if (response.status === 200) {
       const results = await response.json();

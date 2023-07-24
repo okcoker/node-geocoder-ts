@@ -5,8 +5,8 @@ const mockAdapter = buildGeocoderAdapter();
 
 const stupidBatchGeocoderAdapter = {
   ...mockAdapter,
-  _batchGeocode: function (data: any, cb: any) {
-    cb(null, data);
+  _batchGeocode: function (queries: any): Promise<any> {
+    return Promise.resolve(queries);
   }
 };
 

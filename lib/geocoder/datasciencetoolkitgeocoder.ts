@@ -2,9 +2,11 @@ import net from 'net';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
-  BaseAdapterOptions
+
+  BaseAdapterOptions,
+  Result
 } from 'types';
+import ResultError from 'lib/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'datasciencetoolkit';
@@ -24,11 +26,43 @@ class DataScienceToolkitGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this.supportIPv4 = true;
   }
 
+  override async _geocode(query: string): Promise<Result> {
+    const ep = this._endpoint(query);
+
+    const result = await this.httpAdapter.get(ep + query, {});
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    const json = result[query];
+    if (!json) {
+      throw new Error('Could not geocode "' + query + '".');
+    }
+
+    return {
+      raw: result,
+      data: [
+        {
+          latitude: json.latitude,
+          longitude: json.longitude,
+          country: json.country_name,
+          city: json.city || json.locality,
+          state: json.state || json.region,
+          zipcode: json.postal_code,
+          streetName: json.street_name,
+          streetNumber: json.street_number,
+          countryCode: json.country_code
+        }
+      ]
+    };
+  }
+
   /**
    * Build DSTK endpoint, allows for local DSTK installs
    * @param query Value to geocode (Address or IPv4)
    */
-  _endpoint(query: string) {
+  private _endpoint(query: string) {
     const ep = {};
     let host = 'www.datasciencetoolkit.org';
 
@@ -45,45 +79,6 @@ class DataScienceToolkitGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return net.isIPv4(query) ? ep.ipv4Endpoint : ep.street2coordinatesEndpoint;
   }
 
-  /**
-   * Geocode
-   * @param query Value to geocode (Address or IPv4)
-   * @param callback callback method
-   */
-  override _geocode(query: string, callback: ResultCallback) {
-    const ep = this._endpoint(query);
-
-    this.httpAdapter.get(ep + query, {}, (err: any, result: any) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
-
-      result = result[query];
-      if (!result) {
-        return callback(
-          new Error('Could not geocode "' + query + '".'),
-          null
-        );
-      }
-
-      callback(null, {
-        raw: result,
-        data: [
-          {
-            latitude: result.latitude,
-            longitude: result.longitude,
-            country: result.country_name,
-            city: result.city || result.locality,
-            state: result.state || result.region,
-            zipcode: result.postal_code,
-            streetName: result.street_name,
-            streetNumber: result.street_number,
-            countryCode: result.country_code
-          }
-        ]
-      });
-    });
-  }
 }
 
 export default DataScienceToolkitGeocoder;

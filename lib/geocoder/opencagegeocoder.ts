@@ -1,11 +1,11 @@
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
 
 export interface Options extends BaseAdapterOptions {
@@ -46,58 +46,74 @@ class OpenCageGeocoder extends BaseAbstractGeocoderAdapter<Options> {
   }
 
   /**
-   * Geocode
-   * @param <string>   value    Value to geocode (Address)
-   * @param <function> callback Callback method
+   *
+   * @param query Value to geocode (Address)
    */
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
     const params = this._getCommonParams();
-    if (typeof value === 'string') {
-      params.q = value;
+    if (typeof query === 'string') {
+      params.q = query;
     } else {
-      if (value.bounds) {
-        if (Array.isArray(value.bounds)) {
-          params.bounds = value.bounds.join(',');
+      if (query.bounds) {
+        if (Array.isArray(query.bounds)) {
+          params.bounds = query.bounds.join(',');
         } else {
-          params.bounds = value.bounds;
+          params.bounds = query.bounds;
         }
       }
-      if (value.countryCode) {
-        params.countrycode = value.countryCode;
+      if (query.countryCode) {
+        params.countrycode = query.countryCode;
       }
-      if (value.limit) {
-        params.limit = value.limit;
+      if (query.limit) {
+        params.limit = query.limit;
       }
-      if (value.minConfidence) {
-        params.min_confidence = value.minConfidence;
+      if (query.minConfidence) {
+        params.min_confidence = query.minConfidence;
       }
-      if (value.language) {
-        params.language = value.language;
+      if (query.language) {
+        params.language = query.language;
       }
-      params.q = value.address;
+      params.q = query.address;
     }
 
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        const results: ResultData[] = [];
+    const result = await this.httpAdapter.get(this._endpoint, params)
+    const results: ResultData[] = [];
 
-        if (result && result.results instanceof Array) {
-          result.results.forEach((data: any) => {
-            results.push(this._formatResult(data));
-          });
-        }
+    if (result && result.results instanceof Array) {
+      result.results.forEach((data: any) => {
+        results.push(this._formatResult(data));
+      });
+    }
 
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
-    });
+    return {
+      data: results,
+      raw: result
+    };
   }
 
-  _formatResult(result: any) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
+    const lat = query.lat;
+    const lng = query.lon;
+    const params = this._getCommonParams();
+    params.q = lat + ' ' + lng;
+
+    const result = await this.httpAdapter.get(this._endpoint, params)
+
+    const results: ResultData[] = [];
+
+    if (result && Array.isArray(result.results)) {
+      result.results.forEach((data: any) => {
+        results.push(this._formatResult(data));
+      });
+    }
+
+    return {
+      raw: result,
+      data: results
+    };
+  }
+
+  private _formatResult(result: any) {
     const confidence = result.confidence || 0;
 
     return {
@@ -120,38 +136,13 @@ class OpenCageGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
-    const lat = query.lat;
-    const lng = query.lon;
-    const params = this._getCommonParams();
-    params.q = lat + ' ' + lng;
-
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
-        callback(err, null);
-      } else {
-        const results: ResultData[] = [];
-
-        if (result && Array.isArray(result.results)) {
-          result.results.forEach((data: any) => {
-            results.push(this._formatResult(data));
-          });
-        }
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
-    });
-  }
 
   /**
    * Prepare common params
    *
    * @return <Object> common params
    */
-  _getCommonParams(): Record<string, any> {
+  private _getCommonParams(): Record<string, any> {
     const params: Record<string, any> = {};
     params.key = this.options.apiKey;
 

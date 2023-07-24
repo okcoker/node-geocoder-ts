@@ -5,6 +5,9 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  results: []
+};
 
 describe('MapQuestGeocoder', () => {
   afterEach(() => {
@@ -69,7 +72,8 @@ describe('MapQuestGeocoder', () => {
         expectedParams: {
           key: 'API_KEY',
           location: 'test'
-        }
+        },
+        mockResponse: defaultResponse
       });
     });
   });
@@ -85,7 +89,8 @@ describe('MapQuestGeocoder', () => {
         async work() {
           await adapter.reverse({ lat: 10.0235, lon: -2.3662 })
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
   });

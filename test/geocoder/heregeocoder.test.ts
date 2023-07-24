@@ -5,6 +5,7 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {};
 
 describe('HereGeocoder', () => {
   afterEach(() => {
@@ -119,7 +120,8 @@ describe('HereGeocoder', () => {
           gen: 8
         },
         expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 
@@ -142,7 +144,8 @@ describe('HereGeocoder', () => {
           additionaldata: 'Country2,true',
           gen: 8
         },
-        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json'
+        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
+        mockResponse: defaultResponse
       });
     });
 
@@ -165,7 +168,8 @@ describe('HereGeocoder', () => {
           additionaldata: 'Country2,true',
           gen: 8
         },
-        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json'
+        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
+        mockResponse: defaultResponse
       });
     });
 
@@ -188,7 +192,8 @@ describe('HereGeocoder', () => {
           additionaldata: 'Country2,true',
           gen: 8
         },
-        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json'
+        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
+        mockResponse: defaultResponse
       });
     });
 
@@ -211,7 +216,8 @@ describe('HereGeocoder', () => {
           additionaldata: 'Country2,true',
           gen: 8
         },
-        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json'
+        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
+        mockResponse: defaultResponse
       });
     });
 
@@ -238,7 +244,8 @@ describe('HereGeocoder', () => {
           additionaldata: 'Country2,true',
           gen: 8
         },
-        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json'
+        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
+        mockResponse: defaultResponse
       });
     });
 
@@ -265,7 +272,8 @@ describe('HereGeocoder', () => {
           additionaldata: 'Country2,true',
           gen: 8
         },
-        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json'
+        expectedUrl: 'https://geocoder.ls.hereapi.com/6.2/geocode.json',
+        mockResponse: defaultResponse
       });
     });
 
@@ -455,7 +463,8 @@ describe('HereGeocoder', () => {
         async work() {
           return adapter.reverse({ lat: 10.0235, lon: -2.3662 });
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 

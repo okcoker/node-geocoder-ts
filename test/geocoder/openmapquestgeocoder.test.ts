@@ -5,6 +5,9 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  results: []
+};
 
 describe('MapQuestGeocoder', () => {
   describe('#constructor', () => {
@@ -67,7 +70,8 @@ describe('MapQuestGeocoder', () => {
         adapter,
         async work() {
           adapter.reverse({ lat: 10.0235, lon: -2.3662 });
-        }
+        },
+        mockResponse: defaultResponse
       });
     });
   });

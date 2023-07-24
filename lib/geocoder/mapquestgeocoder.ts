@@ -2,12 +2,14 @@ import querystring from 'querystring';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from 'types';
+import ResultError from 'lib/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'mapquest';
@@ -28,7 +30,7 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(value: GeocodeQuery): Promise<Result> {
     const params: Record<string, any> = {
       key: querystring.unescape(this.options.apiKey)
     };
@@ -50,45 +52,64 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       params.location = value;
     }
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._endpoint + '/address',
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
+      params
+    )
+    if (!result) {
+      throw new ResultError(this);
+    }
 
-        if (result.info.statuscode !== 0) {
-          return callback(
-            new Error(
-              'Status is ' +
-              result.info.statuscode +
-              ' ' +
-              result.info.messages[0]
-            ),
-            null
-          );
-        }
+    if (typeof result.info?.statuscode !== 'undefined' && result.info?.statuscode !== 0) {
+      throw new Error(
+        'Status is ' +
+        result.info.statuscode +
+        ' ' +
+        result.info.messages[0]
+      )
+    }
 
-        const results = (result.results || []).reduce(
-          (acc: ResultData[], data: any) => {
-            data.locations.forEach((location: any) => {
-              acc.push(this._formatResult(location));
-            });
-            return acc;
-          },
-          [] as ResultData[]
-        );
-
-        callback(null, {
-          raw: result,
-          data: results
+    const results = (result.results || []).reduce(
+      (acc: ResultData[], data: any) => {
+        data.locations.forEach((location: any) => {
+          acc.push(this._formatResult(location));
         });
-      }
+        return acc;
+      },
+      [] as ResultData[]
     );
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  _formatResult(result: any): ResultData {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
+    const lat = query.lat;
+    const lng = query.lon;
+
+    const result = await this.httpAdapter.get(
+      this._endpoint + '/reverse',
+      {
+        location: lat + ',' + lng,
+        key: querystring.unescape(this.options.apiKey)
+      })
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    const locations = result.results?.[0]?.locations || [];
+    const results = locations.map(this._formatResult);
+
+    return {
+      raw: result,
+      data: results
+    };
+  }
+
+  private _formatResult(result: any): ResultData {
     return {
       formattedAddress: [
         result.street,
@@ -96,8 +117,8 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
         (result.adminArea3 + ' ' + result.postalCode).trim(),
         result.adminArea1
       ].join(', '),
-      latitude: result.latLng.lat,
-      longitude: result.latLng.lng,
+      latitude: result.latLng?.lat,
+      longitude: result.latLng?.lng,
       // 'country': null,
       city: result.adminArea5,
       stateCode: result.adminArea3,
@@ -106,32 +127,6 @@ class MapQuestGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       // 'streetNumber': null,
       countryCode: result.adminArea1
     };
-  }
-
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
-    const lat = query.lat;
-    const lng = query.lon;
-
-    this.httpAdapter.get(
-      this._endpoint + '/reverse',
-      {
-        location: lat + ',' + lng,
-        key: querystring.unescape(this.options.apiKey)
-      },
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        const locations = result.results[0].locations;
-        const results = locations.map(this._formatResult);
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
-    );
   }
 }
 

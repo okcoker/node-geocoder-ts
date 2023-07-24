@@ -40,12 +40,6 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
     value: GeocodeQuery
   ): Promise<AllResultTypes> {
     const result = await this._adapter.geocode(value);
-
-    // This shouldnt happen but the ResultCallback interface type isn't perfect
-    if (!result) {
-      throw new Error('Unexpected error with the result');
-    }
-
     const filtered = this._filter(value, result);
     const formatted = this._format(filtered);
 
@@ -56,12 +50,6 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
     query: ReverseQuery
   ): Promise<AllResultTypes> {
     const result = await this._adapter.reverse(query);
-
-    // This shouldnt happen but the ResultCallback interface type isn't perfect
-    if (!result) {
-      throw new Error('Unexpected error with the result');
-    }
-
     const formatted = this._format(result);
 
     return formatted;
@@ -76,12 +64,6 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
     const result = await this._adapter.batchGeocode(
       values
     );
-
-    // This shouldnt happen but the BatchResultCallback interface type isn't perfect
-    if (!result) {
-      throw new Error('Unexpected error with the result');
-    }
-
     const filtered = this._batchFilter(values, result);
     const formatted = this._batchFormat(filtered);
 
@@ -101,7 +83,9 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
           : value.minConfidence;
 
       data = data.filter(geocodedAddress => {
-        const confidence = geocodedAddress?.extra?.confidence;
+        // @todo make this better
+        const extraAttrs = geocodedAddress?.extra as { confidence?: number };
+        const confidence = extraAttrs.confidence;
         if (
           typeof confidence === 'number' &&
           typeof valueConfidence === 'number'

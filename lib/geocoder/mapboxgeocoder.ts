@@ -1,10 +1,12 @@
+import ResultError from 'lib/error/ResultError';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BaseAdapterOptions,
   ReverseQuery,
-  GeocodeQuery
+  GeocodeQuery,
+  Result,
+  ResultData
 } from 'types';
 
 /**
@@ -42,7 +44,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(value: GeocodeQuery): Promise<Result> {
     let params = this._prepareQueryString({});
     let searchtext = value;
 
@@ -55,27 +57,21 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       searchtext as string
     )}.json`;
 
-    this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
-      const view = result.features;
-      if (!view) {
-        return callback(null, {
-          raw: result,
-          data: []
-        });
-      }
-      const results = view.map(this._formatResult);
+    const result = await this.httpAdapter.get(endpoint, params);
 
-      callback(null, {
-        raw: result,
-        data: results
-      });
-    });
+    if (!result) {
+      throw new ResultError(this);
+    }
+    const view: unknown[] = result.features || [];
+    const results = view.map(this._formatResult);
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
     const { lat, lon, ...other } = query;
 
     const params = this._prepareQueryString(other);
@@ -83,27 +79,22 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       `${lon},${lat}`
     )}.json`;
 
-    this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
-      const view = result.features;
-      if (!view) {
-        return callback(null, {
-          raw: result,
-          data: []
-        });
-      }
-      const results = view.map(this._formatResult);
+    const result = await this.httpAdapter.get(endpoint, params);
 
-      callback(null, {
-        raw: result,
-        data: results
-      });
-    });
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    const view: unknown[] = result.features || [];
+    const results = view.map(this._formatResult);
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  _formatResult(result: any) {
+  private _formatResult(result: any): ResultData {
     const context = (result.context || []).reduce((o: any, item: any) => {
       // possible types: country, region, postcode, district, place, locality, neighborhood, address
       const [type] = item.id.split('.');
@@ -123,7 +114,7 @@ class MapBoxGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
     const properties = result.properties || {};
 
-    const extractedObj = {
+    const extractedObj: ResultData = {
       latitude: result.center[1],
       longitude: result.center[0],
       formattedAddress: result.place_name,

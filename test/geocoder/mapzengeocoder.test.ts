@@ -2,8 +2,13 @@ import MapzenGeocoder from 'lib/geocoder/mapzengeocoder';
 import { buildHttpAdapter } from 'test/helpers/mocks';
 import { HTTPAdapter } from 'types';
 import ValueError from 'lib/error/valueerror';
+import { verifyHttpAdapter } from 'test/helpers/utils';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  features: [],
+  results: []
+};
 
 describe('MapzenGeocoder', () => {
   describe('#constructor', () => {
@@ -56,22 +61,22 @@ describe('MapzenGeocoder', () => {
     test('Should call httpAdapter get method', async () => {
       const apiKey = 'API_KEY';
       const query = { lat: 10.0235, lon: -2.3662 }
-      const adapterSpy = jest.spyOn(mockedHttpAdapter, 'get');
-      const mapzenAdapter = new MapzenGeocoder(mockedHttpAdapter, {
+      const adapter = new MapzenGeocoder(mockedHttpAdapter, {
         apiKey
       });
-      const promise = mapzenAdapter.reverse(query);
 
-      expect(adapterSpy).toHaveBeenCalledTimes(1);
-      expect(adapterSpy.mock.calls[0][1]).toEqual({
-        'point.lat': query.lat,
-        'point.lon': query.lon,
-        api_key: apiKey
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await adapter.reverse(query);
+        },
+        expectedParams: {
+          'point.lat': query.lat,
+          'point.lon': query.lon,
+          api_key: apiKey
+        },
+        mockResponse: defaultResponse
       });
-
-      // We dont care about the response, but the promise hangs
-      // since we're mocking out the http adapter
-      await Promise.reject(promise).catch(() => { });
     });
   });
 });

@@ -5,6 +5,13 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  response: {
+    GeoObjectCollection: {
+      featureMember: []
+    }
+  }
+};
 
 describe('YandexGeocoder', () => {
   afterEach(() => {
@@ -42,7 +49,8 @@ describe('YandexGeocoder', () => {
         async work() {
           adapter.geocode('1 champs élysée Paris');
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 
@@ -134,7 +142,8 @@ describe('YandexGeocoder', () => {
         async work() {
           return adapter.reverse({ lat: 55.985074, lon: 40.018587 })
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 

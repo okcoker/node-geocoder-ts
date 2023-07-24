@@ -1,12 +1,14 @@
+import ResultError from 'lib/error/ResultError';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
-} from '../../types';
+  ResultData,
+  Result
+} from 'types';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'teleport';
@@ -27,41 +29,79 @@ class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this._locations_endpoint = base + '/locations/';
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
     const params: Record<string, any> = {};
-    params.search = value;
+    params.search = query;
     params.embed =
       'city:search-results/city:item/{city:country,city:admin1_division,city:urban_area}';
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._cities_endpoint,
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-        let results: ResultData[] = [];
+      params
+    );
+    if (!result) {
+      throw new ResultError(this);
+    }
+    let results: ResultData[] = [];
 
 
-        const searchResults =
-          getEmbeddedPath(result, 'city:search-results') || [];
-        results = searchResults.map((data: any, index: number) => {
-          const confidence = ((25 - index) / 25.0) * 10;
-          return this._formatResult(
-            data,
-            'city:item',
-            confidence
-          );
-        });
+    const searchResults =
+      getEmbeddedPath(result, 'city:search-results') || [];
+    results = searchResults.map((data: any, index: number) => {
+      const confidence = ((25 - index) / 25.0) * 10;
+      return this._formatResult(
+        data,
+        'city:item',
+        confidence
+      );
+    });
 
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      });
+    return {
+      data: results,
+      raw: result
+    };
   }
 
-  _formatResult(
+  override async _reverse(query: ReverseQuery): Promise<Result> {
+    const lat = query.lat;
+    const lng = query.lon;
+    const suffix = lat + ',' + lng;
+
+    const params: Record<string, string> = {};
+    params.embed =
+      'location:nearest-cities/location:nearest-city/{city:country,city:admin1_division,city:urban_area}';
+
+    const result = await this.httpAdapter.get(
+      this._locations_endpoint + suffix,
+      params
+    );
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+    const results: ResultData[] = [];
+    const searchResults =
+      getEmbeddedPath(result, 'location:nearest-cities') || [];
+
+    searchResults.forEach((data: any) => {
+      const confidence =
+        (Math.max(0, 25 - data.distance_km) / 25) * 10;
+      results.push(
+        this._formatResult(
+          data,
+          'location:nearest-city',
+          confidence
+        )
+      );
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
+  }
+
+  private _formatResult(
     result: any,
     cityRelationName: string,
     confidence: number
@@ -94,45 +134,6 @@ class TeleportGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       stateCode: admin1.geonames_admin1_code,
       extra: extra
     };
-  }
-
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
-    const lat = query.lat;
-    const lng = query.lon;
-    const suffix = lat + ',' + lng;
-
-    const params: Record<string, string> = {};
-    params.embed =
-      'location:nearest-cities/location:nearest-city/{city:country,city:admin1_division,city:urban_area}';
-
-    this.httpAdapter.get(
-      this._locations_endpoint + suffix,
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          throw err;
-        }
-        const results: ResultData[] = [];
-        const searchResults =
-          getEmbeddedPath(result, 'location:nearest-cities') || [];
-
-        searchResults.forEach((data: any) => {
-          const confidence =
-            (Math.max(0, 25 - data.distance_km) / 25) * 10;
-          results.push(
-            this._formatResult(
-              data,
-              'location:nearest-city',
-              confidence
-            )
-          );
-        });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      });
   }
 }
 

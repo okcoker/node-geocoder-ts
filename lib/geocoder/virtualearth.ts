@@ -1,11 +1,12 @@
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
 
 export interface Options extends BaseAdapterOptions {
@@ -27,51 +28,43 @@ class VirtualEarthGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
     const params = {
-      q: value,
+      q: query,
       key: this.options.apiKey
     };
 
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        const results = result.resourceSets[0].resources.map((data: any) => {
-          return this._formatResult(data);
-        });
+    const result = await this.httpAdapter.get(this._endpoint, params)
 
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
+    const results = result.resourceSets[0].resources.map((data: any) => {
+      return this._formatResult(data);
     });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
-  override _reverse(value: ReverseQuery, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
     const params = {
       key: this.options.apiKey
     };
-    const endpoint = this._endpoint + '/' + value.lat + ',' + value.lon;
+    const endpoint = this._endpoint + '/' + query.lat + ',' + query.lon;
 
-    this.httpAdapter.get(endpoint, params, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        const results = result.resourceSets[0].resources.map((data: any) => {
-          return this._formatResult(data);
-        });
+    const result = await this.httpAdapter.get(endpoint, params);
 
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
+    const results = result.resourceSets[0].resources.map((data: any) => {
+      return this._formatResult(data);
     });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
-  _formatResult(result: any): ResultData {
+  private _formatResult(result: any): ResultData {
     return {
       latitude: result.point.coordinates[0],
       longitude: result.point.coordinates[1],

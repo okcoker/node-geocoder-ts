@@ -5,7 +5,10 @@ import ValueError from 'lib/error/valueerror';
 import { verifyHttpAdapter } from 'test/helpers/utils';
 
 const mockedHttpAdapter = buildHttpAdapter();
-
+const defaultResponse = {
+  results: [],
+  status: 'OK'
+};
 describe('GoogleGeocoder', () => {
   afterEach(() => {
     jest.resetAllMocks();
@@ -77,7 +80,8 @@ describe('GoogleGeocoder', () => {
           region: '.de',
           components: '',
           sensor: false
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
@@ -92,7 +96,8 @@ describe('GoogleGeocoder', () => {
         expectedParams: {
           address: '1 champs élysée Paris',
           sensor: false
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
@@ -110,7 +115,8 @@ describe('GoogleGeocoder', () => {
           address: '1 champs élysée Paris',
           sensor: false,
           language: 'fr'
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
@@ -128,7 +134,8 @@ describe('GoogleGeocoder', () => {
           address: '1 champs élysée Paris',
           sensor: false,
           region: 'fr'
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
@@ -150,7 +157,8 @@ describe('GoogleGeocoder', () => {
           address: '1 champs élysée Paris',
           sensor: false,
           components: 'country:FR|postal_code:75008'
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
@@ -171,7 +179,8 @@ describe('GoogleGeocoder', () => {
           address: '1 champs élysée Paris',
           sensor: false,
           components: 'postal_code:75008'
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
@@ -189,13 +198,14 @@ describe('GoogleGeocoder', () => {
           address: '1 champs élysée Paris',
           sensor: false,
           key: 'hey-you-guys'
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 
     test('Should return geocoded address', async () => {
-      jest.spyOn(mockedHttpAdapter, 'get').mockImplementation((url, params, callback) => {
-        callback(null, {
+      jest.spyOn(mockedHttpAdapter, 'get').mockImplementation((_url, _params) => {
+        return Promise.resolve({
           status: 'OK',
           results: [
             {
@@ -667,7 +677,8 @@ describe('GoogleGeocoder', () => {
         async work() {
           return await adapter.reverse({ lat: 10.0235, lon: -2.3662 });
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 
@@ -795,7 +806,8 @@ describe('GoogleGeocoder', () => {
           sensor: false,
           result_type: 'country',
           location_type: 'ROOFTOP'
-        }
+        },
+        mockResponse: defaultResponse
       });
     });
 
@@ -849,7 +861,8 @@ describe('GoogleGeocoder', () => {
           client: 'raoul',
           sensor: false,
           signature: 'PW1yyLFH9lN16B-Iw7EXiAeMKX8='
-        }
+        },
+        mockResponse: defaultResponse
       })
     });
 

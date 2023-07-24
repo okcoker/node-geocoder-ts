@@ -1,11 +1,13 @@
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   ReverseQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
+import ResultError from 'lib/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'yandex';
@@ -48,36 +50,36 @@ class YandexGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     super(httpAdapter, { ...options, provider: 'yandex' });
   }
 
-  override _geocode(value: string, callback: ResultCallback) {
+  override async _geocode(query: string): Promise<Result> {
     const params = {
       ..._processOptionsToParams(this.options),
-      geocode: value,
+      geocode: query,
       format: 'json'
     };
 
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
+    const result = await this.httpAdapter.get(this._endpoint, params)
 
-      const results = result.response.GeoObjectCollection.featureMember.map((geopoint: any) => {
-        return _formatResult(geopoint);
-      });
+    if (!result) {
+      throw new ResultError(this);
+    }
 
-      callback(null, {
-        raw: result,
-        data: results
-      });
+    const results = result.response.GeoObjectCollection.featureMember.map((geopoint: any) => {
+      return _formatResult(geopoint);
     });
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
     const lat = query.lat;
     const lng = query.lon;
 
     const value = lng + ',' + lat;
 
-    this._geocode(value, callback);
+    return this._geocode(value);
   }
 }
 

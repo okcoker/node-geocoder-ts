@@ -6,9 +6,7 @@ import type {
   AbstractGeocoderAdapter,
   ReverseQuery,
   Result,
-  ResultCallback,
   GeocodeQuery,
-  BatchResultCallback,
   BatchResult
 } from 'types';
 
@@ -20,12 +18,12 @@ export function buildHttpAdapter(overrides = {}): HTTPAdapter {
       return true;
     },
 
-    get() {
-      return {};
+    get<T>(): Promise<T> {
+      return Promise.resolve({} as T)
     },
 
-    post() {
-      return {};
+    post<T>(): Promise<T> {
+      return Promise.resolve({} as T)
     },
     ...overrides
   };

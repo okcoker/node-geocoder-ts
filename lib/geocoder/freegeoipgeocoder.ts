@@ -1,9 +1,10 @@
+import ResultError from 'lib/error/ResultError';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BaseAdapterOptions,
-  GeocodeQuery
+  GeocodeQuery,
+  Result
 } from 'types';
 
 export interface Options extends BaseAdapterOptions {
@@ -24,36 +25,35 @@ class FreegeoipGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this.supportAddress = false;
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
-    this.httpAdapter.get(
+  override async _geocode(value: GeocodeQuery): Promise<Result> {
+    const result = await this.httpAdapter.get(
       this._endpoint + value,
       {},
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-        const results = [];
-
-        results.push({
-          ip: result.ip,
-          countryCode: result.country_code,
-          country: result.country_name,
-          regionCode: result.region_code,
-          regionName: result.region_name,
-          city: result.city,
-          zipcode: result.zip_code,
-          timeZone: result.time_zone,
-          latitude: result.latitude,
-          longitude: result.longitude,
-          metroCode: result.metro_code
-        });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
     );
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+    const results = [];
+
+    results.push({
+      ip: result.ip,
+      countryCode: result.country_code,
+      country: result.country_name,
+      regionCode: result.region_code,
+      regionName: result.region_name,
+      city: result.city,
+      zipcode: result.zip_code,
+      timeZone: result.time_zone,
+      latitude: result.latitude,
+      longitude: result.longitude,
+      metroCode: result.metro_code
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 }
 

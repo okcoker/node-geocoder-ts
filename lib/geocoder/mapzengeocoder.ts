@@ -2,11 +2,11 @@ import querystring from 'querystring';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
 
 export interface Options extends BaseAdapterOptions {
@@ -28,35 +28,53 @@ class MapzenGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(query: GeocodeQuery, callback: ResultCallback) {
-    this.httpAdapter.get(
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
+    const result = await this.httpAdapter.get(
       this._endpoint + '/search',
       {
         text: query as string,
         api_key: querystring.unescape(this.options.apiKey)
       },
-      (err: any, result: any) => {
-        if (err) {
-          return callback(err, null);
-        }
-
-        if (result.error) {
-          return callback(new Error('Status is ' + result.error), null);
-        }
-
-        const results = result.features.map((feature: any) => {
-          return this._formatResult(feature);
-        });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
     );
+
+    if (result.error) {
+      throw new Error('Status is ' + result.error);
+    }
+
+    const results = result.features.map((feature: any) => {
+      return this._formatResult(feature);
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  _formatResult(result: any): ResultData {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
+    const lat = query.lat;
+    const lng = query.lon;
+
+    const result = await this.httpAdapter.get(
+      this._endpoint + '/reverse',
+      {
+        'point.lat': lat,
+        'point.lon': lng,
+        api_key: querystring.unescape(this.options.apiKey)
+      }
+    );
+
+    const results = result.results.map((data: any) => {
+      return this._formatResult(data);
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
+  }
+
+  private _formatResult(result: any): ResultData {
     const accuracy =
       result.properties.confidence < 1 ? result.properties.confidence - 0.1 : 1;
 
@@ -76,33 +94,6 @@ class MapzenGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
-    const lat = query.lat;
-    const lng = query.lon;
-
-    this.httpAdapter.get(
-      this._endpoint + '/reverse',
-      {
-        'point.lat': lat,
-        'point.lon': lng,
-        api_key: querystring.unescape(this.options.apiKey)
-      },
-      (err: any, result: any) => {
-        if (err) {
-          return callback(err, null);
-        }
-
-        const results = result.results.map((data: any) => {
-          return this._formatResult(data);
-        });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
-    );
-  }
 }
 
 export default MapzenGeocoder;

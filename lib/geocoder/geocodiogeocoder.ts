@@ -2,11 +2,12 @@ import querystring from 'querystring';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   ReverseQuery,
   ResultData,
-  BaseAdapterOptions
+  BaseAdapterOptions,
+  Result
 } from 'types';
+import ResultError from 'lib/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'geocodio';
@@ -30,32 +31,31 @@ class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(value: any, callback: ResultCallback) {
-    this.httpAdapter.get(
+  override async _geocode(query: string): Promise<Result> {
+    const result = await this.httpAdapter.get(
       this._endpoint + '/geocode',
       {
-        q: value,
+        q: query,
         api_key: querystring.unescape(this.options.apiKey)
-      },
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        if (result.error) {
-          return callback(new Error('Status is ' + result.error), null);
-        }
-
-        const results = result.results.map((location: any) => {
-          return this._formatResult(location);
-        });
-
-        callback(null, {
-          data: results,
-          raw: result
-        });
       }
     );
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    if (result.error) {
+      throw new Error('Status is ' + result.error);
+    }
+
+    const results = result.results.map((location: any) => {
+      return this._formatResult(location);
+    });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
   _formatResult(result: any): ResultData {
@@ -63,13 +63,13 @@ class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return {
       latitude: result.location.lat,
       longitude: result.location.lng,
-      country: result.address_components.country,
+      country: result.address_components?.country,
       formattedAddress: result.formatted_address,
-      city: result.address_components.city,
-      state: result.address_components.state,
-      zipcode: result.address_components.zip,
-      streetName: result.address_components.formatted_street,
-      streetNumber: result.address_components.number,
+      city: result.address_components?.city,
+      state: result.address_components?.state,
+      zipcode: result.address_components?.zip,
+      streetName: result.address_components?.formatted_street,
+      streetNumber: result.address_components?.number,
       // countryCode: null,
       extra: {
         confidence: accuracy || 0
@@ -77,31 +77,30 @@ class GeocodioGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     };
   }
 
-  override  _reverse(query: ReverseQuery, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
     const lat = query.lat;
     const lng = query.lon;
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._endpoint + '/reverse',
       {
         q: lat + ',' + lng,
         api_key: querystring.unescape(this.options.apiKey)
-      },
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        const results = result.results.map((location: any) => {
-          return this._formatResult(location);
-        });
-
-        callback(null, {
-          data: results,
-          raw: result
-        });
       }
     );
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    const results = result.results.map((location: any) => {
+      return this._formatResult(location);
+    });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 }
 

@@ -5,6 +5,7 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {}
 
 describe('NominatimMapquestGeocoder', () => {
   afterEach(() => {
@@ -77,7 +78,8 @@ describe('NominatimMapquestGeocoder', () => {
           addressdetails: 1,
           format: 'json',
           q: '1 champs élysée Paris'
-        }
+        },
+        mockResponse: defaultResponse
       });
     });
 

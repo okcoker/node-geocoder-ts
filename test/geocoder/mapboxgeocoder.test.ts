@@ -5,6 +5,9 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  features: []
+};
 
 describe('MapBoxGeocoder', () => {
   afterEach(() => {
@@ -57,7 +60,8 @@ describe('MapBoxGeocoder', () => {
         async work() {
           await adapter.geocode('1 champs élysée Paris');
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 

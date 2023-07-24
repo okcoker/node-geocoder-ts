@@ -1,10 +1,11 @@
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
 
 export interface Options extends BaseAdapterOptions {
@@ -27,13 +28,33 @@ class SmartyStreets extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  /**
-   * Format Result
-   **/
-  _formatResult(result: any): ResultData | null {
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
+    const params = {
+      street: query,
+      'auth-id': this.options.auth_id,
+      'auth-token': this.options.auth_token,
+      format: 'json'
+    };
+
+    const result = await this.httpAdapter.get(this._endpoint, params)
+
+    const results: ResultData[] = result
+      .map((data: any) => {
+        return this._formatResult(data);
+      })
+      .filter(Boolean);
+
+    return {
+      data: results,
+      raw: result
+    };
+  }
+
+  private _formatResult(result: any): ResultData | null {
     if (!result) {
       return null;
     }
+
     return {
       latitude: result.metadata.latitude,
       longitude: result.metadata.longitude,
@@ -49,32 +70,6 @@ class SmartyStreets extends BaseAbstractGeocoderAdapter<Options> {
       dpv_match: result.analysis.dpv_match_code,
       dpv_footnotes: result.analysis.dpv_footnotes
     };
-  }
-
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
-    const params = {
-      street: value,
-      'auth-id': this.options.auth_id,
-      'auth-token': this.options.auth_token,
-      format: 'json'
-    };
-
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        const results: ResultData[] = result
-          .map((data: any) => {
-            return this._formatResult(data);
-          })
-          .filter(Boolean);
-
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
-    });
   }
 }
 

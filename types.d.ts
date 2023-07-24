@@ -11,9 +11,17 @@ export interface ResultData {
   latitude?: number;
   longitude?: number;
   extra?:
+  // Google
   | {
     googlePlaceId?: string;
     confidence?: number;
+  }
+  // Mapbox
+  | {
+    id?: string;
+    address?: string;
+    category?: string;
+    bbox?: number[];
   }
   ;
   administrativeLevels?:
@@ -22,8 +30,7 @@ export interface ResultData {
     level1short?: string;
     level2long?: string;
     level2short?: string;
-  }
-  ;
+  };
   city?: string;
   streetName?: string;
   streetNumber?: string;
@@ -90,30 +97,6 @@ export interface BatchResultFormatted {
 export type AllResultTypes = ResultWithProvider | Result | ResultFormatted;
 export type AllBatchResultTypes = BatchResult | BatchResultWithProvider | BatchResultFormatted;
 
-export interface NodeCallback<T> {
-  (err: any, result: null): void;
-  (err: any, result: T): void;
-}
-
-export interface ResultCallback {
-  (err: any, result: null): void;
-  (err: null, result: Result): void;
-}
-
-export interface BatchResultCallback {
-  (err: any, result: null): void;
-  (err: null, result: BatchResult): void;
-}
-
-export interface Query {
-  address?: string;
-  country?: string;
-  countryCode?: string;
-  zipcode?: string;
-  minConfidence?: number;
-  limit?: number;
-}
-
 export type FormatterName =
   | 'gpx'
   | 'string';
@@ -130,13 +113,12 @@ export interface Formatter<T extends BaseFormatterOptions> {
 export interface HTTPAdapter {
   options: HTTPAdapterBaseOptions;
   supportsHttps(): boolean;
-  get<T>(url: string, params: Record<string, any>, callback: NodeCallback<T>, fullResponse?: boolean): void
-  post<T>(url: string, params: Record<string, any>, options: any, callback: NodeCallback<T>, fullResponse?: boolean): void
+  get<T = any>(url: string, params: Record<string, any>, fullResponse?: boolean): Promise<T>
+  post<T = any>(url: string, params: Record<string, any>, fetchOptions: RequestInit, fullResponse?: boolean): Promise<T>
 }
 
-export type HTTPAdapterBaseOptions = {
+export type HTTPAdapterBaseOptions = RequestInit & {
   fetch?: (url: RequestInfo, init?: RequestInit) => Promise<Response>;
-  userAgent?: string;
   timeout?: number;
 };
 
@@ -157,11 +139,11 @@ export interface AbstractGeocoderMethods {
 }
 
 export interface AbstractGeocoderAdapterMethods {
-  _reverse?(query: ReverseQuery, callback: ResultCallback): void;
+  _reverse?(query: ReverseQuery): Promise<Result>;
 
-  _geocode?(query: GeocodeQuery, callback: ResultCallback): void;
+  _geocode?(query: GeocodeQuery): Promise<Result>;
 
-  _batchGeocode?(values: GeocodeQuery[], callback: BatchResultCallback): void;
+  _batchGeocode?(values: GeocodeQuery[]): Promise<BatchResult>;
 
   reverse(query: ReverseQuery): Promise<Result>;
 
@@ -181,7 +163,9 @@ export interface AbstractGeocoder<T extends Provider> extends AbstractGeocoderMe
   _formatter?: Formatter<any>;
 }
 
-export type Nullable<T> = T | null
+export type Nullable<T> = T | null;
+
+export type FetchImplementation = (url: RequestInfo, init?: RequestInit) => Promise<Response>;
 
 // https://stackoverflow.com/a/69288824/1048847
 export type Expand<T> = T extends (...args: infer A) => infer R

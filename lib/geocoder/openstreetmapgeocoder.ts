@@ -1,12 +1,14 @@
+import ResultError from 'lib/error/ResultError';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
   ResultData,
-  Nullable
+  Nullable,
+  Result
 } from 'types';
 
 export interface Options extends BaseAdapterOptions {
@@ -100,7 +102,7 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this._endpoint_reverse = osmServer + '/reverse';
   }
 
-  override _geocode(query: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
     let params = this._getCommonParams();
     params.addressdetails = 1;
     if (typeof query == 'string') {
@@ -115,28 +117,66 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
     params = this._forceParams(params);
 
-    this.httpAdapter.get<OSMSearchResult[]>(this._endpoint, params, (err: any, result: Nullable<OSMSearchResult[]>) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
-      // Do we need this check??
-      if ((result as any).error) {
-        return callback(new Error((result as any).error), null);
-      }
-      const all = Array.isArray(result) ? result : [result];
-      const results: ResultData[] = all.map((data: any) => {
-        return this._formatResult(data);
-      });
-
-      callback(null, {
-        raw: result,
-        data: results
-      });
+    const result = await this.httpAdapter.get<Nullable<OSMSearchResult[]>>(this._endpoint, params)
+    if (!result) {
+      throw new ResultError(this);
+    }
+    // Do we need this check??
+    if ((result as any).error) {
+      throw new Error((result as any).error);
+    }
+    const all = Array.isArray(result) ? result : [result];
+    const results: ResultData[] = all.map((data: any) => {
+      return this._formatResult(data);
     });
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  _formatResult(result: any): ResultData {
-    let countryCode = result.address.country_code;
+  override async _reverse(
+    query: ReverseQuery & {
+      format?: 'xml' | 'json';
+      addressdetails?: number;
+      zoom?: number;
+    }
+  ): Promise<Result> {
+    let params = this._getCommonParams();
+    const record = query as Record<string, any>;
+
+    for (const k in query) {
+      const v = record[k];
+      params[k] = v;
+    }
+    params = this._forceParams(params);
+
+    const result = await this.httpAdapter.get(
+      this._endpoint_reverse,
+      params,
+    );
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    const all = Array.isArray(result) ? result : [result];
+    const results: ResultData[] = all.map((data: any) => {
+      return this._formatResult(data);
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
+  }
+
+  private _formatResult(result: any): ResultData {
+    let countryCode = result.address?.country_code;
     if (countryCode) {
       countryCode = countryCode.toUpperCase();
     }
@@ -155,61 +195,19 @@ class OpenStreetMapGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       latitude: latitude,
       longitude: longitude,
       formattedAddress: result.display_name,
-      country: result.address.country,
+      country: result.address?.country,
       city:
-        result.address.city ||
-        result.address.town ||
-        result.address.village ||
-        result.address.hamlet,
-      state: result.address.state,
-      zipcode: result.address.postcode,
-      streetName: result.address.road || result.address.cycleway,
-      streetNumber: result.address.house_number,
+        result.address?.city ||
+        result.address?.town ||
+        result.address?.village ||
+        result.address?.hamlet,
+      state: result.address?.state,
+      zipcode: result.address?.postcode,
+      streetName: result.address?.road || result.address?.cycleway,
+      streetNumber: result.address?.house_number,
       countryCode: countryCode,
-      neighborhood: result.address.neighbourhood
+      neighborhood: result.address?.neighbourhood
     };
-  }
-
-  override _reverse(
-    query: ReverseQuery & {
-      format?: 'xml' | 'json';
-      addressdetails?: number;
-      zoom?: number;
-    },
-    callback: ResultCallback
-  ) {
-    let params = this._getCommonParams();
-    const record = query as Record<string, any>;
-
-    for (const k in query) {
-      const v = record[k];
-      params[k] = v;
-    }
-    params = this._forceParams(params);
-
-    this.httpAdapter.get(
-      this._endpoint_reverse,
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        if (result.error) {
-          return callback(new Error(result.error), null);
-        }
-
-        const all = Array.isArray(result) ? result : [result];
-        const results: ResultData[] = all.map((data: any) => {
-          return this._formatResult(data);
-        });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
-    );
   }
 
   /**

@@ -1,4 +1,4 @@
-import { AbstractGeocoderAdapter, NodeCallback } from 'types';
+import { AbstractGeocoderAdapter } from 'types';
 
 export async function verifyHttpAdapter<T>({
   adapter,
@@ -19,12 +19,17 @@ export async function verifyHttpAdapter<T>({
 }): Promise<T> {
   const adapterSpy = jest.spyOn(adapter.httpAdapter, 'get');
 
-  adapterSpy.mockImplementation((url: string, params: Record<string, any>, callback: NodeCallback<any>) => {
+  adapterSpy.mockImplementation((_url: string, _params: Record<string, any>, _fullResponse = false) => {
     if (mockError) {
-      callback(mockError, null);
+      return Promise.reject(mockError);
     }
-    else {
-      callback(null, mockResponse)
+
+    try {
+      // Fetch adapter will attempt to do parsing by default
+      return JSON.parse(mockResponse);
+    }
+    catch {
+      return Promise.resolve(mockResponse)
     }
   })
 

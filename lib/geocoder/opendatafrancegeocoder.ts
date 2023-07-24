@@ -1,11 +1,12 @@
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
+
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
+  ResultData,
+  Result
 } from '../../types';
 
 export interface Options extends BaseAdapterOptions {
@@ -26,7 +27,7 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     super(httpAdapter, { ...options, provider: 'opendatafrance' });
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(value: GeocodeQuery): Promise<Result> {
     const params = this._getCommonParams();
 
     if (typeof value === 'string') {
@@ -53,24 +54,19 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       }
     }
 
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err) {
-        return callback(err, null);
-      } else {
-        if (result.error) {
-          return callback(new Error(result.error), null);
-        }
+    const result = await this.httpAdapter.get(this._endpoint, params)
+    if (result.error) {
+      throw new Error(result.error);
+    }
 
-        const results = (result.features || []).map((data: any) => {
-          return this._formatResult(data);
-        });
-
-        callback(null, {
-          data: results,
-          raw: result
-        });
-      }
+    const results = (result.features || []).map((data: any) => {
+      return this._formatResult(data);
     });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
   _formatResult(result: any): ResultData {
@@ -115,7 +111,7 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return formatedResult;
   }
 
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery): Promise<Result> {
     const params = this._getCommonParams();
     const record = query as Record<string, any>;
 
@@ -124,28 +120,23 @@ class OpendataFranceGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       params[k] = v;
     }
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._endpoint_reverse,
-      params,
-      (err: any, result: any) => {
-        if (err) {
-          return callback(err, null);
-        } else {
-          if (result.error) {
-            return callback(new Error(result.error), null);
-          }
-
-          const results = (result.features || []).map((data: any) => {
-            return this._formatResult(data);
-          });
-
-          callback(null, {
-            data: results,
-            raw: result
-          });
-        }
-      }
+      params
     );
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    const results = (result.features || []).map((data: any) => {
+      return this._formatResult(data);
+    });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
   /**

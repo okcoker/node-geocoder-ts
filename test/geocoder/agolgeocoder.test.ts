@@ -28,6 +28,7 @@ const mockedOptions = {
   client_id: 'CLIENT_ID',
   client_secret: 'CLIENT_SECRET'
 };
+const defaultResponse = '{"locations": []}';
 
 describe('AGOLGeocoder', () => {
   afterEach(() => {
@@ -94,33 +95,8 @@ describe('AGOLGeocoder', () => {
           grant_type: 'client_credentials',
           client_secret: mockedOptions.client_secret
         },
-        callCount: 2
-      });
-    });
-
-    test('Should return cached token', () => {
-      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
-
-      adapter._getToken(function (err: any, token: any) {
-        expect(token).toEqual('ABCD');
-      });
-      adapter._getToken(function (err: any, token: any) {
-        expect(token).toEqual('ABCD');
-      });
-    });
-
-    test('Should assume cached token is invalid', () => {
-      const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
-
-      adapter.cache.token = 'AAA';
-      adapter.cache.tokenExp = new Date().getTime() - 2000;
-
-      //Verify token is old
-      expect(adapter.cache.token).toEqual('AAA');
-
-      //Verify that expired token is replaced
-      adapter._getToken(function (err: any, token: any) {
-        expect(token).toEqual('ABCD');
+        callCount: 2,
+        mockResponse: defaultResponse
       });
     });
 
@@ -128,9 +104,7 @@ describe('AGOLGeocoder', () => {
       const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
 
       //Force valid tokens (this was tested separately)
-      adapter._getToken = function (callback: any) {
-        callback(null, 'ABCD');
-      };
+      adapter._getToken = () => Promise.resolve('ABCD');
 
       const results = await verifyHttpAdapter({
         adapter,
@@ -156,9 +130,7 @@ describe('AGOLGeocoder', () => {
     test('Should handle a not "OK" status', async () => {
       const adapter = new AGOLGeocoder(mockedAuthHttpAdapter, mockedOptions);
       //Force valid tokens (this was tested separately)
-      adapter._getToken = function (callback: any) {
-        callback(null, 'ABCD');
-      };
+      adapter._getToken = () => Promise.resolve('ABCD');
 
       await verifyHttpAdapter({
         adapter,
@@ -185,16 +157,15 @@ describe('AGOLGeocoder', () => {
         async work() {
           await adapter.reverse({ lat: 10.0235, lon: -2.3662 })
         },
-        callCount: 2
+        callCount: 2,
+        mockResponse: defaultResponse
       });
     });
 
     test('Should return a reverse geocoded address', async () => {
       const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
       //Force valid tokens (this was tested separately)
-      adapter._getToken = function (callback: any) {
-        callback(null, 'ABCD');
-      };
+      adapter._getToken = () => Promise.resolve('ABCD');
 
       const results = await verifyHttpAdapter({
         adapter,
@@ -221,9 +192,7 @@ describe('AGOLGeocoder', () => {
     test('Should handle a not "OK" status', async () => {
       const adapter = new AGOLGeocoder(mockedRequestifyAdapter, mockedOptions);
       //Force valid tokens (this was tested separately)
-      adapter._getToken = function (callback: any) {
-        callback(null, 'ABCD');
-      };
+      adapter._getToken = () => Promise.resolve('ABCD');
 
       await verifyHttpAdapter({
         adapter,

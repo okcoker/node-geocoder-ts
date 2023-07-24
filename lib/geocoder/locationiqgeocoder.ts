@@ -2,12 +2,13 @@ import querystring from 'querystring';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
-  ResultData
-} from '../../types';
+  ResultData,
+  Result
+} from 'types';
+import ResultError from 'lib/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'locationiq';
@@ -36,7 +37,7 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     this.options.apiKey = querystring.unescape(this.options.apiKey);
   }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
+  override async _geocode(value: GeocodeQuery): Promise<Result> {
     let params = this._getCommonParams();
 
     if (typeof value === 'string') {
@@ -61,31 +62,30 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
     params = this._forceParams(params);
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._endpoint + '/search',
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        // when there’s no err thrown here the resulting array object always
-        // seemes to be defined but empty so no need to check for
-        // responseData.error for now
-        // add check if the array is not empty, as it returns an empty array from time to time
-        const results = result.map(this._formatResult).filter((result: any) => {
-          return result.longitude && result.latitude;
-        });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
+      params
     );
+
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    // when there’s no err thrown here the resulting array object always
+    // seemes to be defined but empty so no need to check for
+    // responseData.error for now
+    // add check if the array is not empty, as it returns an empty array from time to time
+    const results = result.map(this._formatResult).filter((result: any) => {
+      return result.longitude && result.latitude;
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  override _reverse(query: ReverseQuery & { zoom?: number }, callback: ResultCallback) {
+  override async _reverse(query: ReverseQuery & { zoom?: number }): Promise<Result> {
     let params = this._getCommonParams();
     const record = query as Record<string, any>;
 
@@ -95,35 +95,33 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
     params = this._forceParams(params);
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get(
       this._endpoint + '/reverse',
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        // when there’s no err thrown here the resulting array object always
-        // seemes to be defined but empty so no need to check for
-        // responseData.error for now
-
-        // locationiq always seemes to answer with a single object instead
-        // of an array
-        const results = [result]
-          .map(this._formatResult)
-          .filter((result: any) => {
-            return result.longitude && result.latitude;
-          });
-
-        callback(null, {
-          raw: result,
-          data: results
-        });
-      }
+      params
     );
+    if (!result) {
+      throw new ResultError(this);
+    }
+
+    // when there’s no err thrown here the resulting array object always
+    // seemes to be defined but empty so no need to check for
+    // responseData.error for now
+
+    // locationiq always seemes to answer with a single object instead
+    // of an array
+    const results = [result]
+      .map(this._formatResult)
+      .filter((result: any) => {
+        return result.longitude && result.latitude;
+      });
+
+    return {
+      raw: result,
+      data: results
+    };
   }
 
-  _formatResult(result: any): ResultData {
+  private _formatResult(result: any): ResultData {
     // transform lat and lon to real floats
     const transformedResult = {
       latitude: result.lat ? parseFloat(result.lat) : undefined,
@@ -168,7 +166,7 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
    *
    * @return <Object> common params
    */
-  _getCommonParams(): Record<string, any> {
+  private _getCommonParams(): Record<string, any> {
     return {
       key: this.options.apiKey
     };
@@ -179,7 +177,7 @@ class LocationIQGeocoder extends BaseAbstractGeocoderAdapter<Options> {
    *
    * @param  {object} params object containing the parameters
    */
-  _forceParams(params: any): Record<string, any> {
+  private _forceParams(params: any): Record<string, any> {
     return {
       ...params,
       format: 'json',

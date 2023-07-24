@@ -5,6 +5,7 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse: unknown[] = [];
 
 describe('LocationIQGeocoder', () => {
   afterEach(() => {
@@ -60,7 +61,8 @@ describe('LocationIQGeocoder', () => {
         async work() {
           await adapter.geocode('Empire State Building')
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 
@@ -217,7 +219,7 @@ describe('LocationIQGeocoder', () => {
           q: 'Athens'
         },
         expectedUrl: 'http://us1.locationiq.com/v1/search',
-        mockResponse: []
+        mockResponse: defaultResponse
       });
 
       expect(results.data).toHaveLength(0);
@@ -240,7 +242,7 @@ describe('LocationIQGeocoder', () => {
             zoom: 15
           })
         },
-        mockResponse: [],
+        mockResponse: defaultResponse,
         expectedUrl: 'http://us1.locationiq.com/v1/reverse',
         expectedParams: {
           addressdetails: '1',
@@ -265,7 +267,7 @@ describe('LocationIQGeocoder', () => {
         async work() {
           return await adapter.reverse(query)
         },
-        mockResponse: [],
+        mockResponse: defaultResponse,
         expectedUrl: 'http://us1.locationiq.com/v1/reverse',
         expectedParams: {
           addressdetails: '1',

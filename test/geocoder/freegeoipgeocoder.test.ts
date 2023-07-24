@@ -5,6 +5,7 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {};
 
 describe('FreegeoipGeocoder', () => {
   afterEach(() => {
@@ -39,7 +40,8 @@ describe('FreegeoipGeocoder', () => {
         async work() {
           await adapter.geocode('127.0.0.1')
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
     test('Should return a geocoded address', async () => {

@@ -4,6 +4,7 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse: unknown[] = [];
 
 describe('OpenStreetMapGeocoder', () => {
   afterEach(() => {
@@ -34,7 +35,8 @@ describe('OpenStreetMapGeocoder', () => {
             adapter.geocode('127.0.0.1')
           ).rejects.toThrow('OpenStreetMapGeocoder does not support geocoding IPv4')
         },
-        callCount: 0
+        callCount: 0,
+        mockResponse: defaultResponse
       });
     });
 
@@ -47,7 +49,8 @@ describe('OpenStreetMapGeocoder', () => {
             adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
           ).rejects.toThrow('OpenStreetMapGeocoder does not support geocoding IPv6')
         },
-        callCount: 0
+        callCount: 0,
+        mockResponse: defaultResponse
       });
     });
 
@@ -58,7 +61,8 @@ describe('OpenStreetMapGeocoder', () => {
         async work() {
           return adapter.geocode('1 champs élysée Paris')
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 
@@ -240,7 +244,8 @@ describe('OpenStreetMapGeocoder', () => {
           addressdetails: 1,
           q: 'Athens'
         },
-        expectedUrl: 'http://nominatim.openstreetmap.org/search'
+        expectedUrl: 'http://nominatim.openstreetmap.org/search',
+        mockResponse: defaultResponse
       });
     });
   });
@@ -336,7 +341,7 @@ describe('OpenStreetMapGeocoder', () => {
           zoom: 15
         },
         expectedUrl: 'http://nominatim.openstreetmap.org/reverse',
-        mockResponse: []
+        mockResponse: defaultResponse
       });
     });
 
@@ -357,7 +362,7 @@ describe('OpenStreetMapGeocoder', () => {
           zoom: 9
         },
         expectedUrl: 'http://nominatim.openstreetmap.org/reverse',
-        mockResponse: []
+        mockResponse: defaultResponse
       });
     });
 
@@ -378,7 +383,7 @@ describe('OpenStreetMapGeocoder', () => {
           lon: 7
         },
         expectedUrl: 'http://nominatim.openstreetmap.org/reverse',
-        mockResponse: []
+        mockResponse: defaultResponse
       });
     });
   });

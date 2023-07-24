@@ -5,6 +5,9 @@ import ValueError from 'lib/error/valueerror';
 import { verifyHttpAdapter } from 'test/helpers/utils';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  results: []
+};
 
 describe('OpenCageGeocoder', () => {
   afterEach(() => {
@@ -50,28 +53,26 @@ describe('OpenCageGeocoder', () => {
     });
     test('Should call httpAdapter get method', async () => {
       const apiKey = 'API_KEY';
-      const adapterSpy = jest.spyOn(mockedHttpAdapter, 'get');
       const address = '1 champs élysée Paris';
       const adapter = new OpenCageGeocoder(mockedHttpAdapter, {
         apiKey
       });
 
-      const promise = adapter.geocode(address);
-
-      expect(adapterSpy).toHaveBeenCalledTimes(1);
-      expect(adapterSpy.mock.calls[0][1]).toEqual({
-        q: address,
-        key: apiKey
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await adapter.geocode(address);
+        },
+        expectedParams: {
+          q: address,
+          key: apiKey
+        },
+        mockResponse: defaultResponse
       });
-
-      // We dont care about the response, but the promise hangs
-      // since we're mocking out the http adapter
-      await Promise.reject(promise).catch(() => { });
     });
 
     test('Should call httpAdapter get method with components if called with object', async () => {
       const apiKey = 'API_KEY';
-      const adapterSpy = jest.spyOn(mockedHttpAdapter, 'get');
       const query = {
         address: '1 champs élysée Paris',
         bounds: [2.01, 48.01, 3.01, 49.01],
@@ -83,24 +84,25 @@ describe('OpenCageGeocoder', () => {
         apiKey
       });
 
-      const promise = adapter.geocode(
-        query
-      );
-
-      expect(adapterSpy).toHaveBeenCalledTimes(1);
-      expect(adapterSpy.mock.calls[0][0]).toEqual('http://api.opencagedata.com/geocode/v1/json');
-      expect(adapterSpy.mock.calls[0][1]).toEqual({
-        bounds: '2.01,48.01,3.01,49.01',
-        countrycode: 'fr',
-        key: apiKey,
-        limit: 1,
-        min_confidence: 4,
-        q: '1 champs élysée Paris',
+      await verifyHttpAdapter({
+        adapter,
+        async work() {
+          await adapter.geocode(
+            query
+          )
+        },
+        expectedParams: {
+          bounds: '2.01,48.01,3.01,49.01',
+          countrycode: 'fr',
+          key: apiKey,
+          limit: 1,
+          min_confidence: 4,
+          q: '1 champs élysée Paris',
+        },
+        callCount: 1,
+        expectedUrl: 'http://api.opencagedata.com/geocode/v1/json',
+        mockResponse: defaultResponse
       });
-
-      // We dont care about the response, but the promise hangs
-      // since we're mocking out the http adapter
-      await Promise.reject(promise).catch(() => { });
     });
 
     test('Should return geocoded address', async () => {

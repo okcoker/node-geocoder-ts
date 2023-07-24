@@ -4,6 +4,9 @@ import { verifyHttpAdapter } from 'test/helpers/utils';
 import { HTTPAdapter } from 'types';
 
 const mockedHttpAdapter = buildHttpAdapter();
+const defaultResponse = {
+  '127.0.0.1': {}
+};
 
 describe('DataScienceToolkitGeocoder', () => {
   afterEach(() => {
@@ -32,7 +35,8 @@ describe('DataScienceToolkitGeocoder', () => {
         async work() {
           return adapter.geocode('127.0.0.1');
         },
-        callCount: 1
+        callCount: 1,
+        mockResponse: defaultResponse
       });
     });
 
@@ -46,7 +50,8 @@ describe('DataScienceToolkitGeocoder', () => {
         async work() {
           return adapter.geocode('127.0.0.1');
         },
-        expectedUrl: 'http://raoul.io/ip2coordinates/127.0.0.1'
+        expectedUrl: 'http://raoul.io/ip2coordinates/127.0.0.1',
+        mockResponse: defaultResponse
       });
     });
 

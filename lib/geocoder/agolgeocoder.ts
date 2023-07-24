@@ -3,12 +3,14 @@ import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
   ReverseQuery,
-  ResultCallback,
   BaseAdapterOptions,
-  NodeCallback,
   ResultData,
-  GeocodeQuery
+  GeocodeQuery,
+  Nullable,
+  Result
 } from 'types';
+import ResultError from 'lib/error/ResultError';
+import TokenCache, { Cache } from 'lib/utils/TokenCache';
 
 export interface Options extends BaseAdapterOptions {
   provider: 'agol';
@@ -17,7 +19,7 @@ export interface Options extends BaseAdapterOptions {
 }
 
 class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
-  cache: any;
+  cache: Cache;
 
   _authEndpoint = 'https://www.arcgis.com/sharing/oauth2/token';
   _endpoint =
@@ -27,7 +29,8 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
 
   constructor(
     httpAdapter: HTTPAdapter,
-    options: Omit<Options, 'provider'> = { client_id: '', client_secret: '' }
+    options: Omit<Options, 'provider'> = { client_id: '', client_secret: '' },
+    cache: Cache = new TokenCache()
   ) {
     super(httpAdapter, { ...options, provider: 'agol' });
 
@@ -41,37 +44,88 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       throw new Error('You must specify the client_id and the client_secret');
     }
 
-    this.cache = {};
+    this.cache = cache;
+  }
+
+  override async _geocode(query: GeocodeQuery): Promise<Result> {
+    if (typeof query === 'string' && net.isIP(query)) {
+      throw new Error('The AGOL geocoder does not support IP addresses');
+    }
+
+    if (query instanceof Array) {
+      //As defined in http://resources.arcgis.com/en/help/arcgis-rest-api/#/Batch_geocoding/02r300000003000000/
+      throw new Error(
+        'An ArcGIS Online organizational account is required to use the batch geocoding functionality'
+      );
+    }
+
+    const token = await this._getToken();
+    const params = {
+      token: token,
+      f: 'json',
+      text: query,
+      outFields: 'AddNum,StPreDir,StName,StType,City,Postal,Region,Country'
+    };
+
+    const json = await this.httpAdapter.get(this._endpoint, params)
+
+    if (!json) {
+      throw new ResultError(this);
+    }
+
+    // This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
+    if (json.error) {
+      throw json.error;
+    }
+
+    const results = json.locations.map((location: any) => {
+      return this._formatResult(location);
+    });
+
+    return {
+      data: results,
+      raw: json
+    };
+  }
+
+
+  override async _reverse(query: ReverseQuery): Promise<Result> {
+    const lat = query.lat;
+    const long = query.lon;
+
+    const token = await this._getToken();
+
+    const params = {
+      token: token,
+      f: 'json',
+      location: long + ',' + lat,
+      outFields: 'AddrNum,StPreDir,StName,StType,City,Postal,Region,Country'
+    };
+
+    const json = await this.httpAdapter.get(
+      this._reverseEndpoint,
+      params
+    );
+
+    if (json.error) {
+      throw json.error;
+    }
+
+    const data = [this._formatResult(json)];
+
+    return {
+      data,
+      raw: json
+    };
   }
 
   //Cached vars
-
-  _cachedToken = {
-    now() {
-      return new Date().getTime();
-    },
-    put(token: any, experation: any, cache: any) {
-      cache.token = token;
-      //Shave 30 secs off experation to ensure that we expire slightly before the actual expiration
-      cache.tokenExp = this.now() + (experation - 30);
-    },
-    get(cache?: any) {
-      if (!cache) {
-        return null;
-      }
-
-      if (this.now() <= cache.tokenExp) {
-        return cache.token;
-      }
-
-      return null;
-    }
-  };
-
-  _getToken(callback: NodeCallback<string>) {
-    if (this._cachedToken.get(this.cache) !== null) {
-      callback(null, this._cachedToken.get());
-      return;
+  // Leaving this non-private since it was a part of the tests
+  // @todo make this private
+  async _getToken(): Promise<Nullable<string>> {
+    const cachedToken = this.cache.get();
+    if (cachedToken !== null) {
+      return cachedToken;
     }
 
     const params = {
@@ -80,75 +134,23 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       client_secret: this.options.client_secret
     };
 
-    this.httpAdapter.get(
+    const result = await this.httpAdapter.get<{ expires_in: number; access_token: string }>(
       this._authEndpoint,
-      params,
-      (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-
-        result = JSON.parse(result);
-        const tokenExpiration = new Date().getTime() + result.expires_in;
-        const token = `${result.access_token}`;
-        this._cachedToken.put(token, tokenExpiration, this.cache);
-
-        callback(null, token);
-      }
+      params
     );
-  }
 
-  override _geocode(value: GeocodeQuery, callback: ResultCallback) {
-    if (typeof value === 'string' && net.isIP(value)) {
-      throw new Error('The AGOL geocoder does not support IP addresses');
+    if (!result) {
+      return null;
     }
 
-    if (value instanceof Array) {
-      //As defined in http://resources.arcgis.com/en/help/arcgis-rest-api/#/Batch_geocoding/02r300000003000000/
-      throw new Error(
-        'An ArcGIS Online organizational account is required to use the batch geocoding functionality'
-      );
-    }
+    const tokenExpiration = new Date().getTime() + result.expires_in;
+    const token = `${result.access_token}`;
+    this.cache.put(token, tokenExpiration);
 
-    const execute = (value: any, token: any, callback: ResultCallback) => {
-      const params = {
-        token: token,
-        f: 'json',
-        text: value,
-        outFields: 'AddNum,StPreDir,StName,StType,City,Postal,Region,Country'
-      };
-
-      this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-        if (err || !result) {
-          return callback(err, null);
-        }
-        const json = JSON.parse(result);
-        //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
-        if (json.error) {
-          return callback(json.error, null);
-        }
-
-        const results = json.locations.map((location: any) => {
-          return this._formatResult(location);
-        });
-
-        callback(null, {
-          data: results,
-          raw: json
-        });
-      });
-    };
-
-    this._getToken(function (err: any, token: any) {
-      if (err) {
-        return callback(err, null);
-      }
-
-      execute(value, token, callback);
-    });
+    return token
   }
 
-  _formatResult(result: any): ResultData {
+  private _formatResult(result: any): ResultData {
     if (result.address) {
       return {
         latitude: result.location.y,
@@ -175,7 +177,7 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     let streetName: string | undefined = undefined;
     let streetNumber: string | undefined = undefined;
 
-    const attributes = result.feature.attributes;
+    const attributes = result.feature?.attributes || {};
     for (const property in attributes) {
       if (attributes[property]) {
         if (property == 'City') {
@@ -207,8 +209,8 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
 
     return {
-      latitude: result.feature.geometry.y,
-      longitude: result.feature.geometry.x,
+      latitude: result.feature?.geometry?.y,
+      longitude: result.feature?.geometry?.x,
       country: country,
       city: city,
       state: state,
@@ -220,58 +222,6 @@ class AGOLGeocoder extends BaseAbstractGeocoderAdapter<Options> {
       streetNumber: streetNumber,
       countryCode: countryCode
     };
-  }
-
-  override _reverse(query: ReverseQuery, callback: ResultCallback) {
-    const lat = query.lat;
-    const long = query.lon;
-
-    const execute = (
-      lat: number,
-      long: number,
-      token: string,
-      callback: ResultCallback
-    ) => {
-      const params = {
-        token: token,
-        f: 'json',
-        location: long + ',' + lat,
-        outFields: 'AddrNum,StPreDir,StName,StType,City,Postal,Region,Country'
-      };
-
-      this.httpAdapter.get(
-        this._reverseEndpoint,
-        params,
-        (err: any, result: any) => {
-          if (err || !result) {
-            return callback(err, null);
-          }
-
-          const json = JSON.parse(result);
-          //This is to work around ESRI's habit of returning 200 OK for failures such as lack of authentication
-          if (json.error) {
-            return callback(json.error, null);
-          }
-
-
-          const data = [this._formatResult(json)];
-
-          callback(null, {
-            data,
-            raw: json
-          });
-        }
-      );
-    }
-
-    this._getToken((err, token) => {
-      if (err) {
-        return callback(err, null);
-      }
-      // probably need to check for empty token here?
-      // leaving as is for backwards compatibility
-      execute(lat, long, token || '', callback);
-    });
   }
 }
 

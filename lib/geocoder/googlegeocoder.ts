@@ -3,13 +3,14 @@ import url from 'url';
 import BaseAbstractGeocoderAdapter from './abstractgeocoder';
 import type {
   HTTPAdapter,
-  ResultCallback,
   BaseAdapterOptions,
   ResultData,
   ReverseQuery,
   GeocodeObject,
-  Nullable
+  Nullable,
+  Result
 } from 'types';
+import ResultError from 'lib/error/ResultError';
 export interface Options extends BaseAdapterOptions {
   provider: 'google';
   clientId?: string;
@@ -41,7 +42,7 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     }
   }
 
-  override _geocode(query: GeocodeObject, callback: ResultCallback) {
+  override async _geocode(query: GeocodeObject): Promise<Result> {
     const params = this._prepareQueryString();
 
     if (query.address) {
@@ -78,50 +79,102 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     delete params.excludePartialMatches;
 
     this._signedRequest(this._endpoint, params);
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: Nullable<GeocoderResponse>) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
-      // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
-      // error_message may or may not be present
-      if (result.status === 'ZERO_RESULTS') {
-        return callback(null, {
-          raw: result,
-          data: []
-        });
-      }
+    const result = await this.httpAdapter.get<Nullable<GeocoderResponse>>(this._endpoint, params);
 
-      if (result.status !== 'OK') {
-        return callback(
-          new Error(
-            `Status is ${result.status}.\n${JSON.stringify(result)}`
-          ),
-          null
-        );
-      }
-
-      const results = result.results
-        .flatMap((currentResult: any) => {
-          if (
-            excludePartialMatches &&
-            excludePartialMatches === true &&
-            typeof currentResult.partial_match !== 'undefined' &&
-            currentResult.partial_match === true
-          ) {
-            return [];
-          }
-
-          return this._formatResult(currentResult);
-        });
-
-      callback(null, {
-        data: results,
-        raw: result
+    if (!result) {
+      throw new ResultError(this);
+    }
+    // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
+    // error_message may or may not be present
+    if (result.status === 'ZERO_RESULTS') {
+      return Promise.resolve({
+        raw: result,
+        data: []
       });
-    });
+    }
+
+    if (result.status !== 'OK') {
+      throw new Error(
+        `Status is ${result.status}.\n${JSON.stringify(result)}`
+      );
+    }
+
+    const results = result.results
+      .flatMap((currentResult: any) => {
+        if (
+          excludePartialMatches &&
+          excludePartialMatches === true &&
+          typeof currentResult.partial_match !== 'undefined' &&
+          currentResult.partial_match === true
+        ) {
+          return [];
+        }
+
+        return this._formatResult(currentResult);
+      });
+
+    return {
+      data: results,
+      raw: result
+    };
   }
 
-  _prepareQueryString(): Record<string, any> {
+  override async _reverse(
+    query: ReverseQuery & {
+      language?: string;
+      result_type?: string;
+      location_type?: string;
+    }
+  ): Promise<Result> {
+    const lat = query.lat;
+    const lng = query.lon;
+    const params = this._prepareQueryString();
+
+    params.latlng = lat + ',' + lng;
+
+    if (query.language) {
+      params.language = query.language;
+    }
+
+    if (query.result_type) {
+      params.result_type = query.result_type;
+    }
+
+    if (query.location_type) {
+      params.location_type = query.location_type;
+    }
+
+    this._signedRequest(this._endpoint, params);
+    const result = await this.httpAdapter.get(this._endpoint, params)
+    if (!result) {
+      throw new ResultError(this);
+    }
+    // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
+    // error_message may or may not be present
+    if (result.status === 'ZERO_RESULTS') {
+      return {
+        raw: result,
+        data: []
+      };
+    }
+
+    if (result.status !== 'OK') {
+      throw new Error(
+        `Status is ${result.status}.\n${JSON.stringify(result)}`
+      )
+    }
+
+    const results = result.results.map((data: any) => {
+      return this._formatResult(data);
+    });
+
+    return {
+      raw: result,
+      data: results
+    };
+  }
+
+  private _prepareQueryString(): Record<string, any> {
     const params: Record<string, any> = {
       sensor: false
     };
@@ -154,6 +207,8 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return params;
   }
 
+  // Making this non private since it was used in tests
+  // @todo make this private
   _signedRequest(endpoint: string, params: Record<string, any>) {
     if (this.options.clientId) {
       const request = url.parse(endpoint);
@@ -175,7 +230,7 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return params;
   }
 
-  _formatResult(result: any): ResultData {
+  private _formatResult(result: any): ResultData {
     const googleConfidenceLookup = {
       ROOFTOP: 1,
       RANGE_INTERPOLATED: 0.9,
@@ -300,68 +355,7 @@ class GoogleGeocoder extends BaseAbstractGeocoderAdapter<Options> {
     return extractedObj;
   }
 
-  override _reverse(
-    query: ReverseQuery & {
-      language?: string;
-      result_type?: string;
-      location_type?: string;
-    },
-    callback: ResultCallback
-  ) {
-    const lat = query.lat;
-    const lng = query.lon;
-    const params = this._prepareQueryString();
-
-    params.latlng = lat + ',' + lng;
-
-    if (query.language) {
-      params.language = query.language;
-    }
-
-    if (query.result_type) {
-      params.result_type = query.result_type;
-    }
-
-    if (query.location_type) {
-      params.location_type = query.location_type;
-    }
-
-    this._signedRequest(this._endpoint, params);
-    this.httpAdapter.get(this._endpoint, params, (err: any, result: any) => {
-      if (err || !result) {
-        return callback(err, null);
-      }
-      // status can be "OK", "ZERO_RESULTS", "OVER_QUERY_LIMIT", "REQUEST_DENIED", "INVALID_REQUEST", or "UNKNOWN_ERROR"
-      // error_message may or may not be present
-      if (result.status === 'ZERO_RESULTS') {
-        return callback(null, {
-          raw: result,
-          data: []
-        });
-      }
-
-      if (result.status !== 'OK') {
-        return callback(
-          new Error(
-            `Status is ${result.status}.\n${JSON.stringify(result)}`
-          ),
-          null
-        );
-      }
-
-      const results = result.results.map((data: any) => {
-        return this._formatResult(data);
-      });
-
-      callback(null, {
-        raw: result,
-        data: results
-      });
-
-    });
-  }
-
-  _encodeSpecialChars = function (value: any) {
+  private _encodeSpecialChars = function (value: any) {
     if (typeof value === 'string') {
       // eslint-disable-next-line no-control-regex
       return value.replace(/\u001a/g, ' ');

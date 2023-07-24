@@ -1,14 +1,13 @@
-import HttpError from '../error/httperror';
+import HttpError from 'lib/error/httperror';
 import nodeFetch from 'node-fetch';
-import BPromise from 'bluebird';
-import type { HTTPAdapter, NodeCallback, HTTPAdapterBaseOptions } from 'types';
+import type { HTTPAdapter, HTTPAdapterBaseOptions, FetchImplementation } from 'types';
 
 class FetchAdapter implements HTTPAdapter {
-  fetch: any;
-  options: HTTPAdapterBaseOptions;
+  fetch: FetchImplementation;
+  options: RequestInit;
 
   constructor({ fetch, ...options }: HTTPAdapterBaseOptions | undefined = {}) {
-    this.fetch = fetch || nodeFetch;
+    this.fetch = fetch || nodeFetch as unknown as FetchImplementation;
     this.options = options;
   }
 
@@ -16,98 +15,90 @@ class FetchAdapter implements HTTPAdapter {
     return true;
   }
 
-  get<T>(
-    url: string,
-    params: Record<string, any>,
-    callback: NodeCallback<T>,
-    fullResponse = false
-  ) {
-    const options = {
+  // @todo type this better so we get `Response` when `fullResponse` is true
+  async get<T>(url: string, params: Record<string, any>, fullResponse?: boolean): Promise<T> {
+    const options: RequestInit = {
       headers: {
         'user-agent':
-          this.options.userAgent ||
           'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
         accept: 'application/json;q=0.9, */*;q=0.1'
-      }
+      },
+      ...this.options
     };
 
-    for (const k in this.options) {
-      const v = (this.options as Record<string, any>)[k];
-      if (!v) {
-        continue;
-      }
-      // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      options[k] = v;
+    const queryString = new URLSearchParams(params);
+    if (queryString.toString()) {
+      url += `?${queryString.toString()}`;
     }
 
-    return BPromise.resolve()
-      .then(async () => {
-        const queryString = new URLSearchParams(params);
-        if (queryString.toString()) {
-          url += `?${queryString.toString()}`;
-        }
-        const res = await this.fetch(url, options);
-        if (fullResponse) {
-          return res;
-        }
-        try {
-          return await res.json();
-        } catch (e) {
-          throw new HttpError(await res.text(), {
-            code: res.statusCode
-          });
-        }
-      })
-      .catch(function (error: any) {
-        if (error instanceof HttpError) {
-          throw error;
-        }
-        const _error = error.cause ? error.cause : error;
-        throw new HttpError(_error.message, {
-          code: _error.code
+    try {
+      const response = await this.fetch(url, options);
+
+      if (fullResponse) {
+        return response as T;
+      }
+
+      const rawResponseBody = await response.text();
+      try {
+        return JSON.parse(rawResponseBody)
+      } catch (e) {
+        throw new HttpError(rawResponseBody, {
+          code: response.status
         });
-      })
-      .asCallback(callback);
+      }
+    }
+    catch (error: any) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
+      const err = error.cause ? error.cause : error;
+      throw new HttpError(err.message, {
+        code: err.code
+      });
+    }
   }
 
-  post<T>(
+  async post<T>(
     url: string,
     params: Record<string, any>,
-    options: any,
-    callback: NodeCallback<T>
-  ) {
-    options.method = 'POST';
-    options.headers = options.headers || {};
-    options.headers['user-agent'] =
-      this.options.userAgent ||
-      'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0';
-
-    for (const k in this.options) {
-      const v = (this.options as Record<string, any>)[k];
-      if (!v) {
-        continue;
-      }
-      options[k] = v;
+    fetchOptions?: RequestInit,
+    fullResponse?: boolean
+  ): Promise<T> {
+    const options: RequestInit = {
+      headers: {
+        'user-agent': 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0'
+      },
+      ...fetchOptions,
+      method: 'POST'
+    };
+    const queryString = new URLSearchParams(params);
+    if (queryString.toString()) {
+      url += `?${queryString.toString()}`;
     }
 
-    return BPromise.resolve()
-      .then(async () => {
-        const queryString = new URLSearchParams(params);
-        if (queryString.toString()) {
-          url += `?${queryString.toString()}`;
-        }
-        return await this.fetch(url, options);
-      })
-      .catch(function (error) {
-        if (error instanceof HttpError) {
-          throw error;
-        }
-        const _error = error.cause ? error.cause : error;
-        throw new HttpError(_error.message, {
-          code: _error.code
+    try {
+      const response = await this.fetch(url, options);
+      if (fullResponse) {
+        return response as T;
+      }
+      const rawResponseBody = await response.text();
+      try {
+        return JSON.parse(rawResponseBody)
+      } catch (e) {
+        throw new HttpError(rawResponseBody, {
+          code: response.status
         });
-      })
-      .asCallback(callback);
+      }
+    }
+    catch (error: any) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
+      const _error = error.cause ? error.cause : error;
+      throw new HttpError(_error.message, {
+        code: _error.code
+      });
+    }
   }
 }
 
