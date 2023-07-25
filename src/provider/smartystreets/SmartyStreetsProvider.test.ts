@@ -40,7 +40,7 @@ describe('SmartyStreetsProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.geocode('1 Infinite Loop, Cupertino, CA')
+          await adapter.geocode('1 Infinite Loop, Cupertino, CA');
         },
         expectedUrl: 'https://api.smartystreets.com/street-address',
         expectedParams: {
@@ -63,7 +63,9 @@ describe('SmartyStreetsProvider', () => {
 
       await expect(
         adapter.reverse({ lat: 10.0235, lon: -2.3662 })
-      ).rejects.toThrow('SmartyStreetsProvider does not support reverse geocoding');
+      ).rejects.toThrow(
+        'SmartyStreetsProvider does not support reverse geocoding'
+      );
     });
   });
 });

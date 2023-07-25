@@ -2,7 +2,6 @@ import ResultError from 'src/utils/error/ResultError';
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
 import type {
   HTTPAdapter,
-
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
@@ -35,25 +34,16 @@ class TeleportProvider extends BaseAbstractProviderAdapter<Options> {
     params.embed =
       'city:search-results/city:item/{city:country,city:admin1_division,city:urban_area}';
 
-    const result = await this.httpAdapter.get(
-      this._cities_endpoint,
-      params
-    );
+    const result = await this.httpAdapter.get(this._cities_endpoint, params);
     if (!result) {
       throw new ResultError(this);
     }
     let results: ResultData[] = [];
 
-
-    const searchResults =
-      getEmbeddedPath(result, 'city:search-results') || [];
+    const searchResults = getEmbeddedPath(result, 'city:search-results') || [];
     results = searchResults.map((data: any, index: number) => {
       const confidence = ((25 - index) / 25.0) * 10;
-      return this._formatResult(
-        data,
-        'city:item',
-        confidence
-      );
+      return this._formatResult(data, 'city:item', confidence);
     });
 
     return {
@@ -84,14 +74,9 @@ class TeleportProvider extends BaseAbstractProviderAdapter<Options> {
       getEmbeddedPath(result, 'location:nearest-cities') || [];
 
     searchResults.forEach((data: any) => {
-      const confidence =
-        (Math.max(0, 25 - data.distance_km) / 25) * 10;
+      const confidence = (Math.max(0, 25 - data.distance_km) / 25) * 10;
       results.push(
-        this._formatResult(
-          data,
-          'location:nearest-city',
-          confidence
-        )
+        this._formatResult(data, 'location:nearest-city', confidence)
       );
     });
 

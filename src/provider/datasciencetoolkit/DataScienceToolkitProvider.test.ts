@@ -108,7 +108,7 @@ describe('DataScienceToolkitProvider', () => {
           fips_county: '06111',
           country_code: 'US'
         }
-      }
+      };
       const adapter = new DataScienceToolkitProvider(mockedHttpAdapter, {});
       const results = await verifyHttpAdapter({
         adapter,
@@ -134,14 +134,16 @@ describe('DataScienceToolkitProvider', () => {
     test('Should error for no result', async () => {
       const response = {
         '2543 Graystone Place, #123, Simi Valley, CA 93065': null
-      }
+      };
       const adapter = new DataScienceToolkitProvider(mockedHttpAdapter, {});
       await verifyHttpAdapter({
         adapter,
         async work() {
           await expect(
             adapter.geocode('2543 Graystone Place, #123, Simi Valley, CA 93065')
-          ).rejects.toThrow('Could not geocode "2543 Graystone Place, #123, Simi Valley, CA 93065".')
+          ).rejects.toThrow(
+            'Could not geocode "2543 Graystone Place, #123, Simi Valley, CA 93065".'
+          );
         },
         mockResponse: response
       });
@@ -156,7 +158,9 @@ describe('DataScienceToolkitProvider', () => {
         async work() {
           await expect(
             adapter.reverse({ lat: 10.0235, lon: -2.3662 })
-          ).rejects.toThrow('DataScienceToolkitProvider does not support reverse geocoding')
+          ).rejects.toThrow(
+            'DataScienceToolkitProvider does not support reverse geocoding'
+          );
         },
         callCount: 0
       });

@@ -67,7 +67,7 @@ class AGOLProvider extends BaseAbstractProviderAdapter<Options> {
       outFields: 'AddNum,StPreDir,StName,StType,City,Postal,Region,Country'
     };
 
-    const json = await this.httpAdapter.get(this._endpoint, params)
+    const json = await this.httpAdapter.get(this._endpoint, params);
 
     if (!json) {
       throw new ResultError(this);
@@ -88,7 +88,6 @@ class AGOLProvider extends BaseAbstractProviderAdapter<Options> {
     };
   }
 
-
   override async _reverse(query: ReverseQuery): Promise<Result> {
     const lat = query.lat;
     const long = query.lon;
@@ -102,10 +101,7 @@ class AGOLProvider extends BaseAbstractProviderAdapter<Options> {
       outFields: 'AddrNum,StPreDir,StName,StType,City,Postal,Region,Country'
     };
 
-    const json = await this.httpAdapter.get(
-      this._reverseEndpoint,
-      params
-    );
+    const json = await this.httpAdapter.get(this._reverseEndpoint, params);
 
     if (json.error) {
       throw json.error;
@@ -134,10 +130,10 @@ class AGOLProvider extends BaseAbstractProviderAdapter<Options> {
       client_secret: this.options.client_secret
     };
 
-    const result = await this.httpAdapter.get<{ expires_in: number; access_token: string }>(
-      this._authEndpoint,
-      params
-    );
+    const result = await this.httpAdapter.get<{
+      expires_in: number;
+      access_token: string;
+    }>(this._authEndpoint, params);
 
     if (!result) {
       return null;
@@ -147,7 +143,7 @@ class AGOLProvider extends BaseAbstractProviderAdapter<Options> {
     const token = `${result.access_token}`;
     this.cache.put(token, tokenExpiration);
 
-    return token
+    return token;
   }
 
   private _formatResult(result: any): ResultData {

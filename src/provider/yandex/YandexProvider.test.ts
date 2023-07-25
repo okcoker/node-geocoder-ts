@@ -29,16 +29,18 @@ describe('YandexProvider', () => {
   describe('#geocode', () => {
     test('Should not accept IPv4', async () => {
       const adapter = new YandexProvider(mockedHttpAdapter);
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('YandexProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('YandexProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
       const adapter = new YandexProvider(mockedHttpAdapter);
       await expect(
         adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-      ).rejects.toEqual(new ValueError('YandexProvider does not support geocoding IPv6'));
+      ).rejects.toEqual(
+        new ValueError('YandexProvider does not support geocoding IPv6')
+      );
     });
 
     test('Should call httpAdapter get method', async () => {
@@ -114,9 +116,7 @@ describe('YandexProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode(
-            'Kabasakal Caddesi, Istanbul, Turkey'
-          )
+          return adapter.geocode('Kabasakal Caddesi, Istanbul, Turkey');
         },
         mockResponse: response
       });
@@ -140,7 +140,7 @@ describe('YandexProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse({ lat: 55.985074, lon: 40.018587 })
+          return adapter.reverse({ lat: 55.985074, lon: 40.018587 });
         },
         callCount: 1,
         mockResponse: defaultResponse
@@ -254,9 +254,7 @@ describe('YandexProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )
+          return adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         mockResponse: response
       });
@@ -270,8 +268,7 @@ describe('YandexProvider', () => {
         state: 'Владимирская область',
         streetName: 'Центральная улица',
         streetNumber: '15',
-        formattedAddress:
-          'Владимирская область, Собинка, Центральная улица, 15'
+        formattedAddress: 'Владимирская область, Собинка, Центральная улица, 15'
       });
     });
   });

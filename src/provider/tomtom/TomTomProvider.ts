@@ -1,7 +1,6 @@
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
 import type {
   HTTPAdapter,
-
   BatchResult,
   BaseAdapterOptions,
   ResultData,
@@ -149,11 +148,7 @@ class TomTomProvider extends BaseAbstractProviderAdapter<Options> {
       throw new Error('Long poll ended without results after 14 minutes');
     }
 
-    const response = await this.httpAdapter.get<Response>(
-      location,
-      {},
-      true
-    );
+    const response = await this.httpAdapter.get<Response>(location, {}, true);
 
     if (response.status === 200) {
       const results = await response.json();

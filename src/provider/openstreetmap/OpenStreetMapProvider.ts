@@ -2,7 +2,6 @@ import ResultError from 'src/utils/error/ResultError';
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
 import type {
   HTTPAdapter,
-
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
@@ -57,35 +56,38 @@ type OSMSearchResult = {
   }
   */
 
-  'place_id': number;
-  'licence': string;
-  'osm_type': string;
-  'osm_id': number;
-  'boundingbox': [
-    south: `${number}`, north: `${number}`, west: `${number}`, east: `${number}`
+  place_id: number;
+  licence: string;
+  osm_type: string;
+  osm_id: number;
+  boundingbox: [
+    south: `${number}`,
+    north: `${number}`,
+    west: `${number}`,
+    east: `${number}`
   ];
-  'lat': `${number}`;
-  'lon': `${number}`;
-  'display_name': string;
-  'class': string;
-  'type': string;
-  'importance': number;
-  'icon': string;
-  'address': {
-    'amenity': string;
-    'house_number': string;
-    'road': string;
-    'suburb': string;
-    'city': string;
-    'county': string;
-    'region': string;
-    'state': string;
+  lat: `${number}`;
+  lon: `${number}`;
+  display_name: string;
+  class: string;
+  type: string;
+  importance: number;
+  icon: string;
+  address: {
+    amenity: string;
+    house_number: string;
+    road: string;
+    suburb: string;
+    city: string;
+    county: string;
+    region: string;
+    state: string;
     'ISO3166-2-lvl4': string;
-    'postcode': string;
-    'country': string;
-    'country_code': string;
-  }
-}
+    postcode: string;
+    country: string;
+    country_code: string;
+  };
+};
 
 class OpenStreetMapProvider extends BaseAbstractProviderAdapter<Options> {
   _endpoint: string;
@@ -117,7 +119,10 @@ class OpenStreetMapProvider extends BaseAbstractProviderAdapter<Options> {
 
     params = this._forceParams(params);
 
-    const result = await this.httpAdapter.get<Nullable<OSMSearchResult[]>>(this._endpoint, params)
+    const result = await this.httpAdapter.get<Nullable<OSMSearchResult[]>>(
+      this._endpoint,
+      params
+    );
     if (!result) {
       throw new ResultError(this);
     }
@@ -152,10 +157,7 @@ class OpenStreetMapProvider extends BaseAbstractProviderAdapter<Options> {
     }
     params = this._forceParams(params);
 
-    const result = await this.httpAdapter.get(
-      this._endpoint_reverse,
-      params,
-    );
+    const result = await this.httpAdapter.get(this._endpoint_reverse, params);
     if (!result) {
       throw new ResultError(this);
     }

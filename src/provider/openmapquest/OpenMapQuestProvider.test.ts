@@ -38,9 +38,7 @@ describe('OpenMapQuestProvider', () => {
         apiKey: 'API_KEY'
       });
 
-      await expect(
-        mapquestAdapter.geocode('127.0.0.1')
-      ).rejects.toEqual(
+      await expect(mapquestAdapter.geocode('127.0.0.1')).rejects.toEqual(
         new ValueError('OpenMapQuestProvider does not support geocoding IPv4')
       );
     });
@@ -51,9 +49,7 @@ describe('OpenMapQuestProvider', () => {
       });
 
       expect(
-        mapquestAdapter.geocode(
-          '2001:0db8:0000:85a3:0000:0000:ac1f:8001'
-        )
+        mapquestAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
       ).rejects.toEqual(
         new ValueError('OpenMapQuestProvider does not support geocoding IPv6')
       );

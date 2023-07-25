@@ -10,7 +10,8 @@ export interface Options extends Omit<OpenStreetMapOptions, 'provider'> {
 
 class NominatimMapQuestProvider extends OpenStreetMapProvider {
   override _endpoint = 'http://open.mapquestapi.com/nominatim/v1/search';
-  override _endpoint_reverse = 'http://open.mapquestapi.com/nominatim/v1/reverse';
+  override _endpoint_reverse =
+    'http://open.mapquestapi.com/nominatim/v1/reverse';
 
   constructor(
     httpAdapter: HTTPAdapter,

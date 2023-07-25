@@ -59,7 +59,7 @@ describe('Geocoder', () => {
       expect(promise).toBeInstanceOf(Promise);
 
       // Dont care about the result, but also this test seems pointless
-      Promise.reject(promise).catch(() => { });
+      Promise.reject(promise).catch(() => {});
     });
 
     test('Should call stupidBatchGeocoderAdapter.batchGeocoder method only once when implemented', async () => {
@@ -87,7 +87,7 @@ describe('Geocoder', () => {
       expect(promise).toBeInstanceOf(Promise);
 
       // Dont care about the result, but also this test seems pointless
-      Promise.reject(promise).catch(() => { });
+      Promise.reject(promise).catch(() => {});
     });
   });
 });

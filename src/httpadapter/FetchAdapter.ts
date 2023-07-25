@@ -1,13 +1,17 @@
 import HttpError from 'src/utils/error/HttpError';
 import nodeFetch from 'node-fetch';
-import type { HTTPAdapter, HTTPAdapterBaseOptions, FetchImplementation } from 'src/types';
+import type {
+  HTTPAdapter,
+  HTTPAdapterBaseOptions,
+  FetchImplementation
+} from 'src/types';
 
 class FetchAdapter implements HTTPAdapter {
   fetch: FetchImplementation;
   options: RequestInit;
 
   constructor({ fetch, ...options }: HTTPAdapterBaseOptions | undefined = {}) {
-    this.fetch = fetch || nodeFetch as unknown as FetchImplementation;
+    this.fetch = fetch || (nodeFetch as unknown as FetchImplementation);
     this.options = options;
   }
 
@@ -16,7 +20,11 @@ class FetchAdapter implements HTTPAdapter {
   }
 
   // @todo type this better so we get `Response` when `fullResponse` is true
-  async get<T>(url: string, params: Record<string, any>, fullResponse?: boolean): Promise<T> {
+  async get<T>(
+    url: string,
+    params: Record<string, any>,
+    fullResponse?: boolean
+  ): Promise<T> {
     const options: RequestInit = {
       headers: {
         'user-agent':
@@ -40,14 +48,13 @@ class FetchAdapter implements HTTPAdapter {
 
       const rawResponseBody = await response.text();
       try {
-        return JSON.parse(rawResponseBody)
+        return JSON.parse(rawResponseBody);
       } catch (e) {
         throw new HttpError(rawResponseBody, {
           code: response.status
         });
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       if (error instanceof HttpError) {
         throw error;
       }
@@ -66,7 +73,8 @@ class FetchAdapter implements HTTPAdapter {
   ): Promise<T> {
     const options: RequestInit = {
       headers: {
-        'user-agent': 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0'
+        'user-agent':
+          'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0'
       },
       ...fetchOptions,
       method: 'POST'
@@ -83,14 +91,13 @@ class FetchAdapter implements HTTPAdapter {
       }
       const rawResponseBody = await response.text();
       try {
-        return JSON.parse(rawResponseBody)
+        return JSON.parse(rawResponseBody);
       } catch (e) {
         throw new HttpError(rawResponseBody, {
           code: response.status
         });
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       if (error instanceof HttpError) {
         throw error;
       }

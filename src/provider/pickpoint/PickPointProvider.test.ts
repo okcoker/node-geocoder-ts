@@ -21,9 +21,13 @@ describe('PickPointProvider', () => {
 
     test('the adapter should support https', () => {
       expect(() => {
-        new PickPointProvider(buildHttpAdapter({
-          supportsHttps() { return false }
-        }));
+        new PickPointProvider(
+          buildHttpAdapter({
+            supportsHttps() {
+              return false;
+            }
+          })
+        );
       }).toThrow('You must use https http adapter');
     });
 

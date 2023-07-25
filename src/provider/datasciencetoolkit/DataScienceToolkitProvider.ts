@@ -1,11 +1,6 @@
 import net from 'net';
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
-import type {
-  HTTPAdapter,
-
-  BaseAdapterOptions,
-  Result
-} from 'src/types';
+import type { HTTPAdapter, BaseAdapterOptions, Result } from 'src/types';
 import ResultError from 'src/utils/error/ResultError';
 
 export interface Options extends BaseAdapterOptions {
@@ -78,7 +73,6 @@ class DataScienceToolkitProvider extends BaseAbstractProviderAdapter<Options> {
     // @ts-expect-error TS(2339): Property 'ipv4Endpoint' does not exist on type '{}... Remove this comment to see the full error message
     return net.isIPv4(query) ? ep.ipv4Endpoint : ep.street2coordinatesEndpoint;
   }
-
 }
 
 export default DataScienceToolkitProvider;

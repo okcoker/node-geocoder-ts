@@ -76,7 +76,7 @@ class OpenCageProvider extends BaseAbstractProviderAdapter<Options> {
       params.q = query.address;
     }
 
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
     const results: ResultData[] = [];
 
     if (result && result.results instanceof Array) {
@@ -97,7 +97,7 @@ class OpenCageProvider extends BaseAbstractProviderAdapter<Options> {
     const params = this._getCommonParams();
     params.q = lat + ' ' + lng;
 
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
 
     const results: ResultData[] = [];
 
@@ -135,7 +135,6 @@ class OpenCageProvider extends BaseAbstractProviderAdapter<Options> {
       }
     };
   }
-
 
   /**
    * Prepare common params

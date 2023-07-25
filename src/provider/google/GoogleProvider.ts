@@ -21,7 +21,9 @@ export interface Options extends BaseAdapterOptions {
   channel?: string;
 }
 
-type GeocoderResponse = google.maps.GeocoderResponse & { status: google.maps.GeocoderStatus };
+type GeocoderResponse = google.maps.GeocoderResponse & {
+  status: google.maps.GeocoderStatus;
+};
 
 class GoogleProvider extends BaseAbstractProviderAdapter<Options> {
   // Google geocoding API endpoint
@@ -79,7 +81,10 @@ class GoogleProvider extends BaseAbstractProviderAdapter<Options> {
     delete params.excludePartialMatches;
 
     this._signedRequest(this._endpoint, params);
-    const result = await this.httpAdapter.get<Nullable<GeocoderResponse>>(this._endpoint, params);
+    const result = await this.httpAdapter.get<Nullable<GeocoderResponse>>(
+      this._endpoint,
+      params
+    );
 
     if (!result) {
       throw new ResultError(this);
@@ -94,24 +99,21 @@ class GoogleProvider extends BaseAbstractProviderAdapter<Options> {
     }
 
     if (result.status !== 'OK') {
-      throw new Error(
-        `Status is ${result.status}.\n${JSON.stringify(result)}`
-      );
+      throw new Error(`Status is ${result.status}.\n${JSON.stringify(result)}`);
     }
 
-    const results = result.results
-      .flatMap((currentResult: any) => {
-        if (
-          excludePartialMatches &&
-          excludePartialMatches === true &&
-          typeof currentResult.partial_match !== 'undefined' &&
-          currentResult.partial_match === true
-        ) {
-          return [];
-        }
+    const results = result.results.flatMap((currentResult: any) => {
+      if (
+        excludePartialMatches &&
+        excludePartialMatches === true &&
+        typeof currentResult.partial_match !== 'undefined' &&
+        currentResult.partial_match === true
+      ) {
+        return [];
+      }
 
-        return this._formatResult(currentResult);
-      });
+      return this._formatResult(currentResult);
+    });
 
     return {
       data: results,
@@ -145,7 +147,7 @@ class GoogleProvider extends BaseAbstractProviderAdapter<Options> {
     }
 
     this._signedRequest(this._endpoint, params);
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
     if (!result) {
       throw new ResultError(this);
     }
@@ -159,9 +161,7 @@ class GoogleProvider extends BaseAbstractProviderAdapter<Options> {
     }
 
     if (result.status !== 'OK') {
-      throw new Error(
-        `Status is ${result.status}.\n${JSON.stringify(result)}`
-      )
+      throw new Error(`Status is ${result.status}.\n${JSON.stringify(result)}`);
     }
 
     const results = result.results.map((data: any) => {

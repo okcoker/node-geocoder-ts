@@ -5,7 +5,7 @@ import { verifyHttpAdapter } from 'src/utils/test/helpers';
 import { HTTPAdapter } from 'src/types';
 
 const mockedHttpAdapter = buildHttpAdapter();
-const defaultResponse = {}
+const defaultResponse = {};
 
 describe('NominatimMapQuestProvider', () => {
   afterEach(() => {
@@ -41,10 +41,10 @@ describe('NominatimMapQuestProvider', () => {
         apiKey: 'API_KEY'
       });
 
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(
-        new ValueError('NominatimMapQuestProvider does not support geocoding IPv4')
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError(
+          'NominatimMapQuestProvider does not support geocoding IPv4'
+        )
       );
     });
 
@@ -70,7 +70,7 @@ describe('NominatimMapQuestProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.geocode('1 champs élysée Paris')
+          await adapter.geocode('1 champs élysée Paris');
         },
         expectedUrl: 'http://open.mapquestapi.com/nominatim/v1/search',
         expectedParams: {
@@ -91,12 +91,7 @@ describe('NominatimMapQuestProvider', () => {
             'Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright',
           osm_type: 'way',
           osm_id: '90394480',
-          boundingbox: [
-            '52.5487473',
-            '52.5488481',
-            '-1.8165129',
-            '-1.8163463'
-          ],
+          boundingbox: ['52.5487473', '52.5488481', '-1.8165129', '-1.8163463'],
           lat: '52.5487921',
           lon: '-1.8164307339635',
           display_name:
@@ -125,7 +120,7 @@ describe('NominatimMapQuestProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode('135 pilkington avenue, birmingham')
+          return await adapter.geocode('135 pilkington avenue, birmingham');
         },
         expectedUrl: 'http://open.mapquestapi.com/nominatim/v1/search',
         mockResponse: response
@@ -177,7 +172,7 @@ describe('NominatimMapQuestProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.reverse({ lat: 40.714232, lon: -73.9612889 })
+          return await adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         expectedUrl: 'http://open.mapquestapi.com/nominatim/v1/reverse',
         expectedParams: {

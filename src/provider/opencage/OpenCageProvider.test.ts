@@ -38,9 +38,9 @@ describe('OpenCageProvider', () => {
         apiKey: 'API_KEY'
       });
 
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toThrow(new ValueError('OpenCageProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toThrow(
+        new ValueError('OpenCageProvider does not support geocoding IPv4')
+      );
     });
     test('Should not accept IPv6', async () => {
       const adapter = new OpenCageProvider(mockedHttpAdapter, {
@@ -49,7 +49,9 @@ describe('OpenCageProvider', () => {
 
       await expect(
         adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-      ).rejects.toEqual(new ValueError('OpenCageProvider does not support geocoding IPv6'));
+      ).rejects.toEqual(
+        new ValueError('OpenCageProvider does not support geocoding IPv6')
+      );
     });
     test('Should call httpAdapter get method', async () => {
       const apiKey = 'API_KEY';
@@ -87,9 +89,7 @@ describe('OpenCageProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.geocode(
-            query
-          )
+          await adapter.geocode(query);
         },
         expectedParams: {
           bounds: '2.01,48.01,3.01,49.01',
@@ -97,7 +97,7 @@ describe('OpenCageProvider', () => {
           key: apiKey,
           limit: 1,
           min_confidence: 4,
-          q: '1 champs élysée Paris',
+          q: '1 champs élysée Paris'
         },
         callCount: 1,
         expectedUrl: 'http://api.opencagedata.com/geocode/v1/json',
@@ -158,13 +158,10 @@ describe('OpenCageProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(
-            'Rua Cafelândia, Carapicuíba, Brasil'
-          )
+          return await adapter.geocode('Rua Cafelândia, Carapicuíba, Brasil');
         },
         mockResponse: response
       });
-
 
       expect(results.data[0]).toEqual({
         latitude: -23.5373732,
@@ -283,9 +280,10 @@ describe('OpenCageProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.reverse(
-            { lat: 13.3826786867678, lon: 52.51921145 }
-          );
+          return await adapter.reverse({
+            lat: 13.3826786867678,
+            lon: 52.51921145
+          });
         },
         mockResponse: response
       });

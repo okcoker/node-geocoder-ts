@@ -56,15 +56,17 @@ class YandexProvider extends BaseAbstractProviderAdapter<Options> {
       format: 'json'
     };
 
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
 
     if (!result) {
       throw new ResultError(this);
     }
 
-    const results = result.response.GeoObjectCollection.featureMember.map((geopoint: any) => {
-      return _formatResult(geopoint);
-    });
+    const results = result.response.GeoObjectCollection.featureMember.map(
+      (geopoint: any) => {
+        return _formatResult(geopoint);
+      }
+    );
 
     return {
       raw: result,

@@ -19,11 +19,11 @@ export function buildHttpAdapter(overrides = {}): HTTPAdapter {
     },
 
     get<T>(): Promise<T> {
-      return Promise.resolve({} as T)
+      return Promise.resolve({} as T);
     },
 
     post<T>(): Promise<T> {
-      return Promise.resolve({} as T)
+      return Promise.resolve({} as T);
     },
     ...overrides
   };
@@ -51,42 +51,46 @@ export function buildProviderAdapter<T extends AllAdapterOptions>(
       return Promise.resolve({
         raw: '',
         data: []
-      })
+      });
     },
 
     geocode(_query: GeocodeQuery): Promise<Result> {
       return Promise.resolve({
         raw: '',
         data: []
-      })
+      });
     },
 
     batchGeocode(_queries: GeocodeQuery[]): Promise<BatchResult> {
       return Promise.resolve({
         raw: '',
         data: []
-      })
+      });
     },
 
     ...overrides
   };
 }
 
-
-export function buildGeocoder<T extends Provider>(overrides = {}): AbstractGeocoder<T> {
+export function buildGeocoder<T extends Provider>(
+  overrides = {}
+): AbstractGeocoder<T> {
   return {
-    _adapter: buildProviderAdapter<Extract<AllAdapterOptions, { provider: T }>>(overrides),
+    _adapter:
+      buildProviderAdapter<Extract<AllAdapterOptions, { provider: T }>>(
+        overrides
+      ),
 
     reverse(_query: ReverseQuery): Promise<Result> {
-      return this._adapter.reverse(_query)
+      return this._adapter.reverse(_query);
     },
 
     geocode(_query: GeocodeQuery): Promise<Result> {
-      return this._adapter.geocode(_query)
+      return this._adapter.geocode(_query);
     },
 
     batchGeocode(_queries: GeocodeQuery[]): Promise<BatchResult> {
-      return this._adapter.batchGeocode(_queries)
+      return this._adapter.batchGeocode(_queries);
     },
 
     ...overrides

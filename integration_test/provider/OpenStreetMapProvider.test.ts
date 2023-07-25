@@ -17,12 +17,14 @@ describe('Openstreetmap geocoder', () => {
       const firstResult = res.data[0] as ResultData;
 
       expect(firstResult).toBeDefined();
-      expect(firstResult).toEqual(expect.objectContaining({
-        country: 'Canada',
-        countryCode: 'CA',
-        state: 'Québec',
-        city: 'Montréal'
-      }));
+      expect(firstResult).toEqual(
+        expect.objectContaining({
+          country: 'Canada',
+          countryCode: 'CA',
+          state: 'Québec',
+          city: 'Montréal'
+        })
+      );
       expect(Math.trunc(firstResult.latitude!)).toEqual(45);
       expect(Math.trunc(firstResult.longitude!)).toEqual(-73);
     });
@@ -36,12 +38,14 @@ describe('Openstreetmap geocoder', () => {
 
       expect(res.data).toHaveLength(2);
       expect(firstResult).toBeDefined();
-      expect(firstResult).toEqual(expect.objectContaining({
-        country: 'Canada',
-        countryCode: 'CA',
-        state: 'Québec',
-        city: 'Montréal'
-      }));
+      expect(firstResult).toEqual(
+        expect.objectContaining({
+          country: 'Canada',
+          countryCode: 'CA',
+          state: 'Québec',
+          city: 'Montréal'
+        })
+      );
       expect(Math.trunc(firstResult.latitude!)).toEqual(45);
       expect(Math.trunc(firstResult.longitude!)).toEqual(-73);
     });

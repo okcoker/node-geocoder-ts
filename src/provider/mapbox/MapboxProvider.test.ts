@@ -35,9 +35,9 @@ describe('MapboxProvider', () => {
         apiKey: 'apiKey'
       });
 
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('MapboxProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('MapboxProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
@@ -47,7 +47,9 @@ describe('MapboxProvider', () => {
 
       await expect(
         adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-      ).rejects.toEqual(new ValueError('MapboxProvider does not support geocoding IPv6'));
+      ).rejects.toEqual(
+        new ValueError('MapboxProvider does not support geocoding IPv6')
+      );
     });
 
     test('Should call httpAdapter get method', async () => {
@@ -262,9 +264,7 @@ describe('MapboxProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )
+          return await adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         mockResponse: response
       });

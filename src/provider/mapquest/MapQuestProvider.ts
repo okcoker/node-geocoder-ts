@@ -2,7 +2,6 @@ import querystring from 'querystring';
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
 import type {
   HTTPAdapter,
-
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
@@ -55,18 +54,18 @@ class MapQuestProvider extends BaseAbstractProviderAdapter<Options> {
     const result = await this.httpAdapter.get(
       this._endpoint + '/address',
       params
-    )
+    );
     if (!result) {
       throw new ResultError(this);
     }
 
-    if (typeof result.info?.statuscode !== 'undefined' && result.info?.statuscode !== 0) {
+    if (
+      typeof result.info?.statuscode !== 'undefined' &&
+      result.info?.statuscode !== 0
+    ) {
       throw new Error(
-        'Status is ' +
-        result.info.statuscode +
-        ' ' +
-        result.info.messages[0]
-      )
+        'Status is ' + result.info.statuscode + ' ' + result.info.messages[0]
+      );
     }
 
     const results = (result.results || []).reduce(
@@ -89,12 +88,10 @@ class MapQuestProvider extends BaseAbstractProviderAdapter<Options> {
     const lat = query.lat;
     const lng = query.lon;
 
-    const result = await this.httpAdapter.get(
-      this._endpoint + '/reverse',
-      {
-        location: lat + ',' + lng,
-        key: querystring.unescape(this.options.apiKey)
-      })
+    const result = await this.httpAdapter.get(this._endpoint + '/reverse', {
+      location: lat + ',' + lng,
+      key: querystring.unescape(this.options.apiKey)
+    });
 
     if (!result) {
       throw new ResultError(this);

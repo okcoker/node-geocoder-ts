@@ -32,13 +32,10 @@ class GeocodioProvider extends BaseAbstractProviderAdapter<Options> {
   }
 
   override async _geocode(query: string): Promise<Result> {
-    const result = await this.httpAdapter.get(
-      this._endpoint + '/geocode',
-      {
-        q: query,
-        api_key: querystring.unescape(this.options.apiKey)
-      }
-    );
+    const result = await this.httpAdapter.get(this._endpoint + '/geocode', {
+      q: query,
+      api_key: querystring.unescape(this.options.apiKey)
+    });
 
     if (!result) {
       throw new ResultError(this);
@@ -81,13 +78,10 @@ class GeocodioProvider extends BaseAbstractProviderAdapter<Options> {
     const lat = query.lat;
     const lng = query.lon;
 
-    const result = await this.httpAdapter.get(
-      this._endpoint + '/reverse',
-      {
-        q: lat + ',' + lng,
-        api_key: querystring.unescape(this.options.apiKey)
-      }
-    );
+    const result = await this.httpAdapter.get(this._endpoint + '/reverse', {
+      q: lat + ',' + lng,
+      api_key: querystring.unescape(this.options.apiKey)
+    });
 
     if (!result) {
       throw new ResultError(this);

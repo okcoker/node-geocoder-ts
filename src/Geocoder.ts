@@ -36,9 +36,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   /**
    * Geocode a value (address or ip)
    */
-  async geocode(
-    value: GeocodeQuery
-  ): Promise<AllResultTypes> {
+  async geocode(value: GeocodeQuery): Promise<AllResultTypes> {
     const result = await this._adapter.geocode(value);
     const filtered = this._filter(value, result);
     const formatted = this._format(filtered);
@@ -46,9 +44,7 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
     return formatted;
   }
 
-  async reverse(
-    query: ReverseQuery
-  ): Promise<AllResultTypes> {
+  async reverse(query: ReverseQuery): Promise<AllResultTypes> {
     const result = await this._adapter.reverse(query);
     const formatted = this._format(result);
 
@@ -58,12 +54,8 @@ class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   /**
    * Batch geocode
    */
-  async batchGeocode(
-    values: GeocodeQuery[]
-  ): Promise<AllBatchResultTypes> {
-    const result = await this._adapter.batchGeocode(
-      values
-    );
+  async batchGeocode(values: GeocodeQuery[]): Promise<AllBatchResultTypes> {
+    const result = await this._adapter.batchGeocode(values);
     const filtered = this._batchFilter(values, result);
     const formatted = this._batchFormat(filtered);
 
@@ -199,7 +191,9 @@ export function isBatchResultFormatted(obj: any): obj is BatchResultFormatted {
   );
 }
 
-export function isBatchResultWithProvider(obj: any): obj is BatchResultWithProvider {
+export function isBatchResultWithProvider(
+  obj: any
+): obj is BatchResultWithProvider {
   return (
     obj.data &&
     Array.isArray(obj.data) &&

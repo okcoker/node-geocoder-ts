@@ -26,9 +26,7 @@ describe('FreegeoipProvider', () => {
   describe('#geocode', () => {
     test('Should not accept address', async () => {
       const adapter = new FreegeoipProvider(mockedHttpAdapter, {});
-      await expect(
-        adapter.geocode('1 rue test')
-      ).rejects.toEqual(
+      await expect(adapter.geocode('1 rue test')).rejects.toEqual(
         new ValueError('FreegeoipProvider does not support geocoding address')
       );
     });
@@ -38,7 +36,7 @@ describe('FreegeoipProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.geocode('127.0.0.1')
+          await adapter.geocode('127.0.0.1');
         },
         callCount: 1,
         mockResponse: defaultResponse
@@ -62,7 +60,7 @@ describe('FreegeoipProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode('66.249.64.0')
+          return await adapter.geocode('66.249.64.0');
         },
         mockResponse: response
       });

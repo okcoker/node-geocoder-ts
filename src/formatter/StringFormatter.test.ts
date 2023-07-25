@@ -31,7 +31,9 @@ describe('StringFormatter', () => {
       expect(results).toHaveLength(1);
       const str = results[0];
 
-      expect(str).toEqual('France FR 29 rue chevreul 69007 Rhone alpes RA Lyon');
+      expect(str).toEqual(
+        'France FR 29 rue chevreul 69007 Rhone alpes RA Lyon'
+      );
     });
   });
 });

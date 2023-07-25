@@ -33,7 +33,7 @@ class VirtualEarthProvider extends BaseAbstractProviderAdapter<Options> {
       key: this.options.apiKey
     };
 
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
 
     const results = result.resourceSets[0].resources.map((data: any) => {
       return this._formatResult(data);

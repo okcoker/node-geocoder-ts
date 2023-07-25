@@ -12,8 +12,12 @@ import StringFormatter, {
 import GoogleGeocoder, {
   Options as GoogleOptions
 } from './provider/google/GoogleProvider';
-import HereGeocoder, { Options as HereOptions } from './provider/here/HereProvider';
-import AGOLProvider, { Options as AGOLOptions } from './provider/agol/AGOLProvider';
+import HereGeocoder, {
+  Options as HereOptions
+} from './provider/here/HereProvider';
+import AGOLProvider, {
+  Options as AGOLOptions
+} from './provider/agol/AGOLProvider';
 import FreegeoipProvider, {
   Options as FreegeoipOptions
 } from './provider/freegeoip/FreegeoipProvider';
@@ -192,17 +196,21 @@ function getGeocoder<T extends Provider | FactoryOptions>(
   T extends Provider ? T : T extends FactoryOptions ? T['provider'] : never
 > {
   if (typeof providerOrOptions === 'string' && !isProvider(providerOrOptions)) {
-    throw new Error(`No geocoder provider found for: ${providerOrOptions}`)
+    throw new Error(`No geocoder provider found for: ${providerOrOptions}`);
   }
 
-  const geocoderOptions = (typeof providerOrOptions === 'object'
-    ? providerOrOptions as FactoryOptions
-    : {
-      provider: providerOrOptions as Provider,
-      ...options
-    });
+  const geocoderOptions =
+    typeof providerOrOptions === 'object'
+      ? (providerOrOptions as FactoryOptions)
+      : {
+          provider: providerOrOptions as Provider,
+          ...options
+        };
   const httpAdapter = _getHttpAdapter('fetch', geocoderOptions);
-  const adapter = _getGeocoderAdapter(httpAdapter, geocoderOptions as AllAdapterOptions);
+  const adapter = _getGeocoderAdapter(
+    httpAdapter,
+    geocoderOptions as AllAdapterOptions
+  );
   const formatter = _getFormatter(geocoderOptions);
 
   return new Geocoder(adapter, formatter);
@@ -236,14 +244,14 @@ type AllSubFormatterOptions = GpxFormatterOptions | StringFormatterOptions;
 type FormatterOptions = {
   formatter?: FormatterName;
   formatterOptions?: FormatterOptions['formatter'] extends undefined
-  ? undefined
-  : Omit<
-    Extract<
-      AllSubFormatterOptions,
-      { name: FormatterOptions['formatter'] }
-    >,
-    'name'
-  >;
+    ? undefined
+    : Omit<
+        Extract<
+          AllSubFormatterOptions,
+          { name: FormatterOptions['formatter'] }
+        >,
+        'name'
+      >;
 };
 
 type FactoryOptions = HTTPAdapterBaseOptions &

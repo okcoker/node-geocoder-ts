@@ -1,7 +1,6 @@
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
 import type {
   HTTPAdapter,
-
   BaseAdapterOptions,
   ReverseQuery,
   GeocodeQuery,
@@ -54,7 +53,7 @@ class OpenDataFranceProvider extends BaseAbstractProviderAdapter<Options> {
       }
     }
 
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
     if (result.error) {
       throw new Error(result.error);
     }
@@ -120,10 +119,7 @@ class OpenDataFranceProvider extends BaseAbstractProviderAdapter<Options> {
       params[k] = v;
     }
 
-    const result = await this.httpAdapter.get(
-      this._endpoint_reverse,
-      params
-    );
+    const result = await this.httpAdapter.get(this._endpoint_reverse, params);
 
     if (result.error) {
       throw new Error(result.error);

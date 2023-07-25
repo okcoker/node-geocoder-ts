@@ -31,9 +31,9 @@ describe('OpenStreetMapProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await expect(
-            adapter.geocode('127.0.0.1')
-          ).rejects.toThrow('OpenStreetMapProvider does not support geocoding IPv4')
+          await expect(adapter.geocode('127.0.0.1')).rejects.toThrow(
+            'OpenStreetMapProvider does not support geocoding IPv4'
+          );
         },
         callCount: 0,
         mockResponse: defaultResponse
@@ -47,7 +47,9 @@ describe('OpenStreetMapProvider', () => {
         async work() {
           await expect(
             adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-          ).rejects.toThrow('OpenStreetMapProvider does not support geocoding IPv6')
+          ).rejects.toThrow(
+            'OpenStreetMapProvider does not support geocoding IPv6'
+          );
         },
         callCount: 0,
         mockResponse: defaultResponse
@@ -59,7 +61,7 @@ describe('OpenStreetMapProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode('1 champs élysée Paris')
+          return adapter.geocode('1 champs élysée Paris');
         },
         callCount: 1,
         mockResponse: defaultResponse
@@ -74,12 +76,7 @@ describe('OpenStreetMapProvider', () => {
             'Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright',
           osm_type: 'way',
           osm_id: '90394480',
-          boundingbox: [
-            '52.5487473',
-            '52.5488481',
-            '-1.8165129',
-            '-1.8163463'
-          ],
+          boundingbox: ['52.5487473', '52.5488481', '-1.8165129', '-1.8163463'],
           lat: '52.5487921',
           lon: '-1.8164307339635',
           display_name:
@@ -106,9 +103,7 @@ describe('OpenStreetMapProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode(
-            '135 pilkington avenue, birmingham'
-          );
+          return adapter.geocode('135 pilkington avenue, birmingham');
         },
         mockResponse: response
       });
@@ -134,12 +129,7 @@ describe('OpenStreetMapProvider', () => {
             'Data \u00a9 OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright',
           osm_type: 'way',
           osm_id: '90394480',
-          boundingbox: [
-            '52.5487473',
-            '52.5488481',
-            '-1.8165129',
-            '-1.8163463'
-          ],
+          boundingbox: ['52.5487473', '52.5488481', '-1.8165129', '-1.8163463'],
           lat: '52.5487921',
           lon: '-1.8164307339635',
           display_name:
@@ -199,9 +189,11 @@ describe('OpenStreetMapProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode(
-            { street: '93 Champs-Élysèes', city: 'Paris', limit: 1 }
-          )
+          return adapter.geocode({
+            street: '93 Champs-Élysèes',
+            city: 'Paris',
+            limit: 1
+          });
         },
         expectedParams: {
           format: 'json',
@@ -235,9 +227,11 @@ describe('OpenStreetMapProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode(
-            { q: 'Athens', format: 'xml', addressdetails: 0 }
-          )
+          return adapter.geocode({
+            q: 'Athens',
+            format: 'xml',
+            addressdetails: 0
+          });
         },
         expectedParams: {
           format: 'json',
@@ -273,14 +267,12 @@ describe('OpenStreetMapProvider', () => {
           country: 'United States of America',
           country_code: 'us'
         }
-      }
+      };
       const adapter = new OpenStreetMapProvider(mockedHttpAdapter);
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )
+          return adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         mockResponse: response
       });
@@ -330,8 +322,10 @@ describe('OpenStreetMapProvider', () => {
         async work() {
           // @todo type revserse params per adapter
           return adapter.reverse({
-            lat: 12, lon: 7, zoom: 15
-          } as any)
+            lat: 12,
+            lon: 7,
+            zoom: 15
+          } as any);
         },
         expectedParams: {
           format: 'json',
@@ -352,7 +346,7 @@ describe('OpenStreetMapProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse({ lat: 12, lon: 7 })
+          return adapter.reverse({ lat: 12, lon: 7 });
         },
         expectedParams: {
           format: 'json',
@@ -374,7 +368,7 @@ describe('OpenStreetMapProvider', () => {
           return adapter.reverse(
             // @todo type reverse params per adapter
             { lat: 12, lon: 7, format: 'xml', addressdetails: 0 } as any
-          )
+          );
         },
         expectedParams: {
           format: 'json',

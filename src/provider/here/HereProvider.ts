@@ -87,10 +87,7 @@ class HereProvider extends BaseAbstractProviderAdapter<Options> {
       params.searchtext = value;
     }
 
-    const result = await this.httpAdapter.get(
-      this._geocodeEndpoint,
-      params,
-    );
+    const result = await this.httpAdapter.get(this._geocodeEndpoint, params);
     if (!result) {
       throw new ResultError(this);
     }
@@ -127,10 +124,7 @@ class HereProvider extends BaseAbstractProviderAdapter<Options> {
     params.pos = lat + ',' + lng;
     params.mode = 'trackPosition';
 
-    const result = await this.httpAdapter.get(
-      this._reverseEndpoint,
-      params,
-    );
+    const result = await this.httpAdapter.get(this._reverseEndpoint, params);
 
     if (!result) {
       throw new ResultError(this);

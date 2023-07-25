@@ -41,9 +41,7 @@ describe('AGOLProvider', () => {
           client_id: '',
           client_secret: 'CLIENT_SECRET'
         });
-      }).toThrow(
-        'You must specify the client_id and the client_secret'
-      );
+      }).toThrow('You must specify the client_id and the client_secret');
     });
 
     test('client_secret should be set', () => {
@@ -52,9 +50,7 @@ describe('AGOLProvider', () => {
           client_id: 'CLIENT_ID',
           client_secret: ''
         });
-      }).toThrow(
-        'You must specify the client_id and the client_secret'
-      );
+      }).toThrow('You must specify the client_id and the client_secret');
     });
 
     test('Should be an instance of AGOLProvider if an http adapter and proper options are supplied', () => {
@@ -68,9 +64,9 @@ describe('AGOLProvider', () => {
     test('Should not accept IPv4', async () => {
       const adapter = new AGOLProvider(mockedRequestifyAdapter, mockedOptions);
 
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('AGOLProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('AGOLProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
@@ -78,7 +74,9 @@ describe('AGOLProvider', () => {
 
       await expect(
         adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-      ).rejects.toEqual(new ValueError('AGOLProvider does not support geocoding IPv6'));
+      ).rejects.toEqual(
+        new ValueError('AGOLProvider does not support geocoding IPv6')
+      );
     });
 
     test('Should call out for authentication', async () => {
@@ -87,7 +85,7 @@ describe('AGOLProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.geocode('1 champs élysée Paris')
+          await adapter.geocode('1 champs élysée Paris');
         },
         expectedUrl: 'https://www.arcgis.com/sharing/oauth2/token',
         expectedParams: {
@@ -109,9 +107,10 @@ describe('AGOLProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode('380 New York St, Redlands, CA 92373')
+          return await adapter.geocode('380 New York St, Redlands, CA 92373');
         },
-        mockResponse: '{"spatialReference":{"wkid":4326,"latestWkid":4326},"locations":[{"name":"380 New York St, Redlands, California, 92373","extent":{"xmin":-117.196701,"ymin":34.055489999999999,"xmax":-117.19470099999999,"ymax":34.057490000000001},"feature":{"geometry":{"x":-117.19566584280369,"y":34.056490727765947},"attributes":{"AddNum":"380","StPreDir":"","StName":"New York","StType":"St","City":"Redlands","Postal":"92373","Region":"California","Country":"USA"}}}]}'
+        mockResponse:
+          '{"spatialReference":{"wkid":4326,"latestWkid":4326},"locations":[{"name":"380 New York St, Redlands, California, 92373","extent":{"xmin":-117.196701,"ymin":34.055489999999999,"xmax":-117.19470099999999,"ymax":34.057490000000001},"feature":{"geometry":{"x":-117.19566584280369,"y":34.056490727765947},"attributes":{"AddNum":"380","StPreDir":"","StName":"New York","StType":"St","City":"Redlands","Postal":"92373","Region":"California","Country":"USA"}}}]}'
       });
       expect(results.data[0]).toEqual({
         latitude: 34.05649072776595,
@@ -141,9 +140,10 @@ describe('AGOLProvider', () => {
             code: 498,
             message: 'Invalid Token',
             details: []
-          })
+          });
         },
-        mockResponse: '{"error":{"code":498,"message":"Invalid Token","details":[]}}'
+        mockResponse:
+          '{"error":{"code":498,"message":"Invalid Token","details":[]}}'
       });
     });
   });
@@ -155,7 +155,7 @@ describe('AGOLProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.reverse({ lat: 10.0235, lon: -2.3662 })
+          await adapter.reverse({ lat: 10.0235, lon: -2.3662 });
         },
         callCount: 2,
         mockResponse: defaultResponse
@@ -170,9 +170,13 @@ describe('AGOLProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse({ lat: -104.98469734299971, lon: 39.739146640000456 });
+          return adapter.reverse({
+            lat: -104.98469734299971,
+            lon: 39.739146640000456
+          });
         },
-        mockResponse: '{"address":{"Address":"1190 E Kenyon Ave","Neighborhood":null,"City":"Englewood","Subregion":null,"Region":"Colorado","Postal":"80113","PostalExt":null,"CountryCode":"USA","Loc_name":"USA.PointAddress"},"location":{"x":-104.97389993455704,"y":39.649423090952013,"spatialReference":{"wkid":4326,"latestWkid":4326}}}'
+        mockResponse:
+          '{"address":{"Address":"1190 E Kenyon Ave","Neighborhood":null,"City":"Englewood","Subregion":null,"Region":"Colorado","Postal":"80113","PostalExt":null,"CountryCode":"USA","Loc_name":"USA.PointAddress"},"location":{"x":-104.97389993455704,"y":39.649423090952013,"spatialReference":{"wkid":4326,"latestWkid":4326}}}'
       });
 
       expect(results.data[0]).toEqual({
@@ -203,9 +207,10 @@ describe('AGOLProvider', () => {
             code: 42,
             message: 'Random Error',
             details: []
-          })
+          });
         },
-        mockResponse: '{"error":{"code":42,"message":"Random Error","details":[]}}'
+        mockResponse:
+          '{"error":{"code":42,"message":"Random Error","details":[]}}'
       });
     });
   });

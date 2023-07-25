@@ -27,9 +27,7 @@ describe('HereProvider', () => {
           appId: 'APP_ID',
           appCode: ''
         });
-      }).toThrow(
-        'You must specify apiKey to use Here Geocoder'
-      );
+      }).toThrow('You must specify apiKey to use Here Geocoder');
       expect(() => {
         new HereProvider(mockedHttpAdapter, {
           appId: '',
@@ -84,9 +82,9 @@ describe('HereProvider', () => {
         appCode: 'APP_CODE'
       });
 
-      await expect(
-        hereAdapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('HereProvider does not support geocoding IPv4'));
+      await expect(hereAdapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('HereProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
@@ -96,10 +94,10 @@ describe('HereProvider', () => {
       });
 
       await expect(
-        hereAdapter.geocode(
-          '2001:0db8:0000:85a3:0000:0000:ac1f:8001'
-        )
-      ).rejects.toEqual(new ValueError('HereProvider does not support geocoding IPv6'));
+        hereAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toEqual(
+        new ValueError('HereProvider does not support geocoding IPv6')
+      );
     });
 
     test('Should call httpAdapter get method', async () => {
@@ -110,7 +108,7 @@ describe('HereProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode('1 champs élysée Paris')
+          return adapter.geocode('1 champs élysée Paris');
         },
         expectedParams: {
           searchtext: '1 champs élysée Paris',
@@ -134,7 +132,7 @@ describe('HereProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode('1 champs élysée Paris')
+          return adapter.geocode('1 champs élysée Paris');
         },
         expectedParams: {
           searchtext: '1 champs élysée Paris',
@@ -158,7 +156,7 @@ describe('HereProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode('1 champs élysée Paris')
+          return adapter.geocode('1 champs élysée Paris');
         },
         expectedParams: {
           searchtext: '1 champs élysée Paris',
@@ -182,7 +180,7 @@ describe('HereProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode('1 champs élysée Paris')
+          return adapter.geocode('1 champs élysée Paris');
         },
         expectedParams: {
           searchtext: '1 champs élysée Paris',
@@ -206,7 +204,7 @@ describe('HereProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode('1 champs élysée Paris')
+          return adapter.geocode('1 champs élysée Paris');
         },
         expectedParams: {
           searchtext: '1 champs élysée Paris',
@@ -233,7 +231,7 @@ describe('HereProvider', () => {
             address: '1 champs élysée Paris',
             zipcode: '75008',
             country: 'FR'
-          })
+          });
         },
         expectedParams: {
           searchtext: '1 champs élysée Paris',
@@ -262,7 +260,7 @@ describe('HereProvider', () => {
           return adapter.geocode({
             address: 'Kaiserswerther Str 10, Berlin',
             country: 'DE'
-          })
+          });
         },
         expectedParams: {
           searchtext: 'Kaiserswerther Str 10, Berlin',
@@ -343,16 +341,13 @@ describe('HereProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode(
-            'Kaiserswerther Str 10, Berlin'
-          )
+          return adapter.geocode('Kaiserswerther Str 10, Berlin');
         },
         mockResponse: response
       });
 
       expect(results.data[0]).toEqual({
-        formattedAddress:
-          'Kaiserswerther Straße 10, 14195 Berlin, Deutschland',
+        formattedAddress: 'Kaiserswerther Straße 10, 14195 Berlin, Deutschland',
         latitude: 52.44841,
         longitude: 13.28755,
         country: 'Deutschland',
@@ -386,10 +381,8 @@ describe('HereProvider', () => {
         adapter,
         async work() {
           await expect(
-            adapter.geocode(
-              '1 champs élysées Paris'
-            )
-          ).rejects.toEqual(new Error('Response status code is 401'))
+            adapter.geocode('1 champs élysées Paris')
+          ).rejects.toEqual(new Error('Response status code is 401'));
         },
         mockError: new Error('Response status code is 401'),
         mockResponse: {
@@ -409,9 +402,7 @@ describe('HereProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.geocode(
-            '1 champs élysées Paris'
-          )
+          return adapter.geocode('1 champs élysées Paris');
         },
         mockResponse: {
           Response: {
@@ -439,10 +430,10 @@ describe('HereProvider', () => {
         adapter,
         async work() {
           await expect(
-            adapter.geocode(
-              '1 champs élysées Paris'
-            )
-          ).rejects.toEqual(new ValueError('apiKey invalid. apiKey not found.'))
+            adapter.geocode('1 champs élysées Paris')
+          ).rejects.toEqual(
+            new ValueError('apiKey invalid. apiKey not found.')
+          );
         },
         mockResponse: {
           error: 'Unauthorized',
@@ -549,9 +540,7 @@ describe('HereProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )
+          return adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         mockResponse: response
       });
@@ -620,8 +609,7 @@ describe('HereProvider', () => {
                       }
                     },
                     Address: {
-                      Label:
-                        'Bedford Ave, Brooklyn, NY 11211, United States',
+                      Label: 'Bedford Ave, Brooklyn, NY 11211, United States',
                       Country: 'USA',
                       State: 'NY',
                       County: 'Kings',
@@ -665,10 +653,8 @@ describe('HereProvider', () => {
         adapter,
         async work() {
           await expect(
-            adapter.reverse(
-              { lat: 40.714232, lon: -73.9612889 }
-            )
-          ).rejects.toEqual(new Error('Response status code is 401'))
+            adapter.reverse({ lat: 40.714232, lon: -73.9612889 })
+          ).rejects.toEqual(new Error('Response status code is 401'));
         },
         mockResponse: {
           details: 'invalid credentials for APP_ID',
@@ -685,7 +671,6 @@ describe('HereProvider', () => {
       //   type: 'PermissionError',
       //   subtype: 'InvalidCredentials'
       // });
-
     });
 
     test('Should handle an empty response', async () => {
@@ -703,9 +688,7 @@ describe('HereProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )
+          return adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         mockResponse: response
       });

@@ -29,13 +29,10 @@ class MapzenProvider extends BaseAbstractProviderAdapter<Options> {
   }
 
   override async _geocode(query: GeocodeQuery): Promise<Result> {
-    const result = await this.httpAdapter.get(
-      this._endpoint + '/search',
-      {
-        text: query as string,
-        api_key: querystring.unescape(this.options.apiKey)
-      },
-    );
+    const result = await this.httpAdapter.get(this._endpoint + '/search', {
+      text: query as string,
+      api_key: querystring.unescape(this.options.apiKey)
+    });
 
     if (result.error) {
       throw new Error('Status is ' + result.error);
@@ -55,14 +52,11 @@ class MapzenProvider extends BaseAbstractProviderAdapter<Options> {
     const lat = query.lat;
     const lng = query.lon;
 
-    const result = await this.httpAdapter.get(
-      this._endpoint + '/reverse',
-      {
-        'point.lat': lat,
-        'point.lon': lng,
-        api_key: querystring.unescape(this.options.apiKey)
-      }
-    );
+    const result = await this.httpAdapter.get(this._endpoint + '/reverse', {
+      'point.lat': lat,
+      'point.lon': lng,
+      api_key: querystring.unescape(this.options.apiKey)
+    });
 
     const results = result.results.map((data: any) => {
       return this._formatResult(data);
@@ -93,7 +87,6 @@ class MapzenProvider extends BaseAbstractProviderAdapter<Options> {
       }
     };
   }
-
 }
 
 export default MapzenProvider;

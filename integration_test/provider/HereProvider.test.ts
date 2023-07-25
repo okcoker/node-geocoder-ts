@@ -14,7 +14,7 @@ if (!apiKey) {
 }
 
 maybeDescribe('Here geocoder', () => {
-  let geocoder: AbstractGeocoder<'here'>;;
+  let geocoder: AbstractGeocoder<'here'>;
 
   beforeAll(() => {
     geocoder = createGeocoder(options);

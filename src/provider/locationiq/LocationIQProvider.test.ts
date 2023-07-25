@@ -37,9 +37,9 @@ describe('LocationIQProvider', () => {
       const adapter = new LocationIQProvider(mockedHttpAdapter, {
         apiKey: 'API_KEY'
       });
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('LocationIQProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('LocationIQProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', () => {
@@ -48,7 +48,9 @@ describe('LocationIQProvider', () => {
       });
       expect(
         adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-      ).rejects.toEqual(new ValueError('LocationIQProvider does not support geocoding IPv6'));
+      ).rejects.toEqual(
+        new ValueError('LocationIQProvider does not support geocoding IPv6')
+      );
     });
 
     test('Should call httpAdapter get method', async () => {
@@ -59,7 +61,7 @@ describe('LocationIQProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.geocode('Empire State Building')
+          await adapter.geocode('Empire State Building');
         },
         callCount: 1,
         mockResponse: defaultResponse
@@ -111,7 +113,7 @@ describe('LocationIQProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode('Empire State Building')
+          return await adapter.geocode('Empire State Building');
         },
         callCount: 1,
         mockResponse: rawResponse
@@ -180,11 +182,10 @@ describe('LocationIQProvider', () => {
           return await adapter.geocode({
             street: '5th Avenue 263',
             city: 'New York'
-          })
+          });
         },
         mockResponse: rawResponse
       });
-
 
       expect(results.data).toHaveLength(1);
       expect(results.data[0]).toEqual({
@@ -210,7 +211,7 @@ describe('LocationIQProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(query)
+          return await adapter.geocode(query);
         },
         expectedParams: {
           addressdetails: '1',
@@ -240,7 +241,7 @@ describe('LocationIQProvider', () => {
             lon: 7,
             // @ts-expect-error @todo make adapter specific params
             zoom: 15
-          })
+          });
         },
         mockResponse: defaultResponse,
         expectedUrl: 'http://us1.locationiq.com/v1/reverse',
@@ -265,7 +266,7 @@ describe('LocationIQProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.reverse(query)
+          return await adapter.reverse(query);
         },
         mockResponse: defaultResponse,
         expectedUrl: 'http://us1.locationiq.com/v1/reverse',

@@ -57,7 +57,7 @@ export type {
   TeleportOptions,
   OpenDataFranceOptions,
   MapBoxOptions
-}
+};
 export type { Provider } from 'src/provider/providers';
 
 // type guards for the lack of specificity on the geocoder methods

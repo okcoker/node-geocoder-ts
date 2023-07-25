@@ -1,6 +1,5 @@
 import type { Provider } from 'src/provider/providers';
-export type HttpAdapterType =
-  | 'fetch'
+export type HttpAdapterType = 'fetch';
 
 export interface BaseAdapterOptions {
   provider: Provider;
@@ -10,22 +9,19 @@ export interface ResultData {
   formattedAddress?: string;
   latitude?: number;
   longitude?: number;
-  extra?:
-  // Google
+  extra?: // Google
   | {
-    googlePlaceId?: string;
-    confidence?: number;
-  }
-  // Mapbox
-  | {
-    id?: string;
-    address?: string;
-    category?: string;
-    bbox?: number[];
-  }
-  ;
-  administrativeLevels?:
-  | {
+        googlePlaceId?: string;
+        confidence?: number;
+      }
+    // Mapbox
+    | {
+        id?: string;
+        address?: string;
+        category?: string;
+        bbox?: number[];
+      };
+  administrativeLevels?: {
     level1long?: string;
     level1short?: string;
     level2long?: string;
@@ -71,15 +67,17 @@ export interface ResultFormatted {
 
 type Success<T> = {
   data: T;
-  error: null
-}
+  error: null;
+};
 type Failure = {
   data: null;
   error: any;
-}
+};
 
 export type MaybeResultMaybeError = Success<Result> | Failure;
-export type MaybeResultWithProviderMaybeError = Success<ResultWithProvider> | Failure;
+export type MaybeResultWithProviderMaybeError =
+  | Success<ResultWithProvider>
+  | Failure;
 export type MaybeResultFormattedMaybeError = Success<ResultFormatted> | Failure;
 
 export interface BatchResult {
@@ -95,14 +93,15 @@ export interface BatchResultFormatted {
 }
 
 export type AllResultTypes = ResultWithProvider | Result | ResultFormatted;
-export type AllBatchResultTypes = BatchResult | BatchResultWithProvider | BatchResultFormatted;
+export type AllBatchResultTypes =
+  | BatchResult
+  | BatchResultWithProvider
+  | BatchResultFormatted;
 
-export type FormatterName =
-  | 'gpx'
-  | 'string';
+export type FormatterName = 'gpx' | 'string';
 
 export interface BaseFormatterOptions {
-  name: FormatterName
+  name: FormatterName;
 }
 
 export interface Formatter<T extends BaseFormatterOptions> {
@@ -113,8 +112,17 @@ export interface Formatter<T extends BaseFormatterOptions> {
 export interface HTTPAdapter {
   options: HTTPAdapterBaseOptions;
   supportsHttps(): boolean;
-  get<T = any>(url: string, params: Record<string, any>, fullResponse?: boolean): Promise<T>
-  post<T = any>(url: string, params: Record<string, any>, fetchOptions: RequestInit, fullResponse?: boolean): Promise<T>
+  get<T = any>(
+    url: string,
+    params: Record<string, any>,
+    fullResponse?: boolean
+  ): Promise<T>;
+  post<T = any>(
+    url: string,
+    params: Record<string, any>,
+    fetchOptions: RequestInit,
+    fullResponse?: boolean
+  ): Promise<T>;
 }
 
 export type HTTPAdapterBaseOptions = RequestInit & {
@@ -122,9 +130,11 @@ export type HTTPAdapterBaseOptions = RequestInit & {
   timeout?: number;
 };
 
-
-export type GeocodeObject = Record<string, string | number | string[] | number[]>
-export type GeocodeQuery = string | GeocodeObject
+export type GeocodeObject = Record<
+  string,
+  string | number | string[] | number[]
+>;
+export type GeocodeQuery = string | GeocodeObject;
 
 export interface ReverseQuery {
   lat: number;
@@ -152,20 +162,27 @@ export interface AbstractGeocoderAdapterMethods {
   batchGeocode(queries: GeocodeQuery[]): Promise<BatchResult>;
 }
 
-export interface AbstractGeocoderAdapter<T extends BaseAdapterOptions> extends AbstractGeocoderAdapterMethods {
+export interface AbstractGeocoderAdapter<T extends BaseAdapterOptions>
+  extends AbstractGeocoderAdapterMethods {
   name: T['provider'];
   options: T;
   httpAdapter: HTTPAdapter;
 }
 
-export interface AbstractGeocoder<T extends Provider> extends AbstractGeocoderMethods {
-  _adapter: AbstractGeocoderAdapter<Extract<AllAdapterOptions, { provider: T }>>;
+export interface AbstractGeocoder<T extends Provider>
+  extends AbstractGeocoderMethods {
+  _adapter: AbstractGeocoderAdapter<
+    Extract<AllAdapterOptions, { provider: T }>
+  >;
   _formatter?: Formatter<any>;
 }
 
 export type Nullable<T> = T | null;
 
-export type FetchImplementation = (url: RequestInfo, init?: RequestInit) => Promise<Response>;
+export type FetchImplementation = (
+  url: RequestInfo,
+  init?: RequestInit
+) => Promise<Response>;
 
 // https://stackoverflow.com/a/69288824/1048847
 export type Expand<T> = T extends (...args: infer A) => infer R
@@ -178,6 +195,6 @@ export type ExpandRecursively<T> = T extends (...args: infer A) => infer R
   ? (...args: ExpandRecursively<A>) => ExpandRecursively<R>
   : T extends object
   ? T extends infer O
-  ? { [K in keyof O]: ExpandRecursively<O[K]> }
-  : never
+    ? { [K in keyof O]: ExpandRecursively<O[K]> }
+    : never
   : T;

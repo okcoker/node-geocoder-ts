@@ -26,10 +26,7 @@ class FreegeoipProvider extends BaseAbstractProviderAdapter<Options> {
   }
 
   override async _geocode(value: GeocodeQuery): Promise<Result> {
-    const result = await this.httpAdapter.get(
-      this._endpoint + value,
-      {},
-    );
+    const result = await this.httpAdapter.get(this._endpoint + value, {});
 
     if (!result) {
       throw new ResultError(this);

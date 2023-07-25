@@ -32,12 +32,8 @@ describe('OpenDataFranceProvider', () => {
         {}
       );
 
-      await expect(
-        openDataFranceProvider.geocode('127.0.0.1')
-      ).rejects.toThrow(
-        new ValueError(
-          'OpenDataFranceProvider does not support geocoding IPv4'
-        )
+      await expect(openDataFranceProvider.geocode('127.0.0.1')).rejects.toThrow(
+        new ValueError('OpenDataFranceProvider does not support geocoding IPv4')
       );
     });
 
@@ -52,9 +48,7 @@ describe('OpenDataFranceProvider', () => {
           '2001:0db8:0000:85a3:0000:0000:ac1f:8001'
         )
       ).rejects.toThrow(
-        new ValueError(
-          'OpenDataFranceProvider does not support geocoding IPv6'
-        )
+        new ValueError('OpenDataFranceProvider does not support geocoding IPv6')
       );
     });
     test('Should call httpAdapter get method', async () => {
@@ -68,15 +62,17 @@ describe('OpenDataFranceProvider', () => {
       const promise = openDataFranceProvider.geocode(address);
 
       expect(adapterSpy).toHaveBeenCalledTimes(1);
-      expect(adapterSpy.mock.calls[0][0]).toEqual('https://api-adresse.data.gouv.fr/search');
+      expect(adapterSpy.mock.calls[0][0]).toEqual(
+        'https://api-adresse.data.gouv.fr/search'
+      );
       expect(adapterSpy.mock.calls[0][1]).toEqual({
-        'provider': 'opendatafrance',
-        'q': '1 champs élysée Paris',
+        provider: 'opendatafrance',
+        q: '1 champs élysée Paris'
       });
 
       // We dont care about the response, but the promise hangs
       // since we're mocking out the http adapter
-      await Promise.reject(promise).catch(() => { });
+      await Promise.reject(promise).catch(() => {});
     });
     test('Should return geocoded address with string', async () => {
       const response = {
@@ -91,13 +87,13 @@ describe('OpenDataFranceProvider', () => {
               citycode: '75119',
               postcode: '75019',
               type: 'housenumber',
-              name: '1 Rue David d\'Angers',
+              name: "1 Rue David d'Angers",
               city: 'Paris',
               housenumber: '1',
               context: '75, Île-de-France',
-              street: 'Rue David d\'Angers',
+              street: "Rue David d'Angers",
               id: 'ADRNIVX_0000000270725006',
-              label: '1 Rue David d\'Angers 75019 Paris'
+              label: "1 Rue David d'Angers 75019 Paris"
             },
             geometry: {
               coordinates: [2.388491, 48.88313],
@@ -107,21 +103,18 @@ describe('OpenDataFranceProvider', () => {
           }
         ],
         version: 'draft',
-        query: '1 rue david d\'angers'
+        query: "1 rue david d'angers"
       };
 
-      const adapter = new OpenDataFranceProvider(
-        mockedHttpAdapter
-      );
+      const adapter = new OpenDataFranceProvider(mockedHttpAdapter);
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode('1 Rue David d\'Angers')
+          return await adapter.geocode("1 Rue David d'Angers");
         },
         mockResponse: response
       });
-
 
       expect(results.data[0]).toEqual({
         latitude: 48.88313,
@@ -130,7 +123,7 @@ describe('OpenDataFranceProvider', () => {
         state: '75, Île-de-France',
         city: 'Paris',
         zipcode: '75019',
-        streetName: 'Rue David d\'Angers',
+        streetName: "Rue David d'Angers",
         streetNumber: '1',
         countryCode: 'FR',
         citycode: '75119',
@@ -150,13 +143,13 @@ describe('OpenDataFranceProvider', () => {
               citycode: '75119',
               postcode: '75019',
               type: 'housenumber',
-              name: '1 Rue David d\'Angers',
+              name: "1 Rue David d'Angers",
               city: 'Paris',
               housenumber: '1',
               context: '75, Île-de-France',
-              street: 'Rue David d\'Angers',
+              street: "Rue David d'Angers",
               id: 'ADRNIVX_0000000270725006',
-              label: '1 Rue David d\'Angers 75019 Paris'
+              label: "1 Rue David d'Angers 75019 Paris"
             },
             geometry: {
               coordinates: [2.388491, 48.88313],
@@ -166,7 +159,7 @@ describe('OpenDataFranceProvider', () => {
           }
         ],
         version: 'draft',
-        query: '1 rue david d\'angers'
+        query: "1 rue david d'angers"
       });
     });
     test('Should return geocoded address with object', async () => {
@@ -176,7 +169,7 @@ describe('OpenDataFranceProvider', () => {
         attribution: 'BAN',
         version: 'draft',
         licence: 'ODbL 1.0',
-        query: '1 Rue David d\'Angers',
+        query: "1 Rue David d'Angers",
         type: 'FeatureCollection',
         features: [
           {
@@ -185,13 +178,13 @@ describe('OpenDataFranceProvider', () => {
               coordinates: [-0.550624, 47.472086]
             },
             properties: {
-              street: 'Rue David d\'Angers',
-              label: '1 Rue David d\'Angers 49100 Angers',
+              street: "Rue David d'Angers",
+              label: "1 Rue David d'Angers 49100 Angers",
               distance: 272,
               context: '49, Maine-et-Loire, Pays de la Loire',
               id: 'ADRNIVX_0000000263522758',
               citycode: '49007',
-              name: '1 Rue David d\'Angers',
+              name: "1 Rue David d'Angers",
               city: 'Angers',
               postcode: '49100',
               housenumber: '1',
@@ -204,7 +197,7 @@ describe('OpenDataFranceProvider', () => {
       };
 
       const queryToGeocode = {
-        address: '1 Rue David d\'Angers',
+        address: "1 Rue David d'Angers",
         zipcode: '49000',
         type: 'street',
         lat: 47.4712,
@@ -212,14 +205,12 @@ describe('OpenDataFranceProvider', () => {
         limit: 20
       };
 
-      const adapter = new OpenDataFranceProvider(
-        mockedHttpAdapter
-      );
+      const adapter = new OpenDataFranceProvider(mockedHttpAdapter);
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(queryToGeocode)
+          return await adapter.geocode(queryToGeocode);
         },
         mockResponse: response
       });
@@ -231,7 +222,7 @@ describe('OpenDataFranceProvider', () => {
         state: '49, Maine-et-Loire, Pays de la Loire',
         city: 'Angers',
         zipcode: '49100',
-        streetName: 'Rue David d\'Angers',
+        streetName: "Rue David d'Angers",
         streetNumber: '1',
         countryCode: 'FR',
         citycode: '49007',
@@ -245,7 +236,7 @@ describe('OpenDataFranceProvider', () => {
         attribution: 'BAN',
         version: 'draft',
         licence: 'ODbL 1.0',
-        query: '1 Rue David d\'Angers',
+        query: "1 Rue David d'Angers",
         type: 'FeatureCollection',
         features: [
           {
@@ -254,13 +245,13 @@ describe('OpenDataFranceProvider', () => {
               coordinates: [-0.550624, 47.472086]
             },
             properties: {
-              street: 'Rue David d\'Angers',
-              label: '1 Rue David d\'Angers 49100 Angers',
+              street: "Rue David d'Angers",
+              label: "1 Rue David d'Angers 49100 Angers",
               distance: 272,
               context: '49, Maine-et-Loire, Pays de la Loire',
               id: 'ADRNIVX_0000000263522758',
               citycode: '49007',
-              name: '1 Rue David d\'Angers',
+              name: "1 Rue David d'Angers",
               city: 'Angers',
               postcode: '49100',
               housenumber: '1',
@@ -313,14 +304,12 @@ describe('OpenDataFranceProvider', () => {
         limit: 1
       };
 
-      const adapter = new OpenDataFranceProvider(
-        mockedHttpAdapter
-      );
+      const adapter = new OpenDataFranceProvider(mockedHttpAdapter);
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(queryToGeocode)
+          return await adapter.geocode(queryToGeocode);
         },
         mockResponse: response
       });
@@ -379,14 +368,12 @@ describe('OpenDataFranceProvider', () => {
         limit: 1
       };
 
-      const adapter = new OpenDataFranceProvider(
-        mockedHttpAdapter
-      );
+      const adapter = new OpenDataFranceProvider(mockedHttpAdapter);
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(queryToGeocode)
+          return await adapter.geocode(queryToGeocode);
         },
         mockResponse: response
       });
@@ -446,14 +433,12 @@ describe('OpenDataFranceProvider', () => {
         limit: 1
       };
 
-      const adapter = new OpenDataFranceProvider(
-        mockedHttpAdapter
-      );
+      const adapter = new OpenDataFranceProvider(mockedHttpAdapter);
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(queryToGeocode)
+          return await adapter.geocode(queryToGeocode);
         },
         mockResponse: response
       });
@@ -506,16 +491,12 @@ describe('OpenDataFranceProvider', () => {
         version: 'draft'
       };
 
-      const adapter = new OpenDataFranceProvider(
-        mockedHttpAdapter
-      );
+      const adapter = new OpenDataFranceProvider(mockedHttpAdapter);
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.reverse(
-            { lat: 47.46653, lon: -0.550142 }
-          )
+          return await adapter.reverse({ lat: 47.46653, lon: -0.550142 });
         },
         mockResponse: response
       });

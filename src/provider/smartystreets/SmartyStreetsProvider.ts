@@ -1,7 +1,6 @@
 import BaseAbstractProviderAdapter from '../BaseAbstractProviderAdapter';
 import type {
   HTTPAdapter,
-
   BaseAdapterOptions,
   GeocodeQuery,
   ResultData,
@@ -36,7 +35,7 @@ class SmartyStreetsProvider extends BaseAbstractProviderAdapter<Options> {
       format: 'json'
     };
 
-    const result = await this.httpAdapter.get(this._endpoint, params)
+    const result = await this.httpAdapter.get(this._endpoint, params);
 
     const results: ResultData[] = result
       .map((data: any) => {

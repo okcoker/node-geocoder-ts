@@ -85,7 +85,9 @@ class LocationIQProvider extends BaseAbstractProviderAdapter<Options> {
     };
   }
 
-  override async _reverse(query: ReverseQuery & { zoom?: number }): Promise<Result> {
+  override async _reverse(
+    query: ReverseQuery & { zoom?: number }
+  ): Promise<Result> {
     let params = this._getCommonParams();
     const record = query as Record<string, any>;
 
@@ -109,11 +111,9 @@ class LocationIQProvider extends BaseAbstractProviderAdapter<Options> {
 
     // locationiq always seemes to answer with a single object instead
     // of an array
-    const results = [result]
-      .map(this._formatResult)
-      .filter((result: any) => {
-        return result.longitude && result.latitude;
-      });
+    const results = [result].map(this._formatResult).filter((result: any) => {
+      return result.longitude && result.latitude;
+    });
 
     return {
       raw: result,

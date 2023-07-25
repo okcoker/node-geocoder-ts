@@ -46,32 +46,34 @@ describe('GoogleProvider', () => {
     test('Should not accept IPv4', async () => {
       const adapter = new GoogleProvider(mockedHttpAdapter, {});
 
-      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(new ValueError('GoogleProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('GoogleProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
       const adapter = new GoogleProvider(mockedHttpAdapter, {});
 
-      await expect(adapter.geocode(
-        '2001:0db8:0000:85a3:0000:0000:ac1f:8001'
-      )).rejects.toEqual(new ValueError('GoogleProvider does not support geocoding IPv6'));
+      await expect(
+        adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toEqual(
+        new ValueError('GoogleProvider does not support geocoding IPv6')
+      );
     });
 
     test('Should accept `language` and `region` as options', async () => {
       const adapter = new GoogleProvider(mockedHttpAdapter, {
         language: 'fr',
         region: '.ru'
-      })
+      });
       await verifyHttpAdapter({
         adapter,
         work: async () => {
-          await adapter.geocode(
-            {
-              address: '1 champs élysée Paris',
-              language: 'ru-RU',
-              region: '.de'
-            }
-          );
+          await adapter.geocode({
+            address: '1 champs élysée Paris',
+            language: 'ru-RU',
+            region: '.de'
+          });
         },
         expectedUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
         expectedParams: {
@@ -82,15 +84,15 @@ describe('GoogleProvider', () => {
           sensor: false
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should call httpAdapter get method', async () => {
-      const adapter = new GoogleProvider(mockedHttpAdapter, {})
+      const adapter = new GoogleProvider(mockedHttpAdapter, {});
       await verifyHttpAdapter({
         adapter,
         work: async () => {
-          await adapter.geocode('1 champs élysée Paris')
+          await adapter.geocode('1 champs élysée Paris');
         },
         expectedUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
         expectedParams: {
@@ -98,13 +100,13 @@ describe('GoogleProvider', () => {
           sensor: false
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should call httpAdapter get method with language if specified', async () => {
       const adapter = new GoogleProvider(mockedHttpAdapter, {
         language: 'fr'
-      })
+      });
       await verifyHttpAdapter({
         adapter,
         work: async () => {
@@ -117,7 +119,7 @@ describe('GoogleProvider', () => {
           language: 'fr'
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should call httpAdapter get method with region if specified', async () => {
@@ -136,7 +138,7 @@ describe('GoogleProvider', () => {
           region: 'fr'
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should call httpAdapter get method with components if called with object', async () => {
@@ -144,13 +146,11 @@ describe('GoogleProvider', () => {
       await verifyHttpAdapter({
         adapter,
         work: () => {
-          return adapter.geocode(
-            {
-              address: '1 champs élysée Paris',
-              zipcode: '75008',
-              country: 'FR'
-            }
-          );
+          return adapter.geocode({
+            address: '1 champs élysée Paris',
+            zipcode: '75008',
+            country: 'FR'
+          });
         },
         expectedUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
         expectedParams: {
@@ -159,7 +159,7 @@ describe('GoogleProvider', () => {
           components: 'country:FR|postal_code:75008'
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should call httpAdapter get method with zipcode if country is missing', async () => {
@@ -167,12 +167,10 @@ describe('GoogleProvider', () => {
       await verifyHttpAdapter({
         adapter,
         work: async () => {
-          await adapter.geocode(
-            {
-              address: '1 champs élysée Paris',
-              zipcode: '75008'
-            }
-          );
+          await adapter.geocode({
+            address: '1 champs élysée Paris',
+            zipcode: '75008'
+          });
         },
         expectedUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
         expectedParams: {
@@ -181,17 +179,17 @@ describe('GoogleProvider', () => {
           components: 'postal_code:75008'
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should call httpAdapter get method with key if specified', async () => {
       const adapter = new GoogleProvider(mockedHttpAdapter, {
         apiKey: 'hey-you-guys'
-      })
+      });
       await verifyHttpAdapter({
         adapter,
         work: async () => {
-          await adapter.geocode('1 champs élysée Paris')
+          await adapter.geocode('1 champs élysée Paris');
         },
         expectedUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
         expectedParams: {
@@ -200,50 +198,50 @@ describe('GoogleProvider', () => {
           key: 'hey-you-guys'
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should return geocoded address', async () => {
-      jest.spyOn(mockedHttpAdapter, 'get').mockImplementation((_url, _params) => {
-        return Promise.resolve({
-          status: 'OK',
-          results: [
-            {
-              geometry: {
-                location: {
-                  lat: 37.386,
-                  lng: -122.0838
-                }
-              },
-              address_components: [
-                { types: ['country'], long_name: 'France', short_name: 'Fr' },
-                { types: ['locality'], long_name: 'Paris' },
-                { types: ['postal_code'], long_name: '75008' },
-                { types: ['route'], long_name: 'Champs-Élysées' },
-                { types: ['street_number'], long_name: '1' },
-                {
-                  types: ['administrative_area_level_1'],
-                  long_name: 'Île-de-France',
-                  short_name: 'IDF'
+      jest
+        .spyOn(mockedHttpAdapter, 'get')
+        .mockImplementation((_url, _params) => {
+          return Promise.resolve({
+            status: 'OK',
+            results: [
+              {
+                geometry: {
+                  location: {
+                    lat: 37.386,
+                    lng: -122.0838
+                  }
                 },
-                {
-                  types: ['sublocality_level_1', 'sublocality', 'political'],
-                  long_name: 'neighborhood'
-                }
-              ],
-              country_code: 'US',
-              country_name: 'United States',
-              locality: 'Mountain View'
-            }
-          ]
-        })
-      })
+                address_components: [
+                  { types: ['country'], long_name: 'France', short_name: 'Fr' },
+                  { types: ['locality'], long_name: 'Paris' },
+                  { types: ['postal_code'], long_name: '75008' },
+                  { types: ['route'], long_name: 'Champs-Élysées' },
+                  { types: ['street_number'], long_name: '1' },
+                  {
+                    types: ['administrative_area_level_1'],
+                    long_name: 'Île-de-France',
+                    short_name: 'IDF'
+                  },
+                  {
+                    types: ['sublocality_level_1', 'sublocality', 'political'],
+                    long_name: 'neighborhood'
+                  }
+                ],
+                country_code: 'US',
+                country_name: 'United States',
+                locality: 'Mountain View'
+              }
+            ]
+          });
+        });
 
       const adapter = new GoogleProvider(mockedHttpAdapter, {});
 
-      const results = await adapter.geocode(
-        '1 champs élysées Paris'
-      );
+      const results = await adapter.geocode('1 champs élysées Paris');
       expect(results.data[0]).toEqual({
         latitude: 37.386,
         longitude: -122.0838,
@@ -376,11 +374,13 @@ describe('GoogleProvider', () => {
             '350 5th Ave, New York, NY 10118'
           );
 
-          expect(results.data[0]).toEqual(expect.objectContaining({
-            extra: expect.objectContaining({
-              neighborhood: 'Midtown'
+          expect(results.data[0]).toEqual(
+            expect.objectContaining({
+              extra: expect.objectContaining({
+                neighborhood: 'Midtown'
+              })
             })
-          }));
+          );
         },
         mockResponse: response
       });
@@ -398,10 +398,12 @@ describe('GoogleProvider', () => {
         adapter,
         async work() {
           await expect(
-            adapter.geocode(
-              '1 champs élysées Paris'
+            adapter.geocode('1 champs élysées Paris')
+          ).rejects.toEqual(
+            new Error(
+              `Status is OVER_QUERY_LIMIT.\n${JSON.stringify(response)}`
             )
-          ).rejects.toEqual(new Error(`Status is OVER_QUERY_LIMIT.\n${JSON.stringify(response)}`));
+          );
         },
         mockResponse: response
       });
@@ -415,10 +417,10 @@ describe('GoogleProvider', () => {
         adapter,
         async work() {
           await expect(
-            adapter.geocode(
-              '1 champs élysées Paris'
-            )
-          ).rejects.toEqual(new Error(`Status is INVALID_REQUEST.\n${JSON.stringify(response)}`));
+            adapter.geocode('1 champs élysées Paris')
+          ).rejects.toEqual(
+            new Error(`Status is INVALID_REQUEST.\n${JSON.stringify(response)}`)
+          );
         },
         mockResponse: response
       });
@@ -453,7 +455,7 @@ describe('GoogleProvider', () => {
             partial_match: true
           }
         ]
-      }
+      };
       const adapter = new GoogleProvider(mockedHttpAdapter, {
         clientId: 'clientId',
         apiKey: 'apiKey',
@@ -462,9 +464,7 @@ describe('GoogleProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          const results = await adapter.geocode(
-            '1 champs élysées Paris'
-          );
+          const results = await adapter.geocode('1 champs élysées Paris');
           expect(results.data).toHaveLength(0);
         },
         mockResponse: response
@@ -500,7 +500,7 @@ describe('GoogleProvider', () => {
             partial_match: true
           }
         ]
-      }
+      };
       const adapter = new GoogleProvider(mockedHttpAdapter, {
         excludePartialMatches: false
       });
@@ -508,9 +508,7 @@ describe('GoogleProvider', () => {
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(
-            '1 champs élysées Paris'
-          );
+          return await adapter.geocode('1 champs élysées Paris');
         },
         mockResponse: response
       });
@@ -599,15 +597,13 @@ describe('GoogleProvider', () => {
             partial_match: true
           }
         ]
-      }
+      };
       const adapter = new GoogleProvider(mockedHttpAdapter, {});
 
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.geocode(
-            '1 champs élysées Paris'
-          );
+          return await adapter.geocode('1 champs élysées Paris');
         },
         mockResponse: response
       });
@@ -714,15 +710,13 @@ describe('GoogleProvider', () => {
             locality: 'Mountain View'
           }
         ]
-      }
+      };
 
       const adapter = new GoogleProvider(mockedHttpAdapter, {});
       const results = await verifyHttpAdapter({
         adapter,
         async work() {
-          return await adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          );
+          return await adapter.reverse({ lat: 40.714232, lon: -73.9612889 });
         },
         mockResponse: response
       });
@@ -822,9 +816,13 @@ describe('GoogleProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await expect(adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )).rejects.toEqual(new Error(`Status is OVER_QUERY_LIMIT.\n${JSON.stringify(response)}`));
+          await expect(
+            adapter.reverse({ lat: 40.714232, lon: -73.9612889 })
+          ).rejects.toEqual(
+            new Error(
+              `Status is OVER_QUERY_LIMIT.\n${JSON.stringify(response)}`
+            )
+          );
         },
         mockResponse: response
       });
@@ -837,9 +835,11 @@ describe('GoogleProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await expect(adapter.reverse(
-            { lat: 40.714232, lon: -73.9612889 }
-          )).rejects.toEqual(new Error(`Status is INVALID_REQUEST.\n${JSON.stringify(response)}`));
+          await expect(
+            adapter.reverse({ lat: 40.714232, lon: -73.9612889 })
+          ).rejects.toEqual(
+            new Error(`Status is INVALID_REQUEST.\n${JSON.stringify(response)}`)
+          );
         },
         mockResponse: response
       });
@@ -849,7 +849,7 @@ describe('GoogleProvider', () => {
       const adapter = new GoogleProvider(mockedHttpAdapter, {
         clientId: 'raoul',
         apiKey: 'foo'
-      })
+      });
       await verifyHttpAdapter({
         adapter,
         async work() {
@@ -863,7 +863,7 @@ describe('GoogleProvider', () => {
           signature: 'PW1yyLFH9lN16B-Iw7EXiAeMKX8='
         },
         mockResponse: defaultResponse
-      })
+      });
     });
 
     test('Should generate signatures with all / characters replaced with _', () => {

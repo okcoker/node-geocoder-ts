@@ -29,9 +29,9 @@ describe('TeleportProvider', () => {
     test('Should not accept IPv4', async () => {
       const adapter = new TeleportProvider(mockedHttpAdapter);
 
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('TeleportProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('TeleportProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {

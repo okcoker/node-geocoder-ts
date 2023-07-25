@@ -61,9 +61,7 @@ abstract class BaseAbstractProviderAdapter<T extends BaseAdapterOptions>
     const customGeocode = this._geocode?.bind(this);
 
     if (typeof customGeocode !== 'function') {
-      throw new Error(
-        this.constructor.name + ' does not support geocoding'
-      );
+      throw new Error(this.constructor.name + ' does not support geocoding');
     }
 
     if (net.isIPv4(address) && !this.supportIPv4) {
@@ -100,17 +98,19 @@ abstract class BaseAbstractProviderAdapter<T extends BaseAdapterOptions>
 
     const promises = queries.map((value: any) => {
       return new Promise<MaybeResultMaybeError>(resolve => {
-        this.geocode(value).then((result) => {
-          resolve({
-            error: null,
-            data: result
-          });
-        }).catch((error) => {
-          resolve({
-            error,
-            data: null
+        this.geocode(value)
+          .then(result => {
+            resolve({
+              error: null,
+              data: result
+            });
           })
-        })
+          .catch(error => {
+            resolve({
+              error,
+              data: null
+            });
+          });
       });
     });
 

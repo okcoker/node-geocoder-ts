@@ -41,9 +41,9 @@ describe('GeocodioProvider', () => {
         apiKey: 'API_KEY'
       });
 
-      await expect(
-        adapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('GeocodioProvider does not support geocoding IPv4'));
+      await expect(adapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('GeocodioProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
@@ -53,7 +53,9 @@ describe('GeocodioProvider', () => {
 
       await expect(
         adapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
-      ).rejects.toEqual(new ValueError('GeocodioProvider does not support geocoding IPv6'));
+      ).rejects.toEqual(
+        new ValueError('GeocodioProvider does not support geocoding IPv6')
+      );
     });
   });
 
@@ -66,7 +68,7 @@ describe('GeocodioProvider', () => {
       await verifyHttpAdapter({
         adapter,
         async work() {
-          await adapter.reverse({ lat: 10.0235, lon: -2.3662 })
+          await adapter.reverse({ lat: 10.0235, lon: -2.3662 });
         },
         callCount: 1,
         mockResponse: defaultResponse

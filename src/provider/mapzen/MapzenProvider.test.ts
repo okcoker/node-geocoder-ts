@@ -39,9 +39,9 @@ describe('MapzenProvider', () => {
         apiKey: 'API_KEY'
       });
 
-      await expect(
-        mapzenAdapter.geocode('127.0.0.1')
-      ).rejects.toEqual(new ValueError('MapzenProvider does not support geocoding IPv4'));
+      await expect(mapzenAdapter.geocode('127.0.0.1')).rejects.toEqual(
+        new ValueError('MapzenProvider does not support geocoding IPv4')
+      );
     });
 
     test('Should not accept IPv6', async () => {
@@ -50,17 +50,17 @@ describe('MapzenProvider', () => {
       });
 
       await expect(
-        mapzenAdapter.geocode(
-          '2001:0db8:0000:85a3:0000:0000:ac1f:8001'
-        )
-      ).rejects.toEqual(new ValueError('MapzenProvider does not support geocoding IPv6'));
+        mapzenAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
+      ).rejects.toEqual(
+        new ValueError('MapzenProvider does not support geocoding IPv6')
+      );
     });
   });
 
   describe('#reverse', () => {
     test('Should call httpAdapter get method', async () => {
       const apiKey = 'API_KEY';
-      const query = { lat: 10.0235, lon: -2.3662 }
+      const query = { lat: 10.0235, lon: -2.3662 };
       const adapter = new MapzenProvider(mockedHttpAdapter, {
         apiKey
       });
