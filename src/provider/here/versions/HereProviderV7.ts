@@ -123,7 +123,7 @@ countryInfo: For each result item renders additional block with the country info
    */
   show?: string[];
 
-  headerParams: HereV7HeaderParams;
+  headerParams?: HereV7HeaderParams;
 };
 
 export type HereV7GeocodeQuery = GeocodeQuery & {
@@ -260,7 +260,7 @@ tz: Renders result items with additional time zone information.
    */
   show?: string[];
 
-  headerParams: HereV7HeaderParams;
+  headerParams?: HereV7HeaderParams;
 };
 
 export type HereV7FieldScore = {
@@ -872,7 +872,7 @@ class HereProviderV7 extends BaseAbstractProviderAdapter<Options> {
     } else {
       const { headerParams, ...rest } = query;
 
-      if (headerParams.XRequestId) {
+      if (headerParams?.XRequestId) {
         fetchOptions.headers = {};
         fetchOptions.headers['X-Request-Id'] = headerParams.XRequestId;
       }
@@ -921,7 +921,7 @@ class HereProviderV7 extends BaseAbstractProviderAdapter<Options> {
       params.at = `${lat},${lng}`;
     }
 
-    if (headerParams.XRequestId) {
+    if (headerParams?.XRequestId) {
       fetchOptions.headers = {};
       fetchOptions.headers['X-Request-Id'] = headerParams.XRequestId;
     }
@@ -930,6 +930,8 @@ class HereProviderV7 extends BaseAbstractProviderAdapter<Options> {
       ...params,
       ...query
     };
+
+    console.log('HereProviderV7.ts', params);
 
     const result = await this.httpAdapter.get<HereV7GeocodeResponse>(
       this._reverseEndpoint,
