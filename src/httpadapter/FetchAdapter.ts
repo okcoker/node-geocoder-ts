@@ -23,15 +23,17 @@ class FetchAdapter implements HTTPAdapter {
   async get<T>(
     url: string,
     params: Record<string, any>,
+    fetchOptions?: RequestInit,
     fullResponse?: boolean
   ): Promise<T> {
     const options: RequestInit = {
+      ...(fetchOptions || {}),
       headers: {
         'user-agent':
           'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
-        accept: 'application/json;q=0.9, */*;q=0.1'
-      },
-      ...this.options
+        accept: 'application/json;q=0.9, */*;q=0.1',
+        ...(fetchOptions || {}).headers
+      }
     };
 
     const queryString = new URLSearchParams(params);
@@ -72,11 +74,13 @@ class FetchAdapter implements HTTPAdapter {
     fullResponse?: boolean
   ): Promise<T> {
     const options: RequestInit = {
+      ...(fetchOptions || {}),
       headers: {
         'user-agent':
-          'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0'
+          'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
+        accept: 'application/json;q=0.9, */*;q=0.1',
+        ...(fetchOptions || {}).headers
       },
-      ...fetchOptions,
       method: 'POST'
     };
     const queryString = new URLSearchParams(params);

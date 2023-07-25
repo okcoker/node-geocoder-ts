@@ -1,5 +1,5 @@
 import ValueError from 'src/utils/error/ValueError';
-import HereProvider from 'src/provider/here/HereProvider';
+import HereProviderV6 from './HereProviderV6';
 import { buildHttpAdapter } from 'src/utils/test/mocks';
 import { verifyHttpAdapter } from 'src/utils/test/helpers';
 import { HTTPAdapter } from 'src/types';
@@ -7,46 +7,46 @@ import { HTTPAdapter } from 'src/types';
 const mockedHttpAdapter = buildHttpAdapter();
 const defaultResponse = {};
 
-describe('HereProvider', () => {
+describe('HereProviderV6', () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
   describe('#constructor', () => {
     test('an http adapter must be set', () => {
       expect(() => {
-        new HereProvider('' as unknown as HTTPAdapter, { apiKey: '' });
-      }).toThrow('HereProvider need an httpAdapter');
+        new HereProviderV6('' as unknown as HTTPAdapter, { apiKey: '' });
+      }).toThrow('HereProviderV6 need an httpAdapter');
     });
 
     test('requires appId and appCode to be specified', () => {
       expect(() => {
-        new HereProvider(mockedHttpAdapter, { apiKey: '' });
+        new HereProviderV6(mockedHttpAdapter, { apiKey: '' });
       }).toThrow('You must specify apiKey to use Here Geocoder');
       expect(() => {
-        new HereProvider(mockedHttpAdapter, {
+        new HereProviderV6(mockedHttpAdapter, {
           appId: 'APP_ID',
           appCode: ''
         });
       }).toThrow('You must specify apiKey to use Here Geocoder');
       expect(() => {
-        new HereProvider(mockedHttpAdapter, {
+        new HereProviderV6(mockedHttpAdapter, {
           appId: '',
           appCode: 'APP_CODE'
         });
       }).toThrow('You must specify apiKey to use Here Geocoder');
     });
 
-    test('Should be an instance of HereProvider if an http adapter, appId, and appCode are provided', () => {
-      const hereAdapter = new HereProvider(mockedHttpAdapter, {
+    test('Should be an instance of HereProviderV6 if an http adapter, appId, and appCode are provided', () => {
+      const hereAdapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
 
-      expect(hereAdapter).toBeInstanceOf(HereProvider);
+      expect(hereAdapter).toBeInstanceOf(HereProviderV6);
     });
 
     test('Should use CIT endpoint, if production is not provided', () => {
-      const hereAdapter = new HereProvider(mockedHttpAdapter, {
+      const hereAdapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -60,7 +60,7 @@ describe('HereProvider', () => {
     });
 
     test('Should use production endpoint, if production is provided', () => {
-      const hereAdapter = new HereProvider(mockedHttpAdapter, {
+      const hereAdapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         production: true
@@ -77,18 +77,18 @@ describe('HereProvider', () => {
 
   describe('#geocode', () => {
     test('Should not accept IPv4', async () => {
-      const hereAdapter = new HereProvider(mockedHttpAdapter, {
+      const hereAdapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
 
       await expect(hereAdapter.geocode('127.0.0.1')).rejects.toEqual(
-        new ValueError('HereProvider does not support geocoding IPv4')
+        new ValueError('HereProviderV6 does not support geocoding IPv4')
       );
     });
 
     test('Should not accept IPv6', async () => {
-      const hereAdapter = new HereProvider(mockedHttpAdapter, {
+      const hereAdapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -96,12 +96,12 @@ describe('HereProvider', () => {
       await expect(
         hereAdapter.geocode('2001:0db8:0000:85a3:0000:0000:ac1f:8001')
       ).rejects.toEqual(
-        new ValueError('HereProvider does not support geocoding IPv6')
+        new ValueError('HereProviderV6 does not support geocoding IPv6')
       );
     });
 
     test('Should call httpAdapter get method', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -124,7 +124,7 @@ describe('HereProvider', () => {
     });
 
     test('Should call httpAdapter get method with language if specified', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         language: 'en'
@@ -148,7 +148,7 @@ describe('HereProvider', () => {
     });
 
     test('Should call httpAdapter get method with politicalView if specified', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         politicalView: 'GRE'
@@ -172,7 +172,7 @@ describe('HereProvider', () => {
     });
 
     test('Should call httpAdapter get method with country if specified', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         country: 'FR'
@@ -196,7 +196,7 @@ describe('HereProvider', () => {
     });
 
     test('Should call httpAdapter get method with state if specified', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         state: 'Île-de-France'
@@ -220,7 +220,7 @@ describe('HereProvider', () => {
     });
 
     test('Should call httpAdapter get method with components if called with object', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -248,7 +248,7 @@ describe('HereProvider', () => {
     });
 
     test('Should call httpAdapter get method without default state if called with object containing country', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         country: 'FR',
@@ -334,7 +334,7 @@ describe('HereProvider', () => {
           ]
         }
       };
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -373,7 +373,7 @@ describe('HereProvider', () => {
     });
 
     test('Should handle a not "OK" status', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -395,7 +395,7 @@ describe('HereProvider', () => {
     });
 
     test('Should handle an empty response', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -423,7 +423,7 @@ describe('HereProvider', () => {
     });
 
     test('Should handle an unauthorized response', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         apiKey: 'API_KEY'
       });
       await verifyHttpAdapter({
@@ -445,7 +445,7 @@ describe('HereProvider', () => {
 
   describe('#reverse', () => {
     test('Should call httpAdapter get method', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -533,7 +533,7 @@ describe('HereProvider', () => {
         }
       };
 
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -645,7 +645,7 @@ describe('HereProvider', () => {
     });
 
     test('Should handle a not "OK" status', async () => {
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -681,7 +681,7 @@ describe('HereProvider', () => {
         }
       };
 
-      const adapter = new HereProvider(mockedHttpAdapter, {
+      const adapter = new HereProviderV6(mockedHttpAdapter, {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -707,7 +707,7 @@ describe('HereProvider', () => {
     //         const mock = sinon.mock(mockedHttpAdapter);
     //         mock.expects('get').once().callsArgWith(2, false, { status: "OVER_QUERY_LIMIT", error_message: "You have exceeded your rate-limit for this API.", results: [] });
 
-    //         const hereAdapter = new HereProvider(mockedHttpAdapter);
+    //         const hereAdapter = new HereProviderV6(mockedHttpAdapter);
 
     //         hereAdapter.reverse({lat:40.714232,lon:-73.9612889}, function(err, results) {
     //             err.message.should.to.equal("Status is OVER_QUERY_LIMIT. You have exceeded your rate-limit for this API.");
@@ -720,7 +720,7 @@ describe('HereProvider', () => {
     //         const mock = sinon.mock(mockedHttpAdapter);
     //         mock.expects('get').once().callsArgWith(2, false, { status: "INVALID_REQUEST", results: [] });
 
-    //         const hereAdapter = new HereProvider(mockedHttpAdapter);
+    //         const hereAdapter = new HereProviderV6(mockedHttpAdapter);
 
     //         hereAdapter.reverse({lat:40.714232,lon:-73.9612889}, function(err, results) {
     //             err.message.should.to.equal("Status is INVALID_REQUEST.");
@@ -738,7 +738,7 @@ describe('HereProvider', () => {
     //             signature: "PW1yyLFH9lN16B-Iw7EXiAeMKX8="
     //         }).once().returns({then: function() {}});
 
-    //         const hereAdapter = new HereProvider(mockedHttpAdapter, {appId: 'raoul', appCode: 'foo'});
+    //         const hereAdapter = new HereProviderV6(mockedHttpAdapter, {appId: 'raoul', appCode: 'foo'});
 
     //         hereAdapter.geocode('1 champs élysée Paris');
 
@@ -746,7 +746,7 @@ describe('HereProvider', () => {
     //     });
 
     //     it('Should generate signatures with all / characters replaced with _', function() {
-    //         const hereAdapter = new HereProvider(mockedHttpAdapter, {appId: 'james', appCode: 'foo'});
+    //         const hereAdapter = new HereProviderV6(mockedHttpAdapter, {appId: 'james', appCode: 'foo'});
     //         const params = {
     //           sensor: false,
     //           client: 'james',
@@ -757,7 +757,7 @@ describe('HereProvider', () => {
     //     });
 
     //     it('Should generate signatures with all + characters replaced with -', function() {
-    //         const hereAdapter = new HereProvider(mockedHttpAdapter, {appId: 'james', appCode: 'foo'});
+    //         const hereAdapter = new HereProviderV6(mockedHttpAdapter, {appId: 'james', appCode: 'foo'});
     //         const params = {
     //           sensor: false,
     //           client: 'james',

@@ -148,7 +148,12 @@ class TomTomProvider extends BaseAbstractProviderAdapter<Options> {
       throw new Error('Long poll ended without results after 14 minutes');
     }
 
-    const response = await this.httpAdapter.get<Response>(location, {}, true);
+    const response = await this.httpAdapter.get<Response>(
+      location,
+      {},
+      undefined,
+      true
+    );
 
     if (response.status === 200) {
       const results = await response.json();

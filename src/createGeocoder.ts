@@ -179,17 +179,17 @@ function _getFormatter<T extends FormatterOptions>(
  * Geocoder factory which creates geocoder with the specified provider and/or options
  * @param providerOrOptions
  */
-function getGeocoder<T extends Provider>(
+function createGeocoder<T extends Provider>(
   providerOrOptions: T
 ): AbstractGeocoder<T>;
-function getGeocoder<T extends Provider>(
+function createGeocoder<T extends Provider>(
   providerOrOptions: T,
   options: Omit<Extract<FactoryOptions, { provider: T }>, 'provider'>
 ): AbstractGeocoder<T>;
-function getGeocoder<T extends FactoryOptions>(
+function createGeocoder<T extends FactoryOptions>(
   providerOrOptions: T
 ): AbstractGeocoder<T['provider']>;
-function getGeocoder<T extends Provider | FactoryOptions>(
+function createGeocoder<T extends Provider | FactoryOptions>(
   providerOrOptions: T,
   options?: Omit<FactoryOptions, 'provider'>
 ): AbstractGeocoder<
@@ -258,7 +258,7 @@ type FactoryOptions = HTTPAdapterBaseOptions &
   AllAdapterOptions &
   FormatterOptions;
 
-export default getGeocoder;
+export default createGeocoder;
 export {
   AllAdapterOptions,
   AllSubFormatterOptions,

@@ -20,7 +20,12 @@ export async function verifyHttpAdapter<T>({
   const adapterSpy = jest.spyOn(adapter.httpAdapter, 'get');
 
   adapterSpy.mockImplementation(
-    (_url: string, _params: Record<string, any>, _fullResponse = false) => {
+    (
+      _url: string,
+      _params: Record<string, any>,
+      _fetchOptions?: RequestInit,
+      _fullResponse = false
+    ) => {
       if (mockError) {
         return Promise.reject(mockError);
       }

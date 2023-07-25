@@ -20,6 +20,11 @@ export interface ResultData {
         address?: string;
         category?: string;
         bbox?: number[];
+      }
+    // Here
+    | {
+        hereId?: string;
+        confidence?: number;
       };
   administrativeLevels?: {
     level1long?: string;
@@ -115,12 +120,13 @@ export interface HTTPAdapter {
   get<T = any>(
     url: string,
     params: Record<string, any>,
+    fetchOptions?: RequestInit,
     fullResponse?: boolean
   ): Promise<T>;
   post<T = any>(
     url: string,
     params: Record<string, any>,
-    fetchOptions: RequestInit,
+    fetchOptions?: RequestInit,
     fullResponse?: boolean
   ): Promise<T>;
 }
