@@ -1,4 +1,4 @@
-import getGeocoder, { AbstractGeocoder, ResultData } from 'src/index';
+import createGeocoder, { AbstractGeocoder, ResultData } from 'src/index';
 
 describe('Openstreetmap geocoder', () => {
   let geocoder: AbstractGeocoder<'openstreetmap'>;
@@ -8,7 +8,7 @@ describe('Openstreetmap geocoder', () => {
       provider: 'openstreetmap'
     } as const;
 
-    geocoder = getGeocoder(options);
+    geocoder = createGeocoder(options);
   });
 
   describe('geocode', () => {

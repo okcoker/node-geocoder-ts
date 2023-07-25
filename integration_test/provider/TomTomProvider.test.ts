@@ -1,4 +1,4 @@
-import getGeocoder, { AbstractGeocoder } from 'src/index';
+import createGeocoder, { AbstractGeocoder } from 'src/index';
 
 const apiKey = process.env.TOMTOM_API_KEY;
 const options = {
@@ -15,7 +15,7 @@ maybeDescribe('TomTom geocoder', () => {
   let geocoder: AbstractGeocoder<'mapbox'>;
 
   beforeAll(() => {
-    geocoder = getGeocoder(options);
+    geocoder = createGeocoder(options);
   });
 
   describe('geocode', () => {

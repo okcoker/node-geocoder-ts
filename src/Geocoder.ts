@@ -15,7 +15,7 @@ import type {
   AllBatchResultTypes
 } from 'src/types';
 import { Provider, providers } from 'src/provider/providers';
-import { AllAdapterOptions } from './getGeocoder';
+import { AllAdapterOptions } from './createGeocoder';
 
 class Geocoder<T extends Provider> implements AbstractGeocoder<T> {
   _adapter: AbstractGeocoderAdapter<

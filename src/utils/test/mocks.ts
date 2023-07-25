@@ -1,4 +1,4 @@
-import type { AllAdapterOptions } from 'src/getGeocoder';
+import type { AllAdapterOptions } from 'src/createGeocoder';
 import type { Provider } from 'src/provider/providers';
 import type {
   HTTPAdapter,

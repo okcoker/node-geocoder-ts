@@ -1,4 +1,4 @@
-import getGeocoder, { AbstractGeocoder } from 'src/index';
+import createGeocoder, { AbstractGeocoder } from 'src/index';
 
 const apiKey = process.env.HERE_API_KEY;
 const options = {
@@ -17,7 +17,7 @@ maybeDescribe('Here geocoder', () => {
   let geocoder: AbstractGeocoder<'here'>;;
 
   beforeAll(() => {
-    geocoder = getGeocoder(options);
+    geocoder = createGeocoder(options);
   });
 
   describe('geocode', () => {

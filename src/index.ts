@@ -1,4 +1,4 @@
-import getGeocoder from 'src/getGeocoder';
+import createGeocoder from 'src/createGeocoder';
 import type {
   AllAdapterOptions,
   AllSubFormatterOptions,
@@ -26,9 +26,9 @@ import type {
   TeleportOptions,
   OpenDataFranceOptions,
   MapBoxOptions
-} from 'src/getGeocoder';
+} from 'src/createGeocoder';
 
-export default getGeocoder;
+export default createGeocoder;
 export type * from 'src/types';
 export type {
   AllAdapterOptions,

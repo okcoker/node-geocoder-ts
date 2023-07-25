@@ -1,6 +1,6 @@
 import GoogleGeocoder from 'src/provider/google/GoogleProvider';
 import HereGeocoder from 'src/provider/here/HereProvider';
-import getGeocoder from 'src/getGeocoder';
+import createGeocoder from 'src/createGeocoder';
 import DataScienceToolkitProvider from 'src/provider/datasciencetoolkit/DataScienceToolkitProvider';
 import OpenStreetMapProvider from 'src/provider/openstreetmap/OpenStreetMapProvider';
 import LocationIQGeocoder from 'src/provider/locationiq/LocationIQProvider';
@@ -13,10 +13,10 @@ import StringFormatter from 'src/formatter/StringFormatter';
 
 import { Provider } from 'src/provider/providers';
 
-describe('GeocoderFactory', () => {
-  describe('getGeocoder', () => {
+describe('createGeocoder', () => {
+  describe('createGeocoder', () => {
     test('called with "google", and extra business key must return google geocoder with business key', () => {
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         clientId: 'CLIENT_ID',
         apiKey: 'API_KEY'
       });
@@ -30,7 +30,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google", and extra business key must return google geocoder with business key', () => {
-      const geocoder = getGeocoder({
+      const geocoder = createGeocoder({
         provider: 'google',
         clientId: 'CLIENT_ID',
         apiKey: 'API_KEY'
@@ -45,7 +45,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google", "fetch" and extra business key and excludePartialMatches must return google geocoder with fetch adapter and business key and exclude partial matches', () => {
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         clientId: 'CLIENT_ID',
         apiKey: 'API_KEY',
         excludePartialMatches: true
@@ -61,7 +61,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google" and extra business key and excludePartialMatches must return google geocoder with business key and exclude partial matches', () => {
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         clientId: 'CLIENT_ID',
         apiKey: 'API_KEY',
         excludePartialMatches: true
@@ -77,7 +77,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google", "http", extra language key and extra region must return google geocoder with options language', () => {
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         language: 'fr',
         region: 'de'
       });
@@ -91,7 +91,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google" and "http" and "gpx" must return google geocoder with gpx formatter', () => {
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         formatter: 'gpx'
       });
 
@@ -104,7 +104,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google" and "http" and "string" must return google geocoder with string formatter', () => {
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         formatter: 'string',
         formatterOptions: {
           pattern: 'PATTERN'
@@ -120,7 +120,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "google" must return google geocoder with fetch adapter', () => {
-      const geocoder = getGeocoder('google');
+      const geocoder = createGeocoder('google');
 
       const adapter = geocoder._adapter;
 
@@ -129,7 +129,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here", "http" and extra business key must return here geocoder with business key', () => {
-      const geocoder = getGeocoder({
+      const geocoder = createGeocoder({
         provider: 'here',
         appId: 'APP_ID',
         appCode: 'APP_CODE'
@@ -144,7 +144,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here", "https" and extra business key must return here geocoder with business key', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE'
       });
@@ -158,7 +158,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here" and "http" and language must return here geocoder with language', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         language: 'en'
@@ -172,7 +172,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here" and "http" and politicalView must return here geocoder with politicalView', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         politicalView: 'GRE'
@@ -186,7 +186,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here" and "http" and country must return here geocoder with  country', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         country: 'FR'
@@ -200,7 +200,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here" and "http" and state must return here geocoder with state', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         state: 'Île-de-France'
@@ -214,7 +214,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here" and "http" and "gpx" must return here geocoder with gpx formatter', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         formatter: 'gpx'
@@ -229,7 +229,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "here" and "http" and "string" must return here geocoder with string formatter', () => {
-      const geocoder = getGeocoder('here', {
+      const geocoder = createGeocoder('here', {
         appId: 'APP_ID',
         appCode: 'APP_CODE',
         formatter: 'string',
@@ -247,7 +247,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "datasciencetoolkit" and "http" must return datasciencetoolkit geocoder', () => {
-      const geocoder = getGeocoder('datasciencetoolkit');
+      const geocoder = createGeocoder('datasciencetoolkit');
 
       const adapter = geocoder._adapter;
 
@@ -256,7 +256,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "datasciencetoolkit" "http" and "host" option must return datasciencetoolkit geocoder with host extra', () => {
-      const geocoder = getGeocoder('datasciencetoolkit', {
+      const geocoder = createGeocoder('datasciencetoolkit', {
         host: 'raoul.io'
       });
 
@@ -268,7 +268,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "openstreetmap" and "http" must return openstreetmap geocoder with adapter', () => {
-      const geocoder = getGeocoder('openstreetmap');
+      const geocoder = createGeocoder('openstreetmap');
 
       const adapter = geocoder._adapter;
 
@@ -277,7 +277,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "locationiq" and "http" must return locationiq geocoder with adapter', () => {
-      const geocoder = getGeocoder('locationiq', {
+      const geocoder = createGeocoder('locationiq', {
         apiKey: 'API_KEY'
       });
 
@@ -289,13 +289,13 @@ describe('GeocoderFactory', () => {
 
     test('called with "zaertyazeaze" must throw an error', () => {
       expect(() => {
-        getGeocoder('zaertyazeaze' as unknown as Provider);
+        createGeocoder('zaertyazeaze' as unknown as Provider);
       }).toThrow('No geocoder provider found for: zaertyazeaze');
     });
 
     test('called with "google", "https" and extra timeout must return google geocoder with http adapter and timeout', () => {
       const timeout = 5 * 1000;
-      const geocoder = getGeocoder('google', {
+      const geocoder = createGeocoder('google', {
         clientId: 'CLIENT_ID',
         apiKey: 'API_KEY',
         timeout: timeout
@@ -309,7 +309,7 @@ describe('GeocoderFactory', () => {
     });
 
     test('called with "pickpoint" and API key must return pickpoint geocoder with fetch adapter', () => {
-      const geocoder = getGeocoder('pickpoint', {
+      const geocoder = createGeocoder('pickpoint', {
         apiKey: 'API_KEY'
       });
 
