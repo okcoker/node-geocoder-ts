@@ -6,6 +6,8 @@ const options = {
   apiKey
 } as const;
 
+// Enable the Geocoding API in your cloud account here:
+// https://console.cloud.google.com/apis/library/browse?q=geocoding%20api
 const maybeDescribe = !apiKey ? describe.skip : describe;
 if (!apiKey) {
   console.log('GOOGLE_API_KEY not configured. Skipping test suite.');
