@@ -113,8 +113,8 @@ const geocoder = NodeGeocoder({
 - `nominatimmapquest`: Same geocoder as `openstreetmap`, but queries the MapQuest servers. You need to specify `options.apiKey`
 - `opencage`: OpenCage Geocoder. Aggregates many different open geocoder. Supports address and reverse geocoding with [many optional parameters](https://opencagedata.com/api#forward-opt). You need to specify `options.apiKey` which can be obtained at [OpenCage](https://opencagedata.com).
 - `opendatafrance`: OpendataFranceGeocoder supports forward and reverse geocoding in France; for more information, see [OpendataFrance API documentation](https://adresse.data.gouv.fr/api/)
-- `openmapquest` : Open MapQuestGeocoder (based on OpenStreetMapGeocoder). Supports address geocoding and reverse geocoding. Needs an apiKey
-- `openstreetmap` : OpenStreetMapGeocoder. Supports address geocoding and reverse geocoding. You can use `options.language` and `options.email` to specify a language and a contact email address.
+- `openmapquest` : Open MapQuestGeocoder (based on OpenStreetMapProvider). Supports address geocoding and reverse geocoding. Needs an apiKey
+- `openstreetmap` : OpenStreetMapProvider. Supports address geocoding and reverse geocoding. You can use `options.language` and `options.email` to specify a language and a contact email address.
   - For `geocode`, you can use an object as value, specifying [one or several parameters](http://nominatim.org/release-docs/latest/api/Search/)
   - For `reverse`, you can use [additional parameters](http://nominatim.org/release-docs/latest/api/Reverse/)
   - You should specify a specific `user-agent` or `referrer` header field as required by the [OpenStreetMap Usage Policy](https://operations.osmfoundation.org/policies/nominatim/)

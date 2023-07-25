@@ -5,7 +5,7 @@
       "allowJs": true,
       "module": "commonjs",
       "target": "ESNext",
-      "sourceMap": true,
+      "sourceMap": false,
       "strict": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
@@ -15,17 +15,13 @@
       "noErrorTruncation": true,
       "noImplicitOverride": true,
       "paths": {
-        "lib": ["lib"],
-        "test": ["test"],
+        "src": ["src"],
         "integration_test": ["integration_test"],
-        "types": ["types.d.ts"]
+        "types": ["src/types.d.ts"]
       }
   },
   "include": [
-      "lib",
-      "test",
-      "integration_test",
-      "index.ts",
-      "types.d.ts"
+      "src",
+      "integration_test"
   ]
 }

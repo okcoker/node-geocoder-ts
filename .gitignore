@@ -4,4 +4,5 @@ test.js
 playground.js
 playground.ts
 dist
+*.map
 env.sh

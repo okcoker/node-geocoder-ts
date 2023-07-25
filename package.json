@@ -7,9 +7,9 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "jest ./test",
-    "lint": "tsc --project ./tsconfig.json && eslint lib test integration_test && prettier --check '{lib,test,integration_test}/**/*.{ts,js}' && tsc",
-    "pretty": "prettier --write '{lib,test,integration_test}/**/*.{ts,js}'",
+    "test": "jest src",
+    "lint": "tsc --project ./tsconfig.json && eslint src integration_test integration_test && prettier --check '{src,integration_test}/**/*.{ts,js}' && tsc",
+    "pretty": "prettier --write '{src,integration_test}/**/*.{ts,js}'",
     "ci": "npm run lint && npm run test",
     "build": "tsc --sourceMap false --declaration --project tsconfig.build.json && tsc-alias",
     "test:integration": "jest ./integration_test",
