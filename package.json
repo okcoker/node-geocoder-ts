@@ -1,8 +1,8 @@
 {
-  "name": "node-geocoder",
-  "version": "4.2.0",
-  "description": "Node Geocoder, node geocoding library, supports google maps, mapquest, open street map, tom tom, promise",
-  "main": "index.ts",
+  "name": "node-geocoder-ts",
+  "version": "0.1.0",
+  "description": "Node Geocoder TS, node geocoding library, supports google maps, mapquest, open street map, tom tom, promise",
+  "main": "src/index.ts",
   "engines": {
     "node": ">=12"
   },
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nchaulet/node-geocoder.git"
+    "url": "https://github.com/okcoker/node-geocoder-ts.git"
   },
   "keywords": [
     "geocoder",
@@ -31,24 +31,22 @@
     "arcgis",
     "tomtom"
   ],
-  "author": "nchaulet",
-  "license": "MIT",
+  "author": "okcoker",
+  "license-ts": "MIT",
   "bugs": {
-    "url": "https://github.com/nchaulet/node-geocoder/issues"
+    "url": "https://github.com/okcoker/node-geocoder-ts/issues"
   },
   "dependencies": {
-    "bluebird": "^3.5.2",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.38",
     "@types/chai": "^4.3.5",
     "@types/google.maps": "^3.53.5",
     "@types/jest": "^29.5.3",
     "@types/node-fetch": "^2.6.4",
     "@types/sinon": "^10.0.15",
-    "@typescript-eslint/eslint-plugin": "^6.1.0",
-    "@typescript-eslint/parser": "^6.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-config-standard": "^17.1.0",
