@@ -36,9 +36,16 @@ class FetchAdapter implements HTTPAdapter {
       }
     };
 
-    const queryString = new URLSearchParams(params);
-    if (queryString.toString()) {
-      url += `?${queryString.toString()}`;
+    // Clean undefined values (shallow)
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
+    });
+
+    const queryString = new URLSearchParams(params).toString();
+    if (queryString) {
+      url += `?${queryString}`;
     }
 
     try {
@@ -83,9 +90,17 @@ class FetchAdapter implements HTTPAdapter {
       },
       method: 'POST'
     };
-    const queryString = new URLSearchParams(params);
-    if (queryString.toString()) {
-      url += `?${queryString.toString()}`;
+
+    // Clean undefined values (shallow)
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
+    });
+
+    const queryString = new URLSearchParams(params).toString();
+    if (queryString) {
+      url += `?${queryString}`;
     }
 
     try {

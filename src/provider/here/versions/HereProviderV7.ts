@@ -928,10 +928,10 @@ class HereProviderV7 extends BaseAbstractProviderAdapter<Options> {
 
     params = {
       ...params,
-      ...query
+      ...query,
+      lat: undefined,
+      lon: undefined
     };
-
-    console.log('HereProviderV7.ts', params);
 
     const result = await this.httpAdapter.get<HereV7GeocodeResponse>(
       this._reverseEndpoint,
