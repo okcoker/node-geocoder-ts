@@ -1,10 +1,34 @@
-# node-geocoder
+# Node Geocoder TS
 
-[![Build Status](https://img.shields.io/travis/nchaulet/node-geocoder.svg?style=flat-square)](https://travis-ci.org/nchaulet/node-geocoder)
-![Dependency status](https://img.shields.io/david/nchaulet/node-geocoder.svg?style=flat-square)
-[![npm version](https://img.shields.io/npm/v/node-geocoder.svg?style=flat-square)](https://www.npmjs.com/package/node-geocoder)
+<!-- [![Build Status](https://img.shields.io/travis/nchaulet/node-geocoder.svg?style=flat-square)](https://travis-ci.org/nchaulet/node-geocoder) -->
+<!-- ![Dependency status](https://img.shields.io/david/nchaulet/node-geocoder.svg?style=flat-square) -->
+<!-- [![npm version](https://img.shields.io/npm/v/node-geocoder.svg?style=flat-square)](https://www.npmjs.com/package/node-geocoder) -->
 
-Node library for geocoding and reverse geocoding. Can be used as a nodejs library
+Node library for geocoding and reverse geocoding.
+
+This is based on the original [node-geocoder](https://github.com/nchaulet/node-geocoder) library and is fully rewritten in TypeScript. The API is not fully backwards compatible with the JS version.
+
+There have been, and will be a few major changes.
+
+- [x] Fully re-written in TypeScipt
+- [x] Restructured project
+- [x] Callbacks have been removed in favor of promises
+- [x] Here provider has been updated with a `version` option (defaults to v7)
+- [x] Sinon and Chai were removed as dependencies in favor of Just Jest™
+- [x] add `options.formatterOptions` to be passed to whatever `options.formatter` is provided
+- [ ] Potentially create general option shape that can map to all provider options
+- [ ] Update `reverse()` params to use `longitude` & `latitude` instead of `lon`/`lat`
+- [ ] Remove instaces of `_reverse()` in favor of `reverse()`
+- [ ] Create provider-specific option types for each `geocode` and `reverse` method
+- [ ] Create integration tests for every provider
+- [ ] Update APIs (ie SmartyStreets is now Smarty and has a different endpoint)
+- [ ] Add reverse geocoding to TomTom provider
+- [ ] Add reverse geocoding to Yandex provider
+- [ ] Add [RapidAPI](https://rapidapi.com/GeocodeSupport/api/forward-reverse-geocoding)
+- [ ] Add [Maps.co](https://geocode.maps.co/)
+- [ ] Add [Geonames](http://www.geonames.org/export/geocode.html)
+- [ ] Migrate NominatimMapQuestProvider to Nominatim (with `mapquest` and `osm` server options)
+
 
 ## Installation (nodejs library)
 
@@ -13,18 +37,15 @@ Node library for geocoding and reverse geocoding. Can be used as a nodejs librar
 ## Usage example
 
 ```javascript
-const NodeGeocoder = require('node-geocoder');
-
-const options = {
+const createGeocoder = require('node-geocoder-ts');
+const geocoder = createGeocoder({
   provider: 'google',
 
   // Optional depending on the providers
   fetch: customFetchImplementation,
   apiKey: 'YOUR_API_KEY', // for Mapquest, OpenCage, Google Premier
   formatter: null // 'gpx', 'string', ...
-};
-
-const geocoder = NodeGeocoder(options);
+});
 
 // Using callback
 const res = await geocoder.geocode('29 champs elysée paris');
@@ -54,14 +75,14 @@ const res = await geocoder.geocode('29 champs elysée paris');
 ## Advanced usage (only google, here, mapquest, locationiq, and opencage providers)
 
 ```javascript
-const res = await geocoder.geocode({
+const result = await geocoder.geocode({
   address: '29 champs elysée',
   country: 'France',
   zipcode: '75008'
 });
 
 // OpenCage advanced usage example
-const res = await geocoder.geocode({
+const result = await geocoder.geocode({
   address: '29 champs elysée',
   countryCode: 'fr',
   minConfidence: 0.5,
@@ -70,11 +91,11 @@ const res = await geocoder.geocode({
 
 // Reverse example
 
-const res = await geocoder.reverse({ lat: 45.767, lon: 4.833 });
+const result = await geocoder.reverse({ lat: 45.767, lon: 4.833 });
 
 // Batch geocode
 
-const results = await geocoder.batchGeocode([
+const batchResult = await geocoder.batchGeocode([
   '13 rue sainte catherine',
   'another address'
 ]);
@@ -82,7 +103,7 @@ const results = await geocoder.batchGeocode([
 // Set specific http request headers:
 const nodeFetch = require('node-fetch');
 
-const geocoder = NodeGeocoder({
+const geocoder = createGeocoder({
   provider: 'google',
   fetch: function fetch(url, options) {
     return nodeFetch(url, {
@@ -97,36 +118,29 @@ const geocoder = NodeGeocoder({
 ```
 
 ## Geocoder Providers (in alphabetical order)
+Service | Provider | Forward Geocoding | Reverse Geocoding | Authentication
+-|-|-|-|-
+[ArcGis](https://developers.arcgis.com/documentation/mapping-apis-and-services/geocoding/) | `agol` | ✅ | ✅ |  `clientId`, `clientSecret`
+[Data Science Toolkit](http://dstk.britecorepro.com/) | `datasciencetoolkit` | ✅ | ✅ |
+[FreeGeoIP.net](https://geocoder.readthedocs.io/providers/FreeGeoIP.html) | `freegeoip` | ✅ (IP only)|  |
+[Geocodio](https://www.geocod.io/) | `geocodio` | ✅ (US & CA) | ✅ (US & CA) |
+[Google](https://developers.google.com/maps/documentation/geocoding) | `google` | ✅ | ✅ | `apiKey`
+[Here](https://developer.here.com/documentation/geocoding-search-api/dev_guide/topics/endpoint-geocode-brief.html) | `here` | ✅ | ✅ | `apiKey`
+[LocationIQ](https://locationiq.com/docs#forward_usage) | `locationiq` | ✅ | ✅ | `apiKey`
+[Mapbox](https://docs.mapbox.com/api/search/geocoding/) | `mapbox` | ✅ | ✅ | `apiKey`
+[MapQuest](https://developer.mapquest.com/documentation/geocoding-api/) | `mapquest` | ✅ | ✅ | `apiKey`
+[OpenCage](https://opencagedata.com/api#quickstart) | `opencage` | ✅ | ✅ | `apiKey`
+[OpenDataFrance](https://adresse.data.gouv.fr/api/) | `opendatafrance` | ✅ | ✅ | `apiKey`
+[OpenStreetMap] | `openstreetmap` | ✅ | ✅ |
+[PickPoint](https://docs.pickpoint.io/openapi/reference/v2/overview/) | `pickpoint` | ✅ | ✅ | `apiKey`
+[Smarty](https://www.smarty.com/products/single-address#demo) | `smartystreets` | ✅ | |  `authId`, `authToken`
+[Teleport](https://developers.teleport.org/api/reference/) | `teleport` | ✅ | ✅ |
+[TomTom](https://developer.tomtom.com/geocoding-api/documentation/geocode) | `tomtom` | ✅ |  | `apiKey`
+[VirtualEarth](https://learn.microsoft.com/en-us/bingmaps/rest-services/locations/find-a-location-by-address) | `virtualearth` | ✅ | ✅ | `apiKey`
+[Yandex](https://yandex.com/dev/geocode/doc/en/) | `yandex` | ✅ |  | `apiKey`
 
-- `agol` : ArcGis Online Geocoding service. Supports geocoding and reverse. Requires a client_id & client_secret
-- `datasciencetoolkit` : DataScienceToolkitGeocoder. Supports IPv4 geocoding and address geocoding. Use `options.host` to specify a local instance
-- `freegeoip` : FreegeoipGeocoder. Supports IP geocoding
-- `geocodio`: Geocodio, Supports address geocoding and reverse geocoding (US only)
-- `google` : GoogleGeocoder. Supports address geocoding and reverse geocoding. Use `options.clientId`and `options.apiKey`(privateKey) for business licence. You can also use `options.language` and `options.region` to specify language and region, respectively.
-- `here` : HereGeocoder. Supports address geocoding and reverse geocoding. You must specify `options.apiKey` with your Here API key. You can also use `options.language`, `options.politicalView` ([read about political views here](https://developer.here.com/rest-apis/documentation/geocoder/topics/political-views.html)), `options.country`, and `options.state`.
-- `locationiq` : LocationIQGeocoder. Supports address geocoding and reverse geocoding just like openstreetmap but does require only a locationiq api key to be set.
-  - For `geocode` you can use simple `q` parameter or an object containing the different parameters defined here: http://locationiq.org/#docs
-  - For `reverse`, you can pass over `{lat, lon}` and additional parameters defined in http://locationiq.org/#docs
-  - No need to specify referer or email addresses, just locationiq api key, note that there are rate limits!
-- `mapbox` : MapBoxGeocoder. Supports address geocoding and reverse geocoding. Needs an apiKey
-- `mapquest` : MapQuestGeocoder. Supports address geocoding and reverse geocoding. Needs an apiKey
-- `nominatimmapquest`: Same geocoder as `openstreetmap`, but queries the MapQuest servers. You need to specify `options.apiKey`
-- `opencage`: OpenCage Geocoder. Aggregates many different open geocoder. Supports address and reverse geocoding with [many optional parameters](https://opencagedata.com/api#forward-opt). You need to specify `options.apiKey` which can be obtained at [OpenCage](https://opencagedata.com).
-- `opendatafrance`: OpendataFranceGeocoder supports forward and reverse geocoding in France; for more information, see [OpendataFrance API documentation](https://adresse.data.gouv.fr/api/)
-- `openmapquest` : Open MapQuestGeocoder (based on OpenStreetMapProvider). Supports address geocoding and reverse geocoding. Needs an apiKey
-- `openstreetmap` : OpenStreetMapProvider. Supports address geocoding and reverse geocoding. You can use `options.language` and `options.email` to specify a language and a contact email address.
-  - For `geocode`, you can use an object as value, specifying [one or several parameters](http://nominatim.org/release-docs/latest/api/Search/)
-  - For `reverse`, you can use [additional parameters](http://nominatim.org/release-docs/latest/api/Reverse/)
-  - You should specify a specific `user-agent` or `referrer` header field as required by the [OpenStreetMap Usage Policy](https://operations.osmfoundation.org/policies/nominatim/)
-  - Set `options.osmServer` to use custom nominatim server. Example: you can setup local nominatim server by following [these instructions](http://nominatim.org/release-docs/latest/admin/Installation/) and set `options.osmServer: http://localhost:8000` to use local server.
-- `pickpoint`: PickPoint Geocoder. Supports address geocoding and reverse geocoding. You need to specify `options.apiKey` obtained at [PickPoint](https://pickpoint.io).
-  - As parameter for `geocode` function you can use a string representing an address like "13 rue sainte catherine" or an object with parameters described in [Forward Geocoding Reference](https://pickpoint.io/api-reference#forward-geocoding).
-  - For `geocode` function you should use an object where `{lat, lon}` are required parameters. Additional parameters like `zoom` are available, see details in [Reverse Geocoding Reference](https://pickpoint.io/api-reference#reverse-geocoding).
-- `smartyStreet`: Smarty street geocoder (US only), you need to specify `options.auth_id` and `options.auth_token`
-- `teleport`: Teleport supports city and urban area forward and reverse geocoding; for more information, see [Teleport API documentation](https://developers.teleport.org/api/)
-- `tomtom`: TomTomGeocoder. Supports address geocoding. You need to specify `options.apiKey` and can use `options.language` to specify a language
-- `virtualearth`: VirtualEarthGeocoder (Bing maps). Supports address geocoding. You need to specify `options.apiKey`
-- `yandex`: Yandex support address geocoding, you can use `options.language` to specify language
+<!-- - `nominatimmapquest`: Same geocoder as `openstreetmap`, but queries the MapQuest servers. You need to specify `options.apiKey` -->
+<!-- - `openmapquest` : Open MapQuestGeocoder (based on OpenStreetMapProvider). Supports address geocoding and reverse geocoding. Needs an apiKey -->
 
 ## Fetch option
 
@@ -146,16 +160,6 @@ This allow you to specify a proxy to use, a custom timeout, specific headers, ..
   - `%T` State
   - `%t` state code
   - `%c` City
-
-## More
-
-### Playground
-
-You can try node-geocoder here http://node-geocoder.herokuapp.com/
-
-### Command line tools
-
-[`node-geocoder-cli`](https://github.com/nchaulet/node-geocoder-cli) You can use node-geocoder-cli to geocode in shell
 
 ### Extending node geocoder
 
